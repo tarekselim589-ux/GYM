@@ -26,48 +26,8 @@
   img,svg{max-width:100%}
   table,pre{max-width:100%;overflow-x:auto}
 </style>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { initializeFirestore, persistentLocalCache, doc, getDocFromServer, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-const app=initializeApp({apiKey:"AIzaSyCLxD-fduSa6kgqnk8pJj8HwtzY3AYfhIg",authDomain:"tarek-74842.firebaseapp.com",projectId:"tarek-74842",storageBucket:"tarek-74842.firebasestorage.app",messagingSenderId:"179196785540",appId:"1:179196785540:web:d4604f645dbbcc6e5f23d1"});
-const auth=getAuth(app);
-let fs; try{ fs=initializeFirestore(app,{localCache:persistentLocalCache()}); }catch(e){ fs=initializeFirestore(app,{}); }
-const ref=doc(fs,"gym/state");
-window.FB={
-  async read(){ let d; try{ d=await getDocFromServer(ref); }catch(e){ try{ d=await getDoc(ref); }catch(x){ return null; } } return d.exists()?d.data():null; },
-  write:(s,ts)=>setDoc(ref,{s:s,ts:ts}),
-  signIn:(e,p)=>signInWithEmailAndPassword(auth,e,p), signOut:()=>signOut(auth)
-};
-onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEvent("fbauth",{detail:u})); });
-</script>
-<style>
-[hidden]{display:none!important}
-.lgov{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;background:#0C2130;color:#E9F0F3;font-family:inherit}
-.lgbox{width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px;background:#12304A;border:1px solid #23465f;border-radius:16px;padding:22px}
-.lgbox #lgFields{display:flex;flex-direction:column;gap:12px}
-.lgt{margin:0;font-weight:700;font-size:20px;text-align:center}
-.lgl{margin:0;text-align:center;color:#8CA9B8}
-.lgf{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#8CA9B8}
-.lgf input{font:16px inherit;padding:11px 12px;border-radius:10px;border:1px solid #23465f;background:#0C2130;color:#E9F0F3}
-.lgbtn{font:600 16px inherit;padding:11px;border-radius:10px;border:0;background:#35C4C0;color:#0C2130;cursor:pointer}
-.lgerr{margin:0;color:#D9705F;font-size:14px;text-align:center}
-</style>
 </head>
 <body>
-<div id="g4cloudErr" hidden style="position:fixed;left:16px;right:16px;bottom:24px;z-index:90;background:#D9705F;color:#0C2130;padding:10px 14px;border-radius:10px;font-weight:600;text-align:center">Not saved to your account. Check your internet.</div>
-<div id="lg" class="lgov">
-  <form id="lgForm" class="lgbox" novalidate>
-    <p class="lgt">Sign in</p>
-    <p class="lgl" id="lgLoad">Loading…</p>
-    <div id="lgFields" hidden>
-      <label class="lgf">Email<input id="lgEmail" type="email" autocomplete="username" inputmode="email"></label>
-      <label class="lgf">Password<input id="lgPass" type="password" autocomplete="current-password"></label>
-      <button class="lgbtn" type="submit" id="lgBtn">Sign in</button>
-      <p class="lgerr" id="lgErr" hidden></p>
-    </div>
-  </form>
-</div>
 <div id="g4">
   <header class="hdr">
     <div class="id"><div class="d1" id="g4h1"></div><div class="d2" id="g4h2"></div></div>
@@ -268,6 +228,21 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     border:1px solid var(--aqua);background:var(--aqua);color:#062028;cursor:pointer}
   #g4 .mgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:12px}
   #g4 .mgrid .field input{padding:13px 40px 13px 11px;font-size:16px}
+  #g4 .mgrid .wide{grid-column:1/-1}
+  #g4 .mlist{margin:14px 0 16px}
+  #g4 .mlist .r{display:flex;align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+  #g4 .mlist .r:last-child{border-bottom:none}
+  #g4 .mlist .n{flex:1;color:var(--muted);font-size:13px}
+  #g4 .mlist .v{font-size:17px;font-weight:700;font-variant-numeric:tabular-nums}
+  #g4 .mlist .c{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums;min-width:54px;text-align:right;color:var(--muted)}
+  #g4 .mlist .c.up{color:var(--aqua)} #g4 .mlist .c.down{color:var(--rose)}
+  #g4 .rep{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 14px;margin:0 0 18px}
+  #g4 .rep p{margin:0 0 9px;font-size:13px;line-height:1.65;color:var(--muted)}
+  #g4 .rep p:last-child{margin-bottom:0}
+  #g4 .rep b{color:var(--chalk);font-weight:600}
+  #g4 .rep p.warn b{color:var(--rose)}
+  #g4 .rep p.good b{color:var(--aqua)}
+  #g4 .clab{color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin:14px 0 0}
   #g4 .mgrid label{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}
   #g4 .mfull{width:100%;font-family:inherit;font-size:15px;font-weight:600;border-radius:10px;padding:13px;
     border:1px solid var(--aqua);background:var(--aqua);color:#062028;cursor:pointer}
@@ -359,10 +334,8 @@ const Store=(function(){
   const ts=s=>{ try{ return JSON.parse(s).ts||0; }catch(e){ return 0; } };
   const newest=arr=>{ const v=arr.filter(Boolean); return v.length?v.sort((a,b)=>ts(b)-ts(a))[0]:null; };
   return {
-    cloud:false,
     get label(){
       const n=[];
-      if(this.cloud) n.push("your account");
       if(local) n.push("browser storage");
       if(idb) n.push("browser database");
       return n.length?n.join(" + "):"Not saving";
@@ -371,7 +344,6 @@ const Store=(function(){
     ok: true,
     async readLocal(){
       const found=[];
-      if(this.cloud){ const c=await window.FB.read(); if(c&&c.s) found.push(c.s); }
       if(local){ try{ const v=localStorage.getItem(KEY); if(v) found.push(v); }catch(e){} }
       if(idb){ const v=await IDB.get(KEY); if(v) found.push(v); }
       return newest(found)||mem;
@@ -381,9 +353,6 @@ const Store=(function(){
       if(local){ try{ localStorage.setItem(KEY,s); ok=true; }catch(e){} }
       if(idb){ if(await IDB.set(KEY,s)) ok=true; }
       if(!ok) mem=s;
-      if(this.cloud){ clearTimeout(this._t); const self=this; this._t=setTimeout(function(){
-        window.FB.write(s,ts(s)).catch(function(){ const b=document.getElementById("g4cloudErr"); if(b){ b.hidden=false; setTimeout(function(){b.hidden=true;},5000);} });
-      },800); }
       return ok;
     }
   };
@@ -611,7 +580,7 @@ function pushPull(now){
   return {push:push,pull:pull,ratio:push?pull/push:null};
 }
 
-function chartSVG(pts){
+function chartSVG(pts,noPr){
   if(pts.length<2) return "";
   const W=320,H=96,pd=10;
   const ys=pts.map(p=>p.e);
@@ -622,7 +591,7 @@ function chartSVG(pts){
   let d="",dots="";
   pts.forEach((p,i)=>{
     d+=(i?" L":"M")+X(i).toFixed(1)+" "+Y(p.e).toFixed(1);
-    const pr=p.e>=hi-0.001;
+    const pr=!noPr&&p.e>=hi-0.001;
     dots+='<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(p.e).toFixed(1)+'" r="'+(pr?4:3)+
       '" fill="'+(pr?"#E9A63C":"#35C4C0")+'"/>';
   });
@@ -947,6 +916,103 @@ function statsView(){
     '<p class="verdict" style="margin-top:14px">Tap any exercise for its full history and chart.</p>';
 }
 
+/* ---- measurement fields: key, label, full-width, direction that is good ---- */
+const MF=[
+  ["neck","Neck",1,""],
+  ["shoulder","Shoulders",1,"+"],
+  ["chest","Chest",1,""],
+  ["armR","Arm R",0,"+"],["armL","Arm L",0,"+"],
+  ["waist","Waist",1,"-"],
+  ["lowerab","Lower abs",1,"-"],
+  ["hip","Hip",1,"-"],
+  ["thighR","Thigh R",0,"+"],["thighL","Thigh L",0,"+"],
+  ["calfR","Calf R",0,"+"],["calfL","Calf L",0,"+"]
+];
+/* records saved before the left/right split used these keys */
+const MOLD={armR:"arm",thighR:"thigh",calfR:"calf"};
+function mval(rec,k){
+  if(!rec) return null;
+  let v=rec[k];
+  if((v===undefined||v===""||v===null)&&MOLD[k]) v=rec[MOLD[k]];
+  v=parseFloat(v);
+  return (isFinite(v)&&v>0)?v:null;
+}
+/* US Navy estimate for men: neck, waist, height. Off by 3-4 points in absolute
+   terms, but the same formula every time, so the direction is trustworthy. */
+function bfPct(rec){
+  const w=mval(rec,"waist"), n=mval(rec,"neck"), h=parseFloat(store.height);
+  if(!w||!n||!isFinite(h)||h<120||w<=n) return null;
+  const L=x=>Math.log(x)/Math.LN10;
+  const b=495/(1.0324-0.19077*L(w-n)+0.15456*L(h))-450;
+  return (b>3&&b<60)?b:null;
+}
+function wNear(d){
+  let best=null,bd=6;
+  (store.weights||[]).forEach(e=>{
+    const k=Math.abs(t0(e.d)-t0(d))/864e5;
+    if(k<=5&&k<bd){ bd=k; best=+e.v; }
+  });
+  return best;
+}
+function measureReport(cur,ref,days){
+  if(!cur) return "";
+  if(!ref) return '<div class="rep"><p>First set saved. The report needs a second measurement to compare against.</p></div>';
+  const P=[];
+  const g=k=>{ const a=mval(ref,k), b=mval(cur,k); return (a!==null&&b!==null)?b-a:null; };
+  const wk=Math.max(days,1)/7;
+  const dWa=g("waist");
+  const limb=["armR","armL","thighR","thighL"].map(g).filter(x=>x!==null);
+  const limbAvg=limb.length?limb.reduce((a,b)=>a+b,0)/limb.length:null;
+  const kNow=wNear(cur.d), kRef=wNear(ref.d);
+  const dKg=(kNow!==null&&kRef!==null)?kNow-kRef:null;
+
+  P.push('<p>Comparing <b>'+fmt(cur.d)+'</b> with <b>'+fmt(ref.d)+'</b>, '+days+' days apart.'+
+    (days<10?' Short window: week-to-week noise is bigger than real change, so read this as a hint and trust the four-week gap.':'')+'</p>');
+
+  if(limb.filter(x=>Math.abs(x)>1.5).length)
+    P.push('<p class="warn"><b>Check that measurement.</b> An arm or thigh moved more than 1.5 cm. Limbs do not change that fast. Measure again before reading anything into it.</p>');
+  if(dWa!==null&&Math.abs(dWa)/wk>1.2)
+    P.push('<p class="warn"><b>The waist moved a lot.</b> More than 1.2 cm a week is water, a different tape position, or a very aggressive deficit.</p>');
+
+  if(dWa!==null&&dKg!==null){
+    const wD=dWa<=-0.3, wF=Math.abs(dWa)<0.3, wU=dWa>=0.3;
+    const kD=dKg<=-0.3, kF=Math.abs(dKg)<0.3, kU=dKg>=0.3;
+    if(wD&&kD) P.push('<p class="good"><b>Fat loss, on track.</b> Waist down '+Math.abs(dWa).toFixed(1)+' cm, weight down '+Math.abs(dKg).toFixed(1)+' kg. That is the pattern you want.</p>');
+    else if(kD&&wF) P.push('<p><b>Weight down, waist flat.</b> Most of that is water and glycogen rather than fat. Give it two more weeks before changing anything.</p>');
+    else if(kF&&wD) P.push('<p class="good"><b>Recomposition.</b> The waist came down while the scale held. Fat off, muscle on. Leave the intake alone.</p>');
+    else if(kU&&wU) P.push('<p class="warn"><b>Gaining fat.</b> Waist and weight both up: you are above maintenance. Cut about 300 calories a day.</p>');
+    else if(kF&&wF) P.push('<p class="warn"><b>Nothing is moving.</b> Neither the waist nor the scale changed, so the deficit is not there. Cut about 300 calories a day, or add walking.</p>');
+    else if(kD&&wU) P.push('<p class="warn"><b>These two disagree.</b> Weight down with the waist up is not normal. Re-measure at the navel, relaxed, without pulling the tape.</p>');
+  } else if(dWa!==null){
+    P.push('<p><b>Waist '+(dWa<0?"down ":"up ")+Math.abs(dWa).toFixed(1)+' cm.</b> Log your weight on measurement day and the report can tell you whether that is fat or water.</p>');
+  }
+
+  if(dKg!==null&&wk>=0.8){
+    const gw=Math.round((dKg/wk)*1000);
+    if(gw<=-350&&gw>=-700) P.push('<p class="good"><b>The rate is right.</b> '+Math.abs(gw)+' g a week is the band that keeps muscle.</p>');
+    else if(gw<-700) P.push('<p class="warn"><b>Too fast.</b> '+Math.abs(gw)+' g a week. Past 700 g you pay in muscle, more so on short sleep. Add 200-300 calories a day.</p>');
+    else if(gw<0) P.push('<p><b>Slow.</b> '+Math.abs(gw)+' g a week. Cut about 200 calories a day if you want it to move.</p>');
+  }
+
+  if(dWa!==null&&dWa<=-0.3&&limbAvg!==null){
+    if(limbAvg>=-0.3) P.push('<p class="good"><b>Muscle held.</b> The waist came down and the arms and thighs did not. That is fat loss, not weight loss.</p>');
+    else if(limbAvg<=-0.6) P.push('<p class="warn"><b>The limbs are shrinking with the waist.</b> Arms and thighs down '+Math.abs(limbAvg).toFixed(1)+' cm on average. Either the deficit is too big or protein is short. Check the gym log: if the weights are falling too, it is the deficit.</p>');
+  }
+
+  [["armR","armL","arm"],["thighR","thighL","thigh"],["calfR","calfL","calf"]].forEach(pr=>{
+    const a=mval(cur,pr[0]), b=mval(cur,pr[1]);
+    if(a===null||b===null) return;
+    const d=Math.abs(a-b);
+    if(d>1.5) P.push('<p class="warn"><b>Side gap: '+pr[2]+' '+d.toFixed(1)+' cm.</b> Up to 1.5 cm between sides is normal in everyone. Past that, check the measuring point first, then whether one side is working harder.</p>');
+  });
+
+  const b1=bfPct(cur), b0=bfPct(ref);
+  if(b1!==null&&b0!==null&&Math.abs(b1-b0)>=0.2)
+    P.push('<p>Body fat estimate moved from <b>'+b0.toFixed(1)+'%</b> to <b>'+b1.toFixed(1)+'%</b>. The number itself can be off by 3-4 points, but it is the same formula every time, so the direction is reliable.</p>');
+
+  return '<div class="rep">'+P.join("")+'</div>';
+}
+
 function bodyView(){
   const w=(store.weights||[]).slice().sort((a,b)=>a.d<b.d?1:-1);
   const now=Date.now();
@@ -969,29 +1035,70 @@ function bodyView(){
 
   /* ---- measurements (#6) ---- */
   const M=(store.measures||[]).slice().sort((a,b)=>a.d<b.d?1:-1);
-  const FIELDS=[["arm","Arm"],["chest","Chest"],["waist","Waist"],["thigh","Thigh"],["shoulder","Shoulders"],["calf","Calf"]];
-  const latest=M[0]||null, first=M.length>1?M[M.length-1]:null;
+  const latest=M[0]||null;
+  /* compare against the set nearest four weeks back, not simply the one before:
+     measuring weekly makes consecutive sets too noisy to read. */
+  let ref=null, refDays=0;
+  if(latest&&M.length>1){
+    const lt=t0(latest.d); let bs=1e9;
+    for(let i=1;i<M.length;i++){
+      const dd=Math.round((lt-t0(M[i].d))/864e5);
+      if(dd<=0) continue;
+      const sc=Math.abs(dd-28);
+      if(sc<bs){ bs=sc; ref=M[i]; refDays=dd; }
+    }
+  }
+
   let mstat="";
   if(latest){
-    mstat='<div class="stat">'+FIELDS.filter(f=>latest[f[0]]!==undefined&&latest[f[0]]!=="").map(f=>{
-      const cur=+latest[f[0]];
-      let d=null;
-      if(first&&first[f[0]]!==undefined&&first[f[0]]!=="") d=cur-(+first[f[0]]);
-      return '<div><div class="k">'+f[1]+'</div><div class="v">'+cur.toFixed(1)+
-        (d!==null&&Math.abs(d)>=0.1?'<span style="font-size:12px;font-weight:600;margin-left:5px" class="'+(d>0?"up":"down")+'">'+
-          (d>0?"+":"")+d.toFixed(1)+'</span>':'')+'</div></div>';
-    }).join("")+'</div>'+
-    '<p class="verdict">Latest on '+fmt(latest.d)+(first?', change since '+fmt(first.d):'')+
-    '. Tape beats the scale on a cut: the waist coming down while the arm and shoulders hold is exactly what you want.</p>';
+    const rows=MF.map(f=>{
+      const cur=mval(latest,f[0]); if(cur===null) return "";
+      const prev=mval(ref,f[0]);
+      const d=(prev!==null)?cur-prev:null;
+      let cls="";
+      if(d!==null&&Math.abs(d)>=0.1&&f[3]) cls=((d<0)===(f[3]==="-"))?"up":"down";
+      return '<div class="r"><span class="n">'+f[1]+'</span><span class="v">'+cur.toFixed(1)+'</span>'+
+        '<span class="c '+cls+'">'+(d===null?"—":(Math.abs(d)<0.05?"0.0":(d>0?"+":"")+d.toFixed(1)))+'</span></div>';
+    }).join("");
+    if(rows) mstat='<p class="verdict" style="margin-bottom:0">Latest '+fmt(latest.d)+
+      (ref?', change against '+fmt(ref.d):', no earlier set to compare with yet')+'.</p><div class="mlist">'+rows+'</div>';
+    const wa=mval(latest,"waist"), hp=mval(latest,"hip"), bf=bfPct(latest);
+    const whr=(wa&&hp)?wa/hp:null;
+    mstat+='<div class="stat">'+
+      '<div><div class="k">Body fat est.</div><div class="v">'+(bf!==null?bf.toFixed(1)+"%":"—")+'</div></div>'+
+      '<div><div class="k">Waist ÷ hip</div><div class="v">'+(whr!==null?whr.toFixed(2):"—")+'</div></div></div>';
+    if(bf===null) mstat+='<p class="verdict">The body fat estimate needs your height, neck and waist. Height is the last field below and you only set it once.</p>';
+    else if(whr!==null) mstat+='<p class="verdict">For men, waist ÷ hip under 0.90 is the low-risk band, 0.90-0.99 moderate, 1.00 and over high. It says where the fat sits, not how much there is.</p>';
+    mstat+=measureReport(latest,ref,refDays);
   }
-  const minputs='<div class="mgrid">'+FIELDS.map(f=>
-    '<div><label>'+f[1]+' (cm)</label><div class="field"><input type="number" inputmode="decimal" step="0.1" '+
-    'id="g4m-'+f[0]+'" placeholder="'+(latest&&latest[f[0]]?(+latest[f[0]]).toFixed(1):"–")+'" aria-label="'+f[1]+'"><span class="unit">cm</span></div></div>'
-  ).join("")+'</div><button class="mfull" onclick="GYM4.madd()">Save measurements</button>';
 
-  const mrows=M.slice(0,8).map(e=>'<div class="hrow"><span class="d">'+fmt(e.d)+'</span>'+
-    '<span class="v">'+FIELDS.filter(f=>e[f[0]]!==undefined&&e[f[0]]!=="").map(f=>f[1].slice(0,2)+" "+(+e[f[0]]).toFixed(1)).join("  ")+'</span>'+
-    '<button class="x" onclick="GYM4.mdel(\''+e.d+'\')" aria-label="Delete">×</button></div>').join("");
+  const minputs='<div class="mgrid">'+MF.map(f=>
+    '<div'+(f[2]?' class="wide"':'')+'><label>'+f[1]+' (cm)</label><div class="field">'+
+    '<input type="number" inputmode="decimal" step="0.1" id="g4m-'+f[0]+'" placeholder="'+
+    (mval(latest,f[0])!==null?mval(latest,f[0]).toFixed(1):"–")+'" aria-label="'+f[1]+'"><span class="unit">cm</span></div></div>'
+  ).join("")+
+  '<div class="wide"><label>Height (cm), set once</label><div class="field">'+
+  '<input type="number" inputmode="decimal" step="0.5" id="g4m-height" placeholder="'+
+  (store.height?(+store.height).toFixed(0):"–")+'" aria-label="Height"><span class="unit">cm</span></div></div>'+
+  '</div><button class="mfull" onclick="GYM4.madd()">Save measurements</button>';
+
+  const mrows=M.slice(0,8).map(e=>{
+    const bits=[], wa=mval(e,"waist"), ar=mval(e,"armR"), th=mval(e,"thighR");
+    if(wa!==null) bits.push("Wa "+wa.toFixed(1));
+    if(ar!==null) bits.push("Ar "+ar.toFixed(1));
+    if(th!==null) bits.push("Th "+th.toFixed(1));
+    return '<div class="hrow"><span class="d">'+fmt(e.d)+'</span><span class="v">'+(bits.join("  ")||"—")+'</span>'+
+      '<button class="x" onclick="GYM4.mdel(\''+e.d+'\')" aria-label="Delete">×</button></div>';
+  }).join("");
+
+  /* ---- trend charts ---- */
+  const wPts=w.slice().reverse().slice(-24).map(e=>({date:e.d,e:+e.v}));
+  const sPts=M.slice().reverse().map(e=>({date:e.d,e:mval(e,"waist")})).filter(x=>x.e!==null).slice(-24);
+  let charts="";
+  if(wPts.length>1) charts+='<p class="clab">Weight (kg)</p>'+chartSVG(wPts,true);
+  if(sPts.length>1) charts+='<p class="clab">Waist (cm)</p>'+chartSVG(sPts,true);
+  if(charts) charts='<h3>Trend</h3>'+charts+
+    '<p class="verdict" style="margin-top:12px">Each chart has its own scale, so read the shape and not the height.</p>';
 
   return '<h3>Body weight</h3>'+
     '<div class="wgrid"><div class="field"><input type="number" inputmode="decimal" step="0.1" id="g4w" '+
@@ -1002,7 +1109,7 @@ function bodyView(){
     '<div><div class="k">Change</div><div class="v '+(df===null?"":df<=0?"up":"down")+'">'+
       (df===null?"—":(df>=0?"+":"")+df.toFixed(2))+'</div></div></div>'+
     '<p class="verdict">'+v+'</p>'+wrows+
-    '<h3>Measurements, every 4 weeks</h3>'+mstat+minputs+mrows;
+    '<h3>Measurements, weekly</h3>'+mstat+minputs+mrows+charts;
 }
 
 /* ================= sheets ================= */
@@ -1113,6 +1220,7 @@ function mergeIn(d){
     store.weights.sort((a,b)=>a.d<b.d?-1:1);
   }
 
+  if(!store.height&&d.height) store.height=d.height;
   if(Array.isArray(d.measures)){
     store.measures=store.measures||[];
     d.measures.forEach(m=>{
@@ -1279,12 +1387,11 @@ const API={
       : "never";
     sheet('<h2>Settings</h2><p class="sub">Numbers save automatically as you type, there is no save button.<br>'+
       'Saving to: <b style="color:#35C4C0">'+Store.label+'</b><br>'+
-      (Store.cloud?'Saved to your account and on this phone. Open it from any device.<br>':'Everything stays on this device. Nothing is sent anywhere.<br>')+
+      'Everything stays on this device. Nothing is sent anywhere.<br>'+
       'Last backup: <b style="color:'+((store.bk&&Date.now()-store.bk<14*864e5)?'#35C4C0':'#E9A63C')+'">'+when+'</b></p>'+
       '<button class="btn go" onclick="GYM4.saveBackup(this)">Save backup file</button>'+
       '<button class="btn" onclick="GYM4.restoreSheet()">Restore from a file</button>'+
-      '<button class="btn danger" onclick="GYM4.reset(this)">Reset program to original</button>'+
-      (Store.cloud?'<button class="btn" onclick="GYM4.signOut(this)">Sign out</button>':''));
+      '<button class="btn danger" onclick="GYM4.reset(this)">Reset program to original</button>');
   },
   async saveBackup(btn){
     const name="gym-backup-"+iso()+".json";
@@ -1383,51 +1490,29 @@ const API={
   },
   wdel(d){ store.weights=store.weights.filter(e=>e.d!==d); save(); render(); },
   madd(){
-    const keys=["arm","chest","waist","thigh","shoulder","calf"];
     const rec={d:iso()};
     let any=false;
-    keys.forEach(k=>{
-      const el=$("g4m-"+k); if(!el) return;
+    MF.forEach(f=>{
+      const el=$("g4m-"+f[0]); if(!el) return;
       const v=parseFloat(el.value);
-      if(isFinite(v)&&v>0){ rec[k]=v; any=true; }
+      if(isFinite(v)&&v>0){ rec[f[0]]=v; any=true; }
     });
-    if(!any) return;
+    const he=$("g4m-height"), hv=he?parseFloat(he.value):NaN;
+    const hok=isFinite(hv)&&hv>120&&hv<250;
+    if(hok) store.height=hv;
+    if(!any){ if(hok){ save(); render(); } return; }
+    /* saving twice on the same day fills in, it does not wipe what you left blank */
+    const old=(store.measures||[]).find(e=>e.d===rec.d);
+    if(old) MF.forEach(f=>{ if(rec[f[0]]===undefined){ const o=mval(old,f[0]); if(o!==null) rec[f[0]]=o; } });
     store.measures=(store.measures||[]).filter(e=>e.d!==rec.d);
     store.measures.push(rec);
     save(); render();
-  },
-  signOut(btn){
-    if(btn.getAttribute("data-arm")!=="1"){ btn.setAttribute("data-arm","1"); btn.textContent="Sure? Tap again"; setTimeout(function(){ btn.removeAttribute("data-arm"); btn.textContent="Sign out"; },3000); return; }
-    window.FB.signOut();
   },
   mdel(d){ store.measures=(store.measures||[]).filter(e=>e.d!==d); save(); render(); }
 };
 
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) API.awake(); });
-let started=false;
-function showLogin(){ $("lg").hidden=false; $("lgLoad").hidden=true; $("lgFields").hidden=false; }
-async function start(){
-  if(started) return; started=true; Store.cloud=true; $("lg").hidden=true;
-  await API.init();
-  const raw=JSON.stringify(store);
-  window.FB.write(raw,store.ts||Date.now()).catch(function(){});
-}
-window.addEventListener("fbauth",function(e){
-  if(e.detail) start();
-  else { if(started){ location.reload(); return; } showLogin(); }
-});
-if(window.FB&&("user" in window.FB)){ if(window.FB.user) start(); else showLogin(); }
-setTimeout(function(){ if(!started&&!window.FB) showLogin(); },8000);
-$("lgForm").addEventListener("submit",async function(e){
-  e.preventDefault();
-  const er=$("lgErr"), btn=$("lgBtn"), em=$("lgEmail").value.trim(), pw=$("lgPass").value; er.hidden=true;
-  if(!em||!pw){ er.textContent="Enter your email and password."; er.hidden=false; return; }
-  if(!window.FB){ er.textContent="No internet. Check your connection."; er.hidden=false; return; }
-  btn.disabled=true; btn.textContent="Signing in…";
-  try{ await window.FB.signIn(em,pw); $("lgPass").value=""; }
-  catch(x){ const c=x&&x.code||""; er.textContent=c.indexOf("too-many")>=0?"Too many tries. Wait a few minutes.":c.indexOf("network")>=0?"No internet. Check your connection.":"Wrong email or password."; er.hidden=false; }
-  btn.disabled=false; btn.textContent="Sign in";
-});
+API.init();
 return API;
 })();
 </script>
