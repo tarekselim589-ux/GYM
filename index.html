@@ -26,8 +26,48 @@
   img,svg{max-width:100%}
   table,pre{max-width:100%;overflow-x:auto}
 </style>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { initializeFirestore, persistentLocalCache, doc, getDocFromServer, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const app=initializeApp({apiKey:"AIzaSyCLxD-fduSa6kgqnk8pJj8HwtzY3AYfhIg",authDomain:"tarek-74842.firebaseapp.com",projectId:"tarek-74842",storageBucket:"tarek-74842.firebasestorage.app",messagingSenderId:"179196785540",appId:"1:179196785540:web:d4604f645dbbcc6e5f23d1"});
+const auth=getAuth(app);
+let fs; try{ fs=initializeFirestore(app,{localCache:persistentLocalCache()}); }catch(e){ fs=initializeFirestore(app,{}); }
+const ref=doc(fs,"gym/state");
+window.FB={
+  async read(){ let d; try{ d=await getDocFromServer(ref); }catch(e){ try{ d=await getDoc(ref); }catch(x){ return null; } } return d.exists()?d.data():null; },
+  write:(s,ts)=>setDoc(ref,{s:s,ts:ts}),
+  signIn:(e,p)=>signInWithEmailAndPassword(auth,e,p), signOut:()=>signOut(auth)
+};
+onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEvent("fbauth",{detail:u})); });
+</script>
+<style>
+[hidden]{display:none!important}
+.lgov{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;background:#0C2130;color:#E9F0F3;font-family:inherit}
+.lgbox{width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px;background:#12304A;border:1px solid #23465f;border-radius:16px;padding:22px}
+.lgbox #lgFields{display:flex;flex-direction:column;gap:12px}
+.lgt{margin:0;font-weight:700;font-size:20px;text-align:center}
+.lgl{margin:0;text-align:center;color:#8CA9B8}
+.lgf{display:flex;flex-direction:column;gap:4px;font-size:13px;color:#8CA9B8}
+.lgf input{font:16px inherit;padding:11px 12px;border-radius:10px;border:1px solid #23465f;background:#0C2130;color:#E9F0F3}
+.lgbtn{font:600 16px inherit;padding:11px;border-radius:10px;border:0;background:#35C4C0;color:#0C2130;cursor:pointer}
+.lgerr{margin:0;color:#D9705F;font-size:14px;text-align:center}
+</style>
 </head>
 <body>
+<div id="g4cloudErr" hidden style="position:fixed;left:16px;right:16px;bottom:24px;z-index:90;background:#D9705F;color:#0C2130;padding:10px 14px;border-radius:10px;font-weight:600;text-align:center">Not saved to your account. Check your internet.</div>
+<div id="lg" class="lgov">
+  <form id="lgForm" class="lgbox" novalidate>
+    <p class="lgt">Sign in</p>
+    <p class="lgl" id="lgLoad">Loading…</p>
+    <div id="lgFields" hidden>
+      <label class="lgf">Email<input id="lgEmail" type="email" autocomplete="username" inputmode="email"></label>
+      <label class="lgf">Password<input id="lgPass" type="password" autocomplete="current-password"></label>
+      <button class="lgbtn" type="submit" id="lgBtn">Sign in</button>
+      <p class="lgerr" id="lgErr" hidden></p>
+    </div>
+  </form>
+</div>
 <div id="g4">
   <header class="hdr">
     <div class="id"><div class="d1" id="g4h1"></div><div class="d2" id="g4h2"></div></div>
@@ -319,8 +359,10 @@ const Store=(function(){
   const ts=s=>{ try{ return JSON.parse(s).ts||0; }catch(e){ return 0; } };
   const newest=arr=>{ const v=arr.filter(Boolean); return v.length?v.sort((a,b)=>ts(b)-ts(a))[0]:null; };
   return {
+    cloud:false,
     get label(){
       const n=[];
+      if(this.cloud) n.push("your account");
       if(local) n.push("browser storage");
       if(idb) n.push("browser database");
       return n.length?n.join(" + "):"Not saving";
@@ -329,6 +371,7 @@ const Store=(function(){
     ok: true,
     async readLocal(){
       const found=[];
+      if(this.cloud){ const c=await window.FB.read(); if(c&&c.s) found.push(c.s); }
       if(local){ try{ const v=localStorage.getItem(KEY); if(v) found.push(v); }catch(e){} }
       if(idb){ const v=await IDB.get(KEY); if(v) found.push(v); }
       return newest(found)||mem;
@@ -338,6 +381,9 @@ const Store=(function(){
       if(local){ try{ localStorage.setItem(KEY,s); ok=true; }catch(e){} }
       if(idb){ if(await IDB.set(KEY,s)) ok=true; }
       if(!ok) mem=s;
+      if(this.cloud){ clearTimeout(this._t); const self=this; this._t=setTimeout(function(){
+        window.FB.write(s,ts(s)).catch(function(){ const b=document.getElementById("g4cloudErr"); if(b){ b.hidden=false; setTimeout(function(){b.hidden=true;},5000);} });
+      },800); }
       return ok;
     }
   };
@@ -1233,11 +1279,12 @@ const API={
       : "never";
     sheet('<h2>Settings</h2><p class="sub">Numbers save automatically as you type, there is no save button.<br>'+
       'Saving to: <b style="color:#35C4C0">'+Store.label+'</b><br>'+
-      'Everything stays on this device. Nothing is sent anywhere.<br>'+
+      (Store.cloud?'Saved to your account and on this phone. Open it from any device.<br>':'Everything stays on this device. Nothing is sent anywhere.<br>')+
       'Last backup: <b style="color:'+((store.bk&&Date.now()-store.bk<14*864e5)?'#35C4C0':'#E9A63C')+'">'+when+'</b></p>'+
       '<button class="btn go" onclick="GYM4.saveBackup(this)">Save backup file</button>'+
       '<button class="btn" onclick="GYM4.restoreSheet()">Restore from a file</button>'+
-      '<button class="btn danger" onclick="GYM4.reset(this)">Reset program to original</button>');
+      '<button class="btn danger" onclick="GYM4.reset(this)">Reset program to original</button>'+
+      (Store.cloud?'<button class="btn" onclick="GYM4.signOut(this)">Sign out</button>':''));
   },
   async saveBackup(btn){
     const name="gym-backup-"+iso()+".json";
@@ -1349,11 +1396,38 @@ const API={
     store.measures.push(rec);
     save(); render();
   },
+  signOut(btn){
+    if(btn.getAttribute("data-arm")!=="1"){ btn.setAttribute("data-arm","1"); btn.textContent="Sure? Tap again"; setTimeout(function(){ btn.removeAttribute("data-arm"); btn.textContent="Sign out"; },3000); return; }
+    window.FB.signOut();
+  },
   mdel(d){ store.measures=(store.measures||[]).filter(e=>e.d!==d); save(); render(); }
 };
 
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) API.awake(); });
-API.init();
+let started=false;
+function showLogin(){ $("lg").hidden=false; $("lgLoad").hidden=true; $("lgFields").hidden=false; }
+async function start(){
+  if(started) return; started=true; Store.cloud=true; $("lg").hidden=true;
+  await API.init();
+  const raw=JSON.stringify(store);
+  window.FB.write(raw,store.ts||Date.now()).catch(function(){});
+}
+window.addEventListener("fbauth",function(e){
+  if(e.detail) start();
+  else { if(started){ location.reload(); return; } showLogin(); }
+});
+if(window.FB&&("user" in window.FB)){ if(window.FB.user) start(); else showLogin(); }
+setTimeout(function(){ if(!started&&!window.FB) showLogin(); },8000);
+$("lgForm").addEventListener("submit",async function(e){
+  e.preventDefault();
+  const er=$("lgErr"), btn=$("lgBtn"), em=$("lgEmail").value.trim(), pw=$("lgPass").value; er.hidden=true;
+  if(!em||!pw){ er.textContent="Enter your email and password."; er.hidden=false; return; }
+  if(!window.FB){ er.textContent="No internet. Check your connection."; er.hidden=false; return; }
+  btn.disabled=true; btn.textContent="Signing in…";
+  try{ await window.FB.signIn(em,pw); $("lgPass").value=""; }
+  catch(x){ const c=x&&x.code||""; er.textContent=c.indexOf("too-many")>=0?"Too many tries. Wait a few minutes.":c.indexOf("network")>=0?"No internet. Check your connection.":"Wrong email or password."; er.hidden=false; }
+  btn.disabled=false; btn.textContent="Sign in";
+});
 return API;
 })();
 </script>
