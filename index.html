@@ -380,7 +380,8 @@ function seed(){
     ["Cable / Machine Fly",3,"12-15",60,"Stretch and isolation","chest","mid"],
     ["Shoulder Press",3,"8-12",90,"Front delt","delts","front"],
     ["DB Side Lateral",3,"12-20",60,"Side delt, width","delts","side"],
-    ["Triceps Cable Pushdown",3,"10-15",60,"Triceps","triceps","short"]]],
+    ["Triceps Cable Pushdown",3,"10-15",60,"Triceps","triceps","short"],
+      ["Overhead Rope Extension",3,"10-12",60,"Triceps long head, in stretch","triceps","long"]]],
    ["tue","Tuesday","Tue","Legs",[
     ["Romanian Deadlift",4,"8-10",120,"Hamstrings and glutes","hams","stretch"],
     ["Narrow Hack Squat",4,"8-12",120,"Primary quad load","quads","general"],
@@ -395,7 +396,8 @@ function seed(){
     ["Wide Lat Pulldown",3,"8-12",90,"Lat width","back","width"],
     ["Straight-Arm Pulldown",3,"12-15",60,"Lat isolation","back","width"],
     ["Cable Face Pull",3,"15-20",60,"Rear delt, shoulder health","delts","rear"],
-    ["Cable Curl",3,"8-12",60,"Biceps","biceps","mid"]]],
+    ["Cable Curl",3,"8-12",60,"Biceps","biceps","mid"],
+      ["Hammer Curl",3,"10-12",60,"Brachialis, pushes the biceps up","biceps","mid"]]],
    ["fri","Friday","Fri","Upper",[
     ["Incline Press (DB)",3,"8-12",90,"Upper chest, longer range","chest","upper"],
     ["Dips (Machine)",3,"8-12",90,"Lower chest","chest","lower"],
@@ -1163,6 +1165,21 @@ function normalize(){
   store.program.forEach(p=>p.ex.forEach(e=>{
     if(!e.m){ const r=ref[e.n]; e.m=r?r.m:"other"; e.h=r?r.h:"general"; }
   }));
+  /* one-off: direct arm volume was the thinnest part of the program.
+     Runs once, skips anything already there, and never comes back if deleted. */
+  store.mig=store.mig||{};
+  if(!store.mig.arm1){
+    const addEx=(dayId,name,sets,reps,rest,why,m,h)=>{
+      const d=store.program.find(p=>p.id===dayId); if(!d||!d.ex) return;
+      const nm=name.toLowerCase().replace(/\s+/g," ").trim();
+      if(d.ex.some(e=>(e.n||"").toLowerCase().replace(/\s+/g," ").trim()===nm)) return;
+      let i=1; while(d.ex.some(e=>e.id===dayId+"-m"+i)) i++;
+      d.ex.push({id:dayId+"-m"+i,n:name,s:sets,r:reps,rest:rest,why:why,m:m,h:h});
+    };
+    addEx("wed","Hammer Curl",3,"10-12",60,"Brachialis, pushes the biceps up","biceps","mid");
+    addEx("sun","Overhead Rope Extension",3,"10-12",60,"Triceps long head, in stretch","triceps","long");
+    store.mig.arm1=1;
+  }
 }
 
 /* Merge a backup into what is already here: add what is missing, never
