@@ -423,37 +423,38 @@ function seed(){
    ["sun","Sunday","Sun","Push",[
     ["Flat Chest Press (Smith)",4,"6-10",120,"Primary chest load","chest","mid"],
     ["Incline Chest Press",3,"8-12",90,"Upper chest","chest","upper"],
-    ["Cable / Machine Fly",3,"12-15",60,"Stretch and isolation","chest","mid"],
+    ["Preacher Curl",3,"10-12",60,"Short head - arm in front of the body","biceps","short"],
     ["Shoulder Press",3,"8-12",90,"Front delt","delts","front"],
+    ["Overhead Rope Extension",3,"10-12",60,"Triceps long head, in stretch","triceps","long"],
+    ["Cable / Machine Fly",3,"12-15",60,"Stretch and isolation","chest","mid"],
     ["DB Side Lateral",3,"12-20",60,"Side delt, width","delts","side"],
-    ["Triceps Cable Pushdown",3,"10-15",60,"Triceps","triceps","short"],
-      ["Overhead Rope Extension",3,"10-12",60,"Triceps long head, in stretch","triceps","long"]]],
+    ["Triceps Cable Pushdown",3,"10-15",60,"Triceps","triceps","short"]]],
    ["tue","Tuesday","Tue","Legs",[
-    ["Romanian Deadlift",4,"8-10",120,"Hamstrings and glutes","hams","stretch"],
     ["Narrow Hack Squat",4,"8-12",120,"Primary quad load","quads","general"],
-    ["Leg Curl",4,"10-15",60,"Hamstring isolation","hams","short"],
+    ["Romanian Deadlift",4,"8-10",120,"Hamstrings and glutes","hams","stretch"],
     ["Leg Extension",3,"12-15",60,"Quad isolation","quads","short"],
+    ["Leg Curl",4,"10-15",60,"Hamstring isolation","hams","short"],
     ["hip adduction",3,"12-15",60,"Adductors","quads","adduction"],
     ["Calf Raise",4,"12-20",45,"Calves","calves","general"],
     ["Abdominal Machine",4,"12-15",45,"Abs","abs","upper"]]],
    ["wed","Wednesday","Wed","Pull",[
-    ["Wide Grip Pull-up / Lat Pulldown",4,"6-10",120,"Back width priority","back","width"],
-    ["Chest-Supported Row",4,"8-12",90,"Back thickness","back","thickness"],
-    ["Wide Lat Pulldown",3,"8-12",90,"Lat width","back","width"],
-    ["Straight-Arm Pulldown",3,"12-15",60,"Lat isolation","back","width"],
-    ["Cable Face Pull",3,"15-20",60,"Rear delt, shoulder health","delts","rear"],
-    ["Cable Curl",3,"8-12",60,"Biceps","biceps","mid"],
-      ["Hammer Curl",3,"10-12",60,"Brachialis, pushes the biceps up","biceps","mid"]]],
+    ["Wide Grip Pull-up / Lat Pulldown",4,"6-10",120,"Overhand, wide - back width","back","width"],
+    ["Chest-Supported Row",4,"8-12",90,"Overhand, shoulder width - back thickness","back","thickness"],
+    ["Neutral Grip Lat Pulldown",3,"8-12",90,"Neutral close (V-handle) - lower lats, not a repeat of #1","back","width"],
+    ["Cable Curl",3,"8-12",60,"Underhand, shoulder width - biceps","biceps","mid"],
+    ["Straight-Arm Pulldown",3,"12-15",60,"Overhand, arms locked straight - lats only","back","width"],
+    ["Hammer Curl",3,"10-12",60,"Neutral grip - brachialis under the biceps","biceps","mid"],
+    ["Cable Face Pull",3,"15-20",60,"Rope, overhand - rear delt and shoulder health","delts","rear"]]],
    ["fri","Friday","Fri","Upper",[
     ["Incline Press (DB)",3,"8-12",90,"Upper chest, longer range","chest","upper"],
-    ["Dips (Machine)",3,"8-12",90,"Lower chest","chest","lower"],
     ["Close Grip Cable Row",3,"10-12",75,"Mid back","back","thickness"],
-    ["Shrugs",4,"12-15",60,"Traps","traps","general"],
-    ["Rear Delt Fly",3,"15-20",45,"Rear delt","delts","rear"],
-    ["DB Side Laterals",4,"12-20",45,"Best muscle for width","delts","side"],
     ["Incline DB Curl",3,"10-12",60,"Biceps in full stretch","biceps","stretch"],
+    ["Dips (Machine)",3,"8-12",90,"Lower chest","chest","lower"],
     ["Overhead Cable Triceps",3,"10-12",60,"Triceps long head","triceps","long"],
-    ["One-Arm Cable Pushdown",3,"12-15",45,"Triceps isolation","triceps","short"]]],
+    ["DB Side Laterals",4,"12-20",45,"Best muscle for width","delts","side"],
+    ["Rear Delt Fly",3,"15-20",45,"Rear delt","delts","rear"],
+    ["One-Arm Cable Pushdown",3,"12-15",45,"Triceps isolation","triceps","short"],
+    ["Shrugs",4,"12-15",60,"Traps - last, it burns your grip","traps","general"]]],
   ];
   return D.map(d=>({id:d[0],day:d[1],short:d[2],label:d[3],
     ex:d[4].map((e,i)=>({id:d[0]+"-"+i,n:e[0],s:e[1],r:e[2],rest:e[3],why:e[4],m:e[5],h:e[6]}))}));
@@ -1225,6 +1226,56 @@ function normalize(){
     addEx("wed","Hammer Curl",3,"10-12",60,"Brachialis, pushes the biceps up","biceps","mid");
     addEx("sun","Overhead Rope Extension",3,"10-12",60,"Triceps long head, in stretch","triceps","long");
     store.mig.arm1=1;
+  }
+  /* one-off: exercise order. The lagging work was always landing last, when
+     there is nothing left to give it. Renames keep the exercise id, so the
+     logged history stays attached. Skips anything already moved or deleted. */
+  if(!store.mig.order1){
+    const K=s=>(s||"").toLowerCase().replace(/\s+/g," ").trim();
+    const find=(dayId,name)=>{
+      const d=store.program.find(p=>p.id===dayId);
+      if(!d||!d.ex) return null;
+      return d.ex.find(x=>K(x.n)===K(name))||null;
+    };
+    const rename=(dayId,from,to,why)=>{ const e=find(dayId,from); if(e){ e.n=to; if(why) e.why=why; } };
+    const note=(dayId,name,why)=>{ const e=find(dayId,name); if(e) e.why=why; };
+    const add=(dayId,name,sets,reps,rest,why,m,h)=>{
+      const d=store.program.find(p=>p.id===dayId); if(!d||!d.ex) return;
+      if(d.ex.some(x=>K(x.n)===K(name))) return;
+      let i=1; while(d.ex.some(x=>x.id===dayId+"-o"+i)) i++;
+      d.ex.push({id:dayId+"-o"+i,n:name,s:sets,r:reps,rest:rest,why:why,m:m,h:h});
+    };
+    const order=(dayId,names)=>{
+      const d=store.program.find(p=>p.id===dayId); if(!d||!d.ex) return;
+      const want=names.map(K);
+      d.ex=d.ex.map((e,i)=>({e:e,i:i})).sort((a,b)=>{
+        const ra=want.indexOf(K(a.e.n)), rb=want.indexOf(K(b.e.n));
+        const xa=ra<0?999:ra, xb=rb<0?999:rb;
+        return xa!==xb?xa-xb:a.i-b.i;   /* anything unknown keeps its place at the end */
+      }).map(x=>x.e);
+    };
+
+    add("sun","Preacher Curl",3,"10-12",60,"Short head - arm in front of the body","biceps","short");
+
+    rename("wed","Wide Lat Pulldown","Neutral Grip Lat Pulldown",
+           "Neutral close (V-handle) - lower lats, not a repeat of #1");
+    note("wed","Wide Grip Pull-up / Lat Pulldown","Overhand, wide - back width");
+    note("wed","Chest-Supported Row","Overhand, shoulder width - back thickness");
+    note("wed","Cable Curl","Underhand, shoulder width - biceps");
+    note("wed","Straight-Arm Pulldown","Overhand, arms locked straight - lats only");
+    note("wed","Hammer Curl","Neutral grip - brachialis under the biceps");
+    note("wed","Cable Face Pull","Rope, overhand - rear delt and shoulder health");
+    note("fri","Shrugs","Traps - last, it burns your grip");
+
+    order("sun",["Flat Chest Press (Smith)","Incline Chest Press","Preacher Curl","Shoulder Press",
+                 "Overhead Rope Extension","Cable / Machine Fly","DB Side Lateral","Triceps Cable Pushdown"]);
+    order("tue",["Narrow Hack Squat","Romanian Deadlift","Leg Extension","Leg Curl",
+                 "hip adduction","Calf Raise","Abdominal Machine"]);
+    order("wed",["Wide Grip Pull-up / Lat Pulldown","Chest-Supported Row","Neutral Grip Lat Pulldown",
+                 "Cable Curl","Straight-Arm Pulldown","Hammer Curl","Cable Face Pull"]);
+    order("fri",["Incline Press (DB)","Close Grip Cable Row","Incline DB Curl","Dips (Machine)",
+                 "Overhead Cable Triceps","DB Side Laterals","Rear Delt Fly","One-Arm Cable Pushdown","Shrugs"]);
+    store.mig.order1=1;
   }
 }
 
