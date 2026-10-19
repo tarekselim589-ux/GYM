@@ -495,6 +495,19 @@ function prevSess(){
   const l=logs(day).sessions.filter(s=>s.date<t&&s.ex&&Object.keys(s.ex).length);
   return l.length?l[l.length-1]:null;
 }
+/* The last session that actually holds THIS exercise. Looking up one session for
+   the whole day was wrong: log a single exercise on a day and every other one
+   reads back as "no previous log" while its history is still sitting there. */
+function prevFor(exId){
+  const t=iso(), ss=logs(day).sessions;
+  for(let i=ss.length-1;i>=0;i--){
+    const x=ss[i];
+    if(!x||x.date>=t) continue;
+    const sets=x.ex&&x.ex[exId];
+    if(sets&&sets.some(filled)) return {date:x.date,sets:sets};
+  }
+  return null;
+}
 
 /* ---------------- food helpers ---------------- */
 const mealsOf=()=>store.meals||[];
@@ -735,9 +748,10 @@ function render(){
 
 function logView(e,ei,pv,s){
   const cur=s.ex[e.id]||[];
-  const ps=pv&&pv.ex&&pv.ex[e.id]?pv.ex[e.id]:null;
+  const pr=prevFor(e.id);
+  const ps=pr?pr.sets:null;
   const chips=ps
-    ? '<span class="lbl">Last '+fmt(pv.date)+'</span>'+ps.filter(filled)
+    ? '<span class="lbl">Last '+fmt(pr.date)+'</span>'+ps.filter(filled)
         .map(x=>'<span class="chip">'+esc(x[0])+'kg × '+esc(x[1])+(x[2]?' @'+esc(x[2]):'')+'</span>').join("")
     : '<span class="none">No previous log for this exercise</span>';
 
