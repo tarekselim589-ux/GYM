@@ -29,7 +29,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { initializeFirestore, persistentLocalCache, doc, getDocFromServer, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { initializeFirestore, persistentLocalCache, doc, getDocFromServer, getDoc, setDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp({apiKey:"AIzaSyCLxD-fduSa6kgqnk8pJj8HwtzY3AYfhIg",authDomain:"tarek-74842.firebaseapp.com",projectId:"tarek-74842",storageBucket:"tarek-74842.firebasestorage.app",messagingSenderId:"179196785540",appId:"1:179196785540:web:d4604f645dbbcc6e5f23d1"});
 const auth=getAuth(app);
 let fs; try{ fs=initializeFirestore(app,{localCache:persistentLocalCache()}); }catch(e){ fs=initializeFirestore(app,{}); }
@@ -37,6 +37,20 @@ const ref=doc(fs,"gym/state");
 window.FB={
   async read(){ let d; try{ d=await getDocFromServer(ref); }catch(e){ try{ d=await getDoc(ref); }catch(x){ return null; } } return d.exists()?d.data():null; },
   write:(s,ts)=>setDoc(ref,{s:s,ts:ts}),
+  /* Daily restore points. They live in the same collection as the live doc so the
+     same security rule covers them, and nothing that writes the live doc touches them. */
+  snap:(k,s,ts)=>setDoc(doc(fs,"gym","snap_"+k),{s:s,ts:ts,d:k}),
+  snapList:async()=>{
+    const out=[];
+    try{
+      const q=await getDocs(collection(fs,"gym"));
+      q.forEach(x=>{ if(x.id.indexOf("snap_")===0){ const v=x.data()||{};
+        out.push({d:v.d||x.id.slice(5), ts:v.ts||0, n:(v.s||"").length}); } });
+    }catch(e){}
+    return out.sort((a,b)=>a.d<b.d?1:-1);
+  },
+  snapGet:async(k)=>{ try{ const x=await getDoc(doc(fs,"gym","snap_"+k)); return x.exists()?x.data():null; }catch(e){ return null; } },
+  snapDel:(k)=>deleteDoc(doc(fs,"gym","snap_"+k)),
   signIn:(e,p)=>signInWithEmailAndPassword(auth,e,p), signOut:()=>signOut(auth)
 };
 onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEvent("fbauth",{detail:u})); });
@@ -282,6 +296,13 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .rep b{color:var(--chalk);font-weight:600}
   #g4 .rep p.warn b{color:var(--rose)}
   #g4 .rep p.good b{color:var(--aqua)}
+  #g4 .snaprow{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)}
+  #g4 .snaprow:last-child{border-bottom:none}
+  #g4 .snaprow .d{flex:1;color:var(--chalk);font-size:14px;font-weight:600}
+  #g4 .snaprow .kb{color:var(--muted);font-size:12px}
+  #g4 .snaprow button{font:600 13px inherit;border-radius:8px;padding:7px 12px;
+    border:1px solid var(--line);background:var(--surface);color:var(--chalk)}
+  #g4 .snaprow button.rep{border-color:#6B3A33;color:#D9705F}
   #g4 .clab{color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin:14px 0 0}
   #g4 .mgrid label{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}
   #g4 .mfull{width:100%;font-family:inherit;font-size:15px;font-weight:600;border-radius:10px;padding:13px;
@@ -1017,6 +1038,23 @@ function wNear(d){
   });
   return best;
 }
+/* One restore point a day, taken the first time the app opens that day, so it
+   holds the state from BEFORE anything today could go wrong. Keeps 30. */
+const SNAP_KEEP=30;
+async function dailySnap(){
+  if(!Store.cloud||!window.FB||!window.FB.snap) return;
+  const t=iso();
+  if(store.snapDay===t) return;
+  try{
+    await window.FB.snap(t,JSON.stringify(store),store.ts||Date.now());
+    store.snapDay=t; save();
+  }catch(e){ return; }
+  try{
+    const l=await window.FB.snapList();
+    for(let i=SNAP_KEEP;i<l.length;i++) await window.FB.snapDel(l[i].d);
+  }catch(e){}
+}
+
 function measureReport(cur,ref,days){
   if(!cur) return "";
   if(!ref) return '<div class="rep"><p>First set saved. The report needs a second measurement to compare against.</p></div>';
@@ -1519,6 +1557,7 @@ const API={
       'Last backup: <b style="color:'+((store.bk&&Date.now()-store.bk<14*864e5)?'#35C4C0':'#E9A63C')+'">'+when+'</b></p>'+
       '<button class="btn go" onclick="GYM4.saveBackup(this)">Save backup file</button>'+
       '<button class="btn" onclick="GYM4.restoreSheet()">Restore from a file</button>'+
+      (Store.cloud?'<button class="btn" onclick="GYM4.snapSheet()">Restore from a day</button>':'')+
       '<button class="btn danger" onclick="GYM4.reset(this)">Reset program to original</button>'+
       (Store.cloud?'<button class="btn" onclick="GYM4.signOut(this)">Sign out</button>':''));
   },
@@ -1555,6 +1594,73 @@ const API={
     }catch(e2){ if(btn) btn.textContent="Could not save the file"; }
   },
 
+  async snapSheet(){
+    closeAll();
+    sheet('<h2>Restore from a day</h2><p class="sub" id="g4smsg">Reading your restore points\u2026</p><div id="g4slist"></div>');
+    if(!Store.cloud||!window.FB||!window.FB.snapList){
+      const m0=$("g4smsg"); if(m0) m0.textContent="Restore points need you to be signed in."; return;
+    }
+    let l=[];
+    try{ l=await window.FB.snapList(); }catch(e){}
+    const m=$("g4smsg"), box=$("g4slist");
+    if(!box) return;
+    if(!l.length){
+      if(m) m.textContent="No restore points yet. The first one is taken the next time you open the app on a new day.";
+      return;
+    }
+    if(m) m.innerHTML='One point a day, the last '+l.length+'. <b>Add</b> brings back whatever is missing and changes nothing else. '+
+      '<b>Replace</b> puts your data back exactly as it was that day and drops anything logged after it.';
+    box.innerHTML=l.map(function(x){
+      return '<div class="snaprow"><span class="d">'+fmt(x.d)+'</span>'+
+        '<span class="kb">'+Math.max(1,Math.round(x.n/1024))+' KB</span>'+
+        '<button onclick="GYM4.snapAdd(\''+x.d+'\',this)">Add</button>'+
+        '<button class="rep" onclick="GYM4.snapReplace(\''+x.d+'\',this)">Replace</button></div>';
+    }).join("");
+  },
+  async _snapLoad(d,btn){
+    btn.disabled=true; btn.textContent="\u2026";
+    const v=await window.FB.snapGet(d);
+    let o=null;
+    try{ o=v&&v.s?JSON.parse(v.s):null; }catch(e){ o=null; }
+    if(!o||typeof o!=="object"||Array.isArray(o)){
+      btn.disabled=false; btn.textContent="Failed";
+      return null;
+    }
+    return o;
+  },
+  async snapAdd(d,btn){
+    const o=await API._snapLoad(d,btn); if(!o) return;
+    const n=mergeIn(o);
+    normalize();
+    if(!plan()) day=store.program[0].id;
+    editing=false; confirmId=null; save();
+    const bits=[];
+    if(n.sessions) bits.push(n.sessions+" session"+(n.sessions>1?"s":""));
+    if(n.sets) bits.push(n.sets+" logged lift"+(n.sets>1?"s":""));
+    if(n.weights) bits.push(n.weights+" weigh-in"+(n.weights>1?"s":""));
+    if(n.measures) bits.push(n.measures+" measurement"+(n.measures>1?"s":""));
+    if(n.ex) bits.push(n.ex+" exercise"+(n.ex>1?"s":""));
+    if(n.meals) bits.push(n.meals+" meal"+(n.meals>1?"s":""));
+    closeAll(); render();
+    sheet('<h2>Restored</h2><p class="sub">'+(bits.length
+      ? 'Added '+bits.join(", ")+' from '+fmt(d)+'. Nothing was changed or deleted.'
+      : 'Nothing was missing. '+fmt(d)+' already matches what you have.')+'</p>');
+  },
+  async snapReplace(d,btn){
+    if(btn.getAttribute("data-arm")!=="1"){
+      btn.setAttribute("data-arm","1"); btn.textContent="Sure?";
+      setTimeout(function(){ if(btn){ btn.removeAttribute("data-arm"); btn.textContent="Replace"; } },4000);
+      return;
+    }
+    const o=await API._snapLoad(d,btn); if(!o) return;
+    store=o;
+    store.snapDay=iso();        /* keep today's point, do not overwrite it on next open */
+    normalize();
+    if(!plan()) day=store.program[0].id;
+    editing=false; confirmId=null; save();
+    closeAll(); render();
+    sheet('<h2>Replaced</h2><p class="sub">Your data is back to exactly how it was on '+fmt(d)+'.</p>');
+  },
   restoreSheet(){
     closeAll();
     sheet('<h2>Restore from a file</h2>'+
@@ -1652,6 +1758,7 @@ async function start(){
   await API.init();
   const raw=JSON.stringify(store);
   window.FB.write(raw,store.ts||Date.now()).catch(function(){});
+  setTimeout(function(){ dailySnap(); },1500);
 }
 window.addEventListener("fbauth",function(e){
   if(e.detail) start();
