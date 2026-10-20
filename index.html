@@ -303,6 +303,11 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .snaprow button{font:600 13px inherit;border-radius:8px;padding:7px 12px;
     border:1px solid var(--line);background:var(--surface);color:var(--chalk)}
   #g4 .snaprow button.rep{border-color:#6B3A33;color:#D9705F}
+  #g4 .next{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 10px}
+  #g4 .next .lbl{color:var(--muted);font-size:12px;margin-right:2px}
+  #g4 .next .chip{font-variant-numeric:tabular-nums;color:#9BE3E1;font-size:12px;
+    border:1px solid rgba(53,196,192,.4);border-radius:5px;padding:2px 7px}
+  #g4 .next .nb{flex-basis:100%;color:var(--muted);font-size:12px;margin-top:2px}
   #g4 .clab{color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin:14px 0 0}
   #g4 .mgrid label{display:block;color:var(--muted);font-size:11px;margin-bottom:4px}
   #g4 .mfull{width:100%;font-family:inherit;font-size:15px;font-weight:600;border-radius:10px;padding:13px;
@@ -600,6 +605,45 @@ function nextWeight(sets,range){
   if(!isFinite(w)||!w) return null;
   return Math.round((w+stepOf(w))*2)/2;
 }
+/* What to put on the bar next time, set by set.
+   Two cases. If every set landed inside the rep range, each set keeps its weight
+   and asks for one more rep, and a set that reached the top of the range goes up
+   one step instead. If any set fell outside the range, the ladder is rebuilt from
+   the session's best estimated max so that every set lands inside it — a 30kg set
+   under a 6-10 prescription is not work, and creeping it to 16 reps makes it worse. */
+const repLo=r=>{const m=String(r).match(/\d+/);return m?+m[0]:0;};
+const roundKg=w=>w<20?Math.round(w):Math.round(w/2.5)*2.5;
+function nextLadder(ps,range,wantSets){
+  const done=(ps||[]).filter(filled).map(x=>({w:+x[0],r:+x[1]}))
+    .filter(x=>isFinite(x.w)&&isFinite(x.r)&&x.w>0&&x.r>0);
+  if(!done.length) return null;
+  const hi=repMax(range), lo=repLo(range);
+  if(!hi||!lo||hi<lo) return null;
+
+  /* 1. anything outside the range: rebuild the ladder so every set lands inside it */
+  if(!done.every(x=>x.r>=lo&&x.r<=hi)){
+    const E=Math.max.apply(null,done.map(x=>e1rm(x.w,x.r)));
+    const n=Math.max(1,wantSets||done.length), items=[];
+    for(let i=0;i<n;i++){
+      const t=(n===1)?hi:Math.max(lo,Math.floor(hi-i*(hi-lo)/(n-1)));
+      items.push({w:roundKg(E/(1+t/30)),r:t});
+    }
+    return {mode:"rebuilt",items:items};
+  }
+
+  /* 2. the heaviest set reached the top of the range: the whole ladder steps up,
+        in proportion, so its shape survives. First session on new weights gets no
+        rep target, only last time's reps to match. */
+  let top=done[0];
+  done.forEach(x=>{ if(x.w>top.w||(x.w===top.w&&x.r>top.r)) top=x; });
+  if(top.r>=hi){
+    const f=(top.w+stepOf(top.w))/top.w;
+    return {mode:"stepped",items:done.map(x=>({w:roundKg(x.w*f),r:x.r}))};
+  }
+
+  /* 3. otherwise: same weights, one more rep on every set */
+  return {mode:"bump",items:done.map(x=>({w:x.w,r:x.r+1}))};
+}
 function failureFlags(series,curSets){
   const bestAt={};
   series.forEach(s=>s.all.forEach(x=>{
@@ -780,12 +824,13 @@ function logView(e,ei,pv,s){
   const allS=exSeries(day,e.id);
   const past=allS.filter(p=>p.date!==iso());
   let cue="";
-  const nw=ps?nextWeight(ps,e.r):null;
-  if(nw){
-    const lo=(String(e.r).match(/\d+/)||[""])[0];
-    cue+='<div class="cue go"><div class="hl">Go up → <span class="big">'+nw+' kg</span></div>'+
-      '<div class="ex2">You hit '+repMax(e.r)+' reps on every set last time. '+
-      'Start again at '+lo+' reps.</div></div>';
+  const L=ps?nextLadder(ps,e.r,e.s):null;
+  if(L){
+    cue+='<div class="next"><span class="lbl">Next</span>'+
+      L.items.map(function(x){ return '<span class="chip">'+x.w+'kg × '+x.r+'</span>'; }).join("")+
+      (L.mode==="rebuilt"?'<span class="nb">rebuilt so every set lands inside '+esc(e.r)+'</span>'
+        :L.mode==="stepped"?'<span class="nb">new weights — match last time\'s reps, then build from there</span>':'')+
+      '</div>';
   }
   if(stalled(past)) cue+='<div class="cue hold"><div class="hl">Stalled — 3 sessions</div>'+
     '<div class="ex2">Same weight is not moving. Deload this week or swap the exercise.</div></div>';
