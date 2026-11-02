@@ -313,6 +313,63 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .mfull{width:100%;font-family:inherit;font-size:15px;font-weight:600;border-radius:10px;padding:13px;
     border:1px solid var(--aqua);background:var(--aqua);color:#062028;cursor:pointer}
 
+  /* food: library + weighed daily log */
+  #g4 .kcard{margin:16px 0 4px}
+  #g4 .kcard .ktop{display:flex;justify-content:space-between;align-items:baseline}
+  #g4 .kcard .kbig{font-size:38px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+  #g4 .kcard .kgoal{color:var(--muted);font-size:13px;font-variant-numeric:tabular-nums}
+  #g4 .kcard .kleft{color:var(--aqua);font-size:12.5px;font-variant-numeric:tabular-nums;margin-top:3px}
+  #g4 .kcard .kleft.over{color:var(--rose)}
+  #g4 .pbar{height:7px;border-radius:4px;background:var(--surface-2);overflow:hidden;margin-top:9px}
+  #g4 .pbar i{display:block;height:100%;background:var(--aqua)}
+  #g4 .pbar i.over{background:var(--rose)}
+  #g4 .macros{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:18px 0 4px}
+  #g4 .mc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:11px 11px 12px}
+  #g4 .mc .mk{color:var(--muted);font-size:10.5px;text-transform:uppercase;letter-spacing:.5px}
+  #g4 .mc .mv{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;margin-top:3px;line-height:1.1}
+  #g4 .mc .mg{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums}
+  #g4 .mc .pbar{height:5px;margin-top:8px}
+  #g4 .mc.f .pbar i{background:var(--amber)}
+  #g4 .mc.c .pbar i{background:#7FA8C4}
+  #g4 .frow{display:flex;align-items:center;gap:11px;border-top:1px solid var(--line);padding:12px 0}
+  #g4 .frow:first-of-type{border-top:none}
+  #g4 .frow .ft{flex:1;min-width:0}
+  #g4 .frow .fn{font-size:14.5px;font-weight:600;line-height:1.3;direction:rtl;text-align:left}
+  #g4 .frow .fq{color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums;margin-top:2px}
+  #g4 .frow .fk{font-size:15px;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
+  #g4 .frow .fx{background:none;border:none;color:var(--muted);font-family:inherit;font-size:19px;
+    padding:0 2px 0 8px;cursor:pointer}
+  #g4 .fnone{color:var(--muted);font-size:13px;font-style:italic;padding:16px 0;text-align:center}
+  #g4 .frtl{direction:rtl;text-align:right}
+  #g4 .fsearch,#g4 .fsel,#g4 .ftext{width:100%;background:var(--surface);border:1px solid var(--line);
+    color:var(--chalk);border-radius:10px;padding:12px;font-family:inherit;font-size:16px}
+  #g4 .fsearch:focus,#g4 .fsel:focus,#g4 .ftext:focus{outline:none;border-color:var(--aqua)}
+  #g4 .fpick{display:flex;align-items:center;gap:10px;padding:11px 0;
+    border-bottom:1px solid var(--line);cursor:pointer}
+  #g4 .fpick .fn{flex:1;font-size:14.5px;font-weight:600;direction:rtl;text-align:left}
+  #g4 .fpick .fm{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  #g4 .qgrid{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:center;margin-top:4px}
+  #g4 .qgrid input{width:100%;background:var(--surface);border:1px solid var(--line);color:var(--chalk);
+    border-radius:10px;padding:13px;font-family:inherit;font-size:18px;font-weight:600;
+    font-variant-numeric:tabular-nums;appearance:none;-moz-appearance:textfield}
+  #g4 .qgrid input::-webkit-outer-spin-button,
+  #g4 .qgrid input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  #g4 .qgrid input:focus{outline:none;border-color:var(--aqua)}
+  #g4 .qgrid .qu{color:var(--muted);font-size:14px}
+  #g4 .chips{display:flex;gap:7px;margin-top:9px;flex-wrap:wrap}
+  #g4 .chips button{background:var(--surface-2);border:1px solid var(--line);color:var(--chalk);
+    border-radius:8px;padding:8px 13px;font-family:inherit;font-size:13px;
+    font-variant-numeric:tabular-nums;cursor:pointer}
+  #g4 .prev{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+    padding:12px 13px;margin-top:14px}
+  #g4 .prev .r{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;
+    font-variant-numeric:tabular-nums}
+  #g4 .prev .r b{font-weight:650}
+  #g4 .prev .r.kc{font-size:16px;border-bottom:1px solid var(--line);padding-bottom:7px;margin-bottom:5px}
+  #g4 .n3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  #g4 .n3 input{width:100%;background:var(--surface);border:1px solid var(--line);color:var(--chalk);
+    border-radius:10px;padding:12px;font-family:inherit;font-size:16px;font-variant-numeric:tabular-nums}
+  #g4 .n3 input:focus{outline:none;border-color:var(--aqua)}
   #g4 .hrow{display:flex;gap:10px;align-items:baseline;border-top:1px solid var(--line);padding:10px 0}
   #g4 .hrow .d{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;white-space:nowrap}
   #g4 .hrow .v{flex:1;font-size:13.5px;font-variant-numeric:tabular-nums}
@@ -486,17 +543,55 @@ function seed(){
     ex:d[4].map((e,i)=>({id:d[0]+"-"+i,n:e[0],s:e[1],r:e[2],rest:e[3],why:e[4],m:e[5],h:e[6]}))}));
 }
 
-function seedMeals(){
-  // time, description, kcal, protein(g) -- totals ~2655 kcal / 224 g
-  return [
-    ["06:00","Carb shake",240,0],
-    ["09:30","Protein scoop + banana + apple + 25g nuts",470,31],
-    ["13:30","200g chicken + 150g rice",525,66],
-    ["17:00","Shake: skim milk + protein + banana, with 25g nuts",480,46],
-    ["19:30","2 brown toast + 2 tbsp peanut butter",350,14],
-    ["22:30","200g chicken or beef + 200g rice",590,67]
-  ].map(function(m,i){ return {id:"m"+i,t:m[0],n:m[1],k:m[2],p:m[3]}; });
+/* The food list. Every number is for the food AS EATEN (cooked), per 100 g or
+   per 100 ml, except the ones marked as a piece. k=calories p=protein f=fat b=carbs. */
+function seedLib(){
+  const G=[
+   ["\u0628\u0631\u0648\u062a\u064a\u0646",[
+    ["\u0635\u062f\u0648\u0631 \u0641\u0631\u0627\u062e","g",165,31,3.6,0],
+    ["\u0641\u062e\u062f\u0629 \u0641\u0631\u0627\u062e","g",209,26,11,0],
+    ["\u0644\u062d\u0645\u0629 \u0628\u0642\u0631\u064a \u0642\u0644\u064a\u0644\u0629 \u0627\u0644\u062f\u0647\u0646","g",212,30,9,0],
+    ["\u0644\u062d\u0645\u0629 \u0645\u0641\u0631\u0648\u0645\u0629","g",254,26,17,0],
+    ["\u0636\u0627\u0646\u064a","g",294,25,21,0],
+    ["\u0628\u0644\u0637\u064a \u0645\u0634\u0648\u064a","g",129,26,3,0],
+    ["\u062a\u0648\u0646\u0629 \u0645\u0635\u0641\u0627\u0629","g",219,26,12,0],
+    ["\u0628\u064a\u0636\u0629","pc",72,6.3,4.8,0.4],
+    ["\u0633\u0643\u0648\u0628 \u0628\u0631\u0648\u062a\u064a\u0646","pc",163,40,0,0.4],
+    ["\u0646\u062f\u064a","ml",87,9.5,0.1,11]]],
+   ["\u0646\u0634\u0648\u064a\u0627\u062a",[
+    ["\u0631\u0632 \u0623\u0628\u064a\u0636","g",130,2.7,0.3,28],
+    ["\u0645\u0643\u0631\u0648\u0646\u0629","g",158,5.8,0.9,31],
+    ["\u0628\u0637\u0627\u0637\u0633 \u0645\u0633\u0644\u0648\u0642\u0629 \u0623\u0648 \u0645\u0634\u0648\u064a\u0629","g",87,2,0.1,20],
+    ["\u0628\u0637\u0627\u0637\u0633 \u0645\u062d\u0645\u0631\u0629","g",312,3.4,15,41],
+    ["\u062a\u0648\u0633\u062a \u0628\u0631\u0648\u062a\u064a\u0646 \u2014 \u0634\u0631\u064a\u062d\u0629","pc",172,9.5,6,20.4],
+    ["\u062e\u0628\u0632 \u0627\u0644\u062d\u0627\u0637\u0628 \u2014 \u0631\u063a\u064a\u0641","pc",147,14,3.7,16.2],
+    ["\u0633\u0643\u0648\u0628 \u0645\u0627\u0643\u0631\u0648 \u0643\u0627\u0631\u0628","pc",172,0,0,43]]],
+   ["\u0623\u0644\u0628\u0627\u0646",[
+    ["\u062d\u0644\u064a\u0628 \u0627\u0644\u0645\u0631\u0627\u0639\u064a \u0643\u0627\u0645\u0644 \u0627\u0644\u062f\u0633\u0645","ml",63,3.2,3.4,4.7],
+    ["\u062d\u0644\u064a\u0628 \u0627\u0644\u0645\u0631\u0627\u0639\u064a \u0642\u0644\u064a\u0644 \u0627\u0644\u062f\u0633\u0645","ml",46,3.4,1.5,4.8],
+    ["\u062c\u0628\u0646\u0629 \u0634\u064a\u062f\u0631","g",403,25,33,1.3],
+    ["\u062c\u0628\u0646\u0629 \u0631\u0648\u0645\u064a","g",390,26,31,1.5]]],
+   ["\u0641\u0627\u0643\u0647\u0629 \u0648\u062e\u0636\u0627\u0631",[
+    ["\u0645\u0648\u0632\u0629","pc",105,1.3,0.4,27],
+    ["\u062a\u0641\u0627\u062d\u0629","pc",95,0.5,0.3,25],
+    ["\u062e\u064a\u0627\u0631\u0629","pc",23,1,0.2,5]]],
+   ["\u0645\u0643\u0633\u0631\u0627\u062a \u0648\u062f\u0647\u0648\u0646",[
+    ["\u0643\u0627\u062c\u0648","g",553,18,44,30],
+    ["\u0644\u0648\u0632","g",579,21,50,22],
+    ["\u0639\u064a\u0646 \u062c\u0645\u0644","g",654,15,65,14],
+    ["\u0632\u064a\u062a \u2014 \u0645\u0639\u0644\u0642\u0629 \u0643\u0628\u064a\u0631\u0629","pc",120,0,14,0]]],
+   ["\u062a\u0627\u0646\u064a",[
+    ["\u0645\u0639\u0645\u0648\u0644 \u2014 \u0642\u0637\u0639\u0629","pc",238,14.5,11.2,20.4],
+    ["\u0639\u0633\u0644 \u2014 \u0645\u0639\u0644\u0642\u0629 \u0635\u063a\u064a\u0631\u0629","pc",21,0,0,5.7],
+    ["\u0648\u062c\u0628\u0629 \u0628\u0631\u0647 (\u062a\u0642\u062f\u064a\u0631\u064a)","pc",900,40,40,90]]]
+  ];
+  const out=[]; let i=0;
+  G.forEach(g=>g[1].forEach(x=>{
+    out.push({id:"f"+(i++),c:g[0],n:x[0],u:x[1],k:x[2],p:x[3],f:x[4],b:x[5]});
+  }));
+  return out;
 }
+function seedDiet(){ return {k:2450,p:190,f:70,b:265}; }
 
 let store={}, day="sun", editing=false, confirmId=null, timer=null, audio=null, wake=null;
 
@@ -536,24 +631,30 @@ function prevFor(exId){
 }
 
 /* ---------------- food helpers ---------------- */
-const mealsOf=()=>store.meals||[];
-function foodToday(){ return (store.food||{})[iso()]||{}; }
-function foodTodayW(){
-  store.food=store.food||{};
+const libOf=()=>store.lib||[];
+const dietOf=()=>Object.assign(seedDiet(),store.diet||{});
+const r1=n=>Math.round(n*10)/10;
+function eatToday(){ const a=(store.eat||{})[iso()]; return Array.isArray(a)?a:[]; }
+function eatTodayW(){
+  store.eat=store.eat||{};
   const t=iso();
-  store.food[t]=store.food[t]||{};
-  return store.food[t];
+  if(!Array.isArray(store.eat[t])) store.eat[t]=[];
+  return store.eat[t];
 }
-function foodGot(){
-  const f=foodToday(); let k=0,p=0;
-  mealsOf().forEach(m=>{ if(f[m.id]){ k+=(+m.k||0); p+=(+m.p||0); } });
-  return {k:k,p:p};
+function eatTotal(){
+  return eatToday().reduce((a,x)=>({
+    k:a.k+(+x.k||0), p:a.p+(+x.p||0), f:a.f+(+x.f||0), b:a.b+(+x.b||0)
+  }),{k:0,p:0,f:0,b:0});
 }
-function foodPlan(){
-  let k=0,p=0;
-  mealsOf().forEach(m=>{ k+=(+m.k||0); p+=(+m.p||0); });
-  return {k:k,p:p};
+/* An entry stores its own finished numbers, so editing or deleting a list item
+   later never rewrites a day you already logged. */
+function fdCalc(x,q){
+  const m=(x.u==="pc")?q:q/100;
+  return {k:(+x.k||0)*m, p:(+x.p||0)*m, f:(+x.f||0)*m, b:(+x.b||0)*m};
 }
+const unitLab=u=>u==="pc"?"\u0642\u0637\u0639\u0629":(u==="ml"?"ml":"g");
+const qtyTxt=x=>x.u==="pc"?("\u00d7"+r1(+x.q||0)):(r1(+x.q||0)+(x.u==="ml"?"ml":"g"));
+const perLab=u=>u==="pc"?"\u0644\u0644\u0642\u0637\u0639\u0629":(u==="ml"?"/100ml":"/100g");
 
 let flash=null;
 function save(){
@@ -778,17 +879,13 @@ function render(){
   }
 
   if(day==="fd"){
-    const M=mealsOf();
     $("g4h1").textContent="Food";
     if(editing){
-      $("g4h2").textContent="Editing, "+M.length+" meals";
-      m.innerHTML=warn+
-        '<div class="hint">Rename a meal, change its time, calories or protein, reorder or delete. The targets at the top are just the sum of the meals below, so they update themselves.</div>'+
-        M.map((x,i)=>foodEditView(x,i,M.length)).join("")+
-        '<button class="addex" onclick="GYM4.fdAdd()">+ Add meal</button>';
+      $("g4h2").textContent="Editing, "+libOf().length+" items";
+      m.innerHTML=warn+foodEditView();
     }else{
-      const n=Object.keys(foodToday()).length;
-      $("g4h2").textContent=fmt(iso())+" \u00b7 "+n+" of "+M.length+" meals";
+      const t=eatTotal();
+      $("g4h2").textContent=fmt(iso())+" \u00b7 "+Math.round(t.k)+" kcal \u00b7 "+r1(t.p)+"g protein";
       m.innerHTML=warn+foodView();
     }
     return;
@@ -890,50 +987,68 @@ function editView(e,i,total){
   '</section>';
 }
 
-function foodView(){
-  const M=mealsOf();
-  if(!M.length) return '<div class="hint">No meals yet. Tap Edit to add some.</div>';
-  const f=foodToday(), got=foodGot(), tot=foodPlan();
-  const pk=tot.k?Math.min(100,(got.k/tot.k)*100):0;
-  const pp=tot.p?Math.min(100,(got.p/tot.p)*100):0;
-  const head=
-    '<div class="fbar"><div class="lab"><span>Calories</span>'+
-      '<span><b>'+got.k+'</b> / '+tot.k+'</span></div>'+
-      '<div class="bar"><i style="width:'+pk.toFixed(1)+'%;background:var(--aqua)"></i></div></div>'+
-    '<div class="fbar"><div class="lab"><span>Protein</span>'+
-      '<span><b>'+got.p+'</b> / '+tot.p+' g</span></div>'+
-      '<div class="bar"><i style="width:'+pp.toFixed(1)+'%;background:var(--amber)"></i></div></div>';
-  const rows=M.map(m=>
-    '<div class="meal" data-on="'+(f[m.id]?1:0)+'" onclick="GYM4.fdToggle(\''+m.id+'\')">'+
-      '<span class="tick">\u2713</span>'+
-      '<div class="mtxt">'+(m.t?'<div class="mtime">'+esc(m.t)+'</div>':'')+
-        '<div class="mname">'+esc(m.n)+'</div>'+
-        '<div class="mmac">'+(+m.k||0)+' kcal \u00b7 '+(+m.p||0)+'g protein</div>'+
-      '</div></div>').join("");
-  return head+rows+
-    '<p class="verdict" style="margin-top:18px">Tap a meal when you have eaten it. The list resets on its own every day.</p>';
+function mcard(cls,lab,v,go){
+  const pct=go>0?Math.min(100,v/go*100):0;
+  return '<div class="mc '+cls+'"><div class="mk">'+lab+'</div>'+
+    '<div class="mv">'+r1(v)+'</div><div class="mg">/ '+r1(go)+' g</div>'+
+    '<div class="pbar"><i class="'+(v>go?"over":"")+'" style="width:'+pct.toFixed(1)+'%"></i></div></div>';
 }
 
-function foodEditView(m,i,total){
-  if(confirmId===m.id){
-    return '<section class="ex"><div class="confirm">'+
-      '<p>Delete <b>'+esc(m.n)+'</b>?</p>'+
-      '<div class="row"><button class="yes" onclick="GYM4.fdRemove('+i+')">Delete</button>'+
-      '<button onclick="GYM4.cancel()">Keep it</button></div></div></section>';
-  }
-  return '<section class="ex">'+
-    '<div class="erow">'+
-      '<input class="nm" type="text" value="'+esc(m.n)+'" onchange="GYM4.fdSet('+i+',\'n\',this.value)" aria-label="Meal">'+
-      '<button class="ebtn" onclick="GYM4.fdMove('+i+',-1)" '+(i===0?"disabled":"")+' aria-label="Move up">\u25b2</button>'+
-      '<button class="ebtn" onclick="GYM4.fdMove('+i+',1)" '+(i===total-1?"disabled":"")+' aria-label="Move down">\u25bc</button>'+
-    '</div>'+
-    '<div class="egrid three">'+
-      '<div><label>Time</label><input type="text" value="'+esc(m.t||"")+'" onchange="GYM4.fdSet('+i+',\'t\',this.value)"></div>'+
-      '<div><label>Calories</label><input type="number" inputmode="numeric" min="0" value="'+(+m.k||0)+'" onchange="GYM4.fdSet('+i+',\'k\',this.value)"></div>'+
-      '<div><label>Protein (g)</label><input type="number" inputmode="numeric" min="0" value="'+(+m.p||0)+'" onchange="GYM4.fdSet('+i+',\'p\',this.value)"></div>'+
-    '</div>'+
-    '<button class="rmbtn" onclick="GYM4.fdAsk('+i+')">Delete this meal</button>'+
-  '</section>';
+function foodView(){
+  const t=eatTotal(), g=dietOf(), rows=eatToday();
+  const pk=g.k>0?Math.min(100,t.k/g.k*100):0, left=g.k-t.k;
+  let h='<div class="kcard"><div class="ktop">'+
+    '<span class="kbig">'+Math.round(t.k)+'</span>'+
+    '<span class="kgoal">/ '+Math.round(g.k)+' kcal</span></div>'+
+    '<div class="kleft'+(left<0?" over":"")+'">'+
+      (left>=0?Math.round(left)+" kcal left":Math.round(-left)+" kcal over")+'</div>'+
+    '<div class="pbar"><i class="'+(t.k>g.k?"over":"")+'" style="width:'+pk.toFixed(1)+'%"></i></div></div>';
+  h+='<div class="macros">'+mcard("p","Protein",t.p,g.p)+
+      mcard("f","Fat",t.f,g.f)+mcard("c","Carbs",t.b,g.b)+'</div>';
+  h+='<button class="addex" onclick="GYM4.fdPick()">\u0623\u0636\u0641 \u0623\u0643\u0644</button>';
+  h+='<h3>\u0623\u0643\u0644 \u0627\u0644\u0646\u0647\u0627\u0631\u062f\u0647</h3>';
+  if(!rows.length) return h+'<p class="fnone">\u0644\u0633\u0647 \u0645\u062f\u062e\u0644\u062a\u0634 \u062d\u0627\u062c\u0629 \u0627\u0644\u0646\u0647\u0627\u0631\u062f\u0647</p>';
+  return h+rows.map((x,i)=>
+    '<div class="frow"><div class="ft"><div class="fn">'+esc(x.n)+'</div>'+
+      '<div class="fq">'+qtyTxt(x)+' \u00b7 '+r1(+x.p||0)+'P \u00b7 '+r1(+x.f||0)+'F \u00b7 '+r1(+x.b||0)+'C</div></div>'+
+    '<span class="fk">'+Math.round(+x.k||0)+'</span>'+
+    '<button class="fx" onclick="GYM4.fdDel('+i+')" aria-label="Remove">\u00d7</button></div>').join("");
+}
+
+function foodEditView(){
+  const g=dietOf(), L=libOf();
+  const tgt=(key,lab,v)=>'<div><label>'+lab+'</label><input type="number" inputmode="decimal" min="0" '+
+    'value="'+v+'" onchange="GYM4.fdTgt(\''+key+'\',this.value)"></div>';
+  const num=(i,key,lab,v)=>'<div><label>'+lab+'</label><input type="number" inputmode="decimal" min="0" '+
+    'value="'+(+v||0)+'" onchange="GYM4.fdLibSet('+i+',\''+key+'\',this.value)"></div>';
+  let h='<div class="hint">Your daily targets, and the food list behind the Add button. '+
+    'Changing or deleting an item here never touches a day you have already logged.</div>';
+  h+='<h3>Daily targets</h3><div class="egrid two">'+
+     tgt("k","Calories",Math.round(g.k))+tgt("p","Protein (g)",r1(g.p))+
+     tgt("f","Fat (g)",r1(g.f))+tgt("b","Carbs (g)",r1(g.b))+'</div>';
+  h+='<h3>Food list, '+L.length+' items</h3>';
+  h+=L.map((x,i)=>{
+    if(confirmId===x.id)
+      return '<section class="ex"><div class="confirm">'+
+        '<p>Delete <b>'+esc(x.n)+'</b>?</p><div class="row">'+
+        '<button class="yes" onclick="GYM4.fdLibDel('+i+')">Delete</button>'+
+        '<button onclick="GYM4.cancel()">Keep it</button></div></div></section>';
+    const sel=['g','ml','pc'].map(u=>'<option value="'+u+'"'+(x.u===u?' selected':'')+'>'+
+      (u==="g"?"per 100 g":u==="ml"?"per 100 ml":"per piece")+'</option>').join("");
+    return '<section class="ex">'+
+      '<div class="erow">'+
+        '<input class="nm" type="text" value="'+esc(x.n)+'" onchange="GYM4.fdLibSet('+i+',\'n\',this.value)" aria-label="Food">'+
+        '<button class="ebtn" onclick="GYM4.fdAsk(\''+x.id+'\')" aria-label="Delete">\u00d7</button>'+
+      '</div>'+
+      '<div class="egrid two">'+
+        '<div><label>Measured</label><select onchange="GYM4.fdLibSet('+i+',\'u\',this.value)">'+sel+'</select></div>'+
+        '<div><label>Calories</label><input type="number" inputmode="decimal" min="0" value="'+(+x.k||0)+
+          '" onchange="GYM4.fdLibSet('+i+',\'k\',this.value)"></div>'+
+      '</div>'+
+      '<div class="egrid three">'+num(i,"p","Protein",x.p)+num(i,"f","Fat",x.f)+num(i,"b","Carbs",x.b)+'</div>'+
+    '</section>';
+  }).join("");
+  return h+'<button class="addex" onclick="GYM4.fdNew()">+ Add a food</button>';
 }
 
 function statsView(){
@@ -1299,11 +1414,16 @@ function normalize(){
   if(!store.days) store.days={};
   if(!store.weights) store.weights=[];
   if(!store.measures) store.measures=[];
-  if(!store.meals||!store.meals.length) store.meals=seedMeals();
-  if(!store.food) store.food={};
-  // keep the tick log small: drop anything older than 60 days
+  /* one-off: the tick-a-meal list is replaced by a weighed food log. Runs once,
+     so a list the user has since edited is never rebuilt. */
+  store.mig=store.mig||{};
+  if(!store.mig.food1){ delete store.meals; delete store.food; store.mig.food1=1; }
+  if(!store.lib||!store.lib.length) store.lib=seedLib();
+  if(!store.diet) store.diet=seedDiet();
+  if(!store.eat||typeof store.eat!=="object") store.eat={};
+  // keep the food log small: drop anything older than 60 days
   const cut=iso(new Date(Date.now()-60*864e5));
-  Object.keys(store.food).forEach(d=>{ if(d<cut) delete store.food[d]; });
+  Object.keys(store.eat).forEach(d=>{ if(d<cut) delete store.eat[d]; });
   const ref={};
   seed().forEach(p=>p.ex.forEach(e=>{ ref[e.n]={m:e.m,h:e.h}; }));
   store.program.forEach(p=>p.ex.forEach(e=>{
@@ -1379,7 +1499,7 @@ function normalize(){
 /* Merge a backup into what is already here: add what is missing, never
    overwrite and never delete. Returns counts of what was added. */
 function mergeIn(d){
-  const n={ex:0,sessions:0,sets:0,weights:0,measures:0,meals:0,food:0,days:0};
+  const n={ex:0,sessions:0,sets:0,weights:0,measures:0,lib:0,eat:0,days:0};
   const clone=x=>JSON.parse(JSON.stringify(x));
 
   if(Array.isArray(d.program)){
@@ -1395,12 +1515,13 @@ function mergeIn(d){
     });
   }
 
-  if(Array.isArray(d.meals)){
-    store.meals=store.meals||[];
-    d.meals.forEach(im=>{
-      if(im&&im.id&&!store.meals.some(m=>m.id===im.id)){ store.meals.push(clone(im)); n.meals++; }
+  if(Array.isArray(d.lib)){
+    store.lib=store.lib||[];
+    d.lib.forEach(im=>{
+      if(im&&im.id&&!store.lib.some(m=>m.id===im.id)){ store.lib.push(clone(im)); n.lib++; }
     });
   }
+  if(d.diet&&typeof d.diet==="object"&&!store.diet) store.diet=clone(d.diet);
 
   if(d.days&&typeof d.days==="object"){
     store.days=store.days||{};
@@ -1440,13 +1561,14 @@ function mergeIn(d){
     store.measures.sort((a,b)=>a.d<b.d?-1:1);
   }
 
-  if(d.food&&typeof d.food==="object"){
-    store.food=store.food||{};
-    Object.keys(d.food).forEach(dt=>{
-      store.food[dt]=store.food[dt]||{};
-      Object.keys(d.food[dt]||{}).forEach(mid=>{
-        if(!(mid in store.food[dt])){ store.food[dt][mid]=1; n.food++; }
-      });
+  if(d.eat&&typeof d.eat==="object"){
+    store.eat=store.eat||{};
+    Object.keys(d.eat).forEach(dt=>{
+      const inc=d.eat[dt];
+      if(!Array.isArray(inc)||!inc.length) return;
+      // only fill a day that is empty here, so a day already logged is never doubled
+      if(Array.isArray(store.eat[dt])&&store.eat[dt].length) return;
+      store.eat[dt]=clone(inc); n.eat+=inc.length;
     });
   }
 
@@ -1519,37 +1641,118 @@ const API={
     if(f.length){ const l=f[f.length-1]; l.focus(); l.select(); }
   },
 
-  fdToggle(id){
-    const f=foodTodayW();
-    if(f[id]) delete f[id]; else f[id]=1;
+  /* ---- food: pick from the list, weigh it, log it ---- */
+  fdPick(){
+    closeAll();
+    sheet('<h2 class="frtl">\u0627\u062e\u062a\u0627\u0631 \u0645\u0646 \u0627\u0644\u0642\u0627\u064a\u0645\u0629</h2>'+
+      '<p class="sub frtl">\u0643\u0644 \u0627\u0644\u0623\u0631\u0642\u0627\u0645 \u0644\u0644\u0623\u0643\u0644 \u0628\u0639\u062f \u0627\u0644\u0637\u0628\u062e\u060c \u0644\u0643\u0644 100 \u062c\u0631\u0627\u0645 \u0623\u0648 100 \u0645\u0644\u064a.</p>'+
+      '<input class="fsearch" type="search" id="g4fq" placeholder="\u062f\u0648\u0651\u0631..." oninput="GYM4.fdFilt(this.value)">'+
+      '<div id="g4flist"></div>'+
+      '<button class="btn" onclick="GYM4.fdNew()">+ \u0623\u0636\u0641 \u0635\u0646\u0641 \u062c\u062f\u064a\u062f</button>');
+    API.fdFilt("");
+  },
+  fdFilt(q){
+    const box=$("g4flist"); if(!box) return;
+    q=String(q||"").trim().toLowerCase();
+    const groups=[], by={};
+    libOf().forEach(x=>{
+      if(q&&String(x.n||"").toLowerCase().indexOf(q)<0) return;
+      const c=x.c||"\u062a\u0627\u0646\u064a";
+      if(!by[c]){ by[c]=[]; groups.push(c); }
+      by[c].push(x);
+    });
+    if(!groups.length){ box.innerHTML='<p class="fnone">\u0645\u0641\u064a\u0634 \u0646\u062a\u064a\u062c\u0629</p>'; return; }
+    box.innerHTML=groups.map(c=>'<p class="clab">'+esc(c)+'</p>'+
+      by[c].map(x=>'<div class="fpick" onclick="GYM4.fdChoose(\''+x.id+'\')">'+
+        '<span class="fn">'+esc(x.n)+'</span>'+
+        '<span class="fm">'+Math.round(+x.k||0)+' kcal '+perLab(x.u)+'</span></div>').join("")).join("");
+  },
+  fdChoose(id){
+    const x=libOf().find(y=>y.id===id); if(!x) return;
+    closeAll();
+    const pc=x.u==="pc";
+    const chips=(pc?[1,2,3]:[50,100,150,200,250,300])
+      .map(v=>'<button onclick="GYM4.fdQ('+v+',\''+id+'\')">'+v+'</button>').join("");
+    sheet('<h2 class="frtl">'+esc(x.n)+'</h2>'+
+      '<p class="sub frtl">'+(pc?"\u0627\u0643\u062a\u0628 \u0627\u0644\u0639\u062f\u062f":"\u0627\u0643\u062a\u0628 \u0627\u0644\u0648\u0632\u0646 \u0628\u0627\u0644\u062c\u0631\u0627\u0645")+'</p>'+
+      '<div class="qgrid"><input type="number" inputmode="decimal" min="0" id="g4fqty" value="'+(pc?1:100)+
+        '" oninput="GYM4.fdPrev(\''+id+'\')"><span class="qu">'+unitLab(x.u)+'</span></div>'+
+      '<div class="chips">'+chips+'</div>'+
+      '<div class="prev" id="g4fprev"></div>'+
+      '<button class="btn go" onclick="GYM4.fdAdd(\''+id+'\')">\u0623\u0636\u0641</button>');
+    API.fdPrev(id);
+  },
+  fdQ(v,id){ const e=$("g4fqty"); if(e){ e.value=v; API.fdPrev(id); } },
+  fdPrev(id){
+    const box=$("g4fprev"), x=libOf().find(y=>y.id===id); if(!box||!x) return;
+    const e=$("g4fqty"), q=e?parseFloat(e.value):0;
+    const v=fdCalc(x,(isFinite(q)&&q>0)?q:0);
+    box.innerHTML='<div class="r kc"><span>Calories</span><b>'+Math.round(v.k)+'</b></div>'+
+      '<div class="r"><span>Protein</span><b>'+r1(v.p)+' g</b></div>'+
+      '<div class="r"><span>Fat</span><b>'+r1(v.f)+' g</b></div>'+
+      '<div class="r"><span>Carbs</span><b>'+r1(v.b)+' g</b></div>';
+  },
+  fdAdd(id){
+    const x=libOf().find(y=>y.id===id); if(!x) return;
+    const e=$("g4fqty"), q=e?parseFloat(e.value):0;
+    if(!isFinite(q)||q<=0) return;
+    const v=fdCalc(x,q);
+    eatTodayW().push({n:x.n,u:x.u,q:q,k:v.k,p:v.p,f:v.f,b:v.b});
+    closeAll(); save(); render();
+  },
+  fdDel(i){
+    const a=eatTodayW();
+    if(i<0||i>=a.length) return;
+    a.splice(i,1); save(); render();
+  },
+  fdNew(){
+    closeAll();
+    sheet('<h2 class="frtl">\u0635\u0646\u0641 \u062c\u062f\u064a\u062f</h2>'+
+      '<p class="sub frtl">\u0627\u0646\u0642\u0644 \u0627\u0644\u0623\u0631\u0642\u0627\u0645 \u0645\u0646 \u0639\u0644\u0649 \u0627\u0644\u0639\u0644\u0628\u0629 \u0632\u064a \u0645\u0627 \u0647\u064a.</p>'+
+      '<p class="clab">Name</p><input class="ftext" type="text" id="g4nn">'+
+      '<p class="clab">Measured</p><select class="fsel" id="g4nu">'+
+        '<option value="g">per 100 g</option><option value="ml">per 100 ml</option>'+
+        '<option value="pc">per piece</option></select>'+
+      '<p class="clab">Protein \u00b7 Fat \u00b7 Carbs</p>'+
+      '<div class="n3"><input type="number" inputmode="decimal" min="0" id="g4np" placeholder="P">'+
+        '<input type="number" inputmode="decimal" min="0" id="g4nf" placeholder="F">'+
+        '<input type="number" inputmode="decimal" min="0" id="g4nb" placeholder="C"></div>'+
+      '<p class="clab">Calories \u2014 leave it empty and it works it out</p>'+
+      '<input class="ftext" type="number" inputmode="decimal" min="0" id="g4nk">'+
+      '<button class="btn go" onclick="GYM4.fdSaveNew()">Save to the list</button>');
+    const f=$("g4nn"); if(f) f.focus();
+  },
+  fdSaveNew(){
+    const V=id=>{ const e=$(id); return e?e.value:""; };
+    const n=String(V("g4nn")).trim();
+    if(!n){ const f=$("g4nn"); if(f) f.focus(); return; }
+    const num=id=>Math.max(0,parseFloat(V(id))||0);
+    const pr=num("g4np"), ft=num("g4nf"), cb=num("g4nb");
+    let k=parseFloat(V("g4nk"));
+    if(!isFinite(k)||k<0) k=Math.round(pr*4+ft*9+cb*4);
+    const u=V("g4nu")||"g";
+    store.lib=store.lib||[];
+    store.lib.push({id:uid(),c:"\u062a\u0627\u0646\u064a",n:n,
+      u:(u==="ml"||u==="pc")?u:"g",k:k,p:pr,f:ft,b:cb});
+    closeAll(); save(); render();
+  },
+  fdLibSet(i,key,val){
+    const x=(store.lib||[])[i]; if(!x) return;
+    if(key==="n") x.n=String(val).trim()||x.n;
+    else if(key==="u") x.u=(val==="ml"||val==="pc")?val:"g";
+    else if(key==="k"||key==="p"||key==="f"||key==="b") x[key]=Math.max(0,parseFloat(val)||0);
     save(); render();
   },
-  fdSet(i,key,val){
-    const m=(store.meals||[])[i]; if(!m) return;
-    if(key==="n") m.n=String(val).trim()||"Meal";
-    else if(key==="t") m.t=String(val).trim();
-    else if(key==="k") m.k=Math.max(0,parseInt(val,10)||0);
-    else if(key==="p") m.p=Math.max(0,parseInt(val,10)||0);
-    save(); render();
+  fdAsk(id){ if((store.lib||[]).some(x=>x.id===id)){ confirmId=id; render(); } },
+  fdLibDel(i){
+    const x=(store.lib||[])[i]; if(!x) return;
+    store.lib.splice(i,1); confirmId=null; save(); render();
   },
-  fdMove(i,d){
-    const M=store.meals||[], j=i+d;
-    if(j<0||j>=M.length) return;
-    const t=M[i]; M[i]=M[j]; M[j]=t;
+  fdTgt(key,val){
+    if(["k","p","f","b"].indexOf(key)<0) return;
+    store.diet=Object.assign(seedDiet(),store.diet||{});
+    store.diet[key]=Math.max(0,parseFloat(val)||0);
     save(); render();
-  },
-  fdAsk(i){ const m=(store.meals||[])[i]; if(m){ confirmId=m.id; render(); } },
-  fdRemove(i){
-    const m=(store.meals||[])[i]; if(!m) return;
-    Object.keys(store.food||{}).forEach(d=>{ if(store.food[d]) delete store.food[d][m.id]; });
-    store.meals.splice(i,1); confirmId=null; save(); render();
-  },
-  fdAdd(){
-    store.meals=store.meals||[];
-    store.meals.push({id:uid(),t:"",n:"New meal",k:0,p:0});
-    save(); render();
-    const f=document.querySelectorAll("#g4 .erow .nm");
-    if(f.length){ const l=f[f.length-1]; l.focus(); l.select(); }
   },
 
   rest(secs,btn){
@@ -1685,7 +1888,8 @@ const API={
     if(n.weights) bits.push(n.weights+" weigh-in"+(n.weights>1?"s":""));
     if(n.measures) bits.push(n.measures+" measurement"+(n.measures>1?"s":""));
     if(n.ex) bits.push(n.ex+" exercise"+(n.ex>1?"s":""));
-    if(n.meals) bits.push(n.meals+" meal"+(n.meals>1?"s":""));
+    if(n.lib) bits.push(n.lib+" food item"+(n.lib>1?"s":""));
+    if(n.eat) bits.push(n.eat+" food entr"+(n.eat>1?"ies":"y"));
     closeAll(); render();
     sheet('<h2>Restored</h2><p class="sub">'+(bits.length
       ? 'Added '+bits.join(", ")+' from '+fmt(d)+'. Nothing was changed or deleted.'
@@ -1736,12 +1940,12 @@ const API={
       const bits=[];
       if(n.days) bits.push(n.days+" day"+(n.days>1?"s":""));
       if(n.ex) bits.push(n.ex+" exercise"+(n.ex>1?"s":""));
-      if(n.meals) bits.push(n.meals+" meal"+(n.meals>1?"s":""));
+      if(n.lib) bits.push(n.lib+" food item"+(n.lib>1?"s":""));
       if(n.sessions) bits.push(n.sessions+" session"+(n.sessions>1?"s":""));
       if(n.sets) bits.push(n.sets+" logged lift"+(n.sets>1?"s":""));
       if(n.weights) bits.push(n.weights+" weigh-in"+(n.weights>1?"s":""));
       if(n.measures) bits.push(n.measures+" measurement"+(n.measures>1?"s":""));
-      if(n.food) bits.push(n.food+" meal tick"+(n.food>1?"s":""));
+      if(n.eat) bits.push(n.eat+" food entr"+(n.eat>1?"ies":"y"));
       if(msg) msg.innerHTML=bits.length
         ? "Added "+bits.join(", ")+". Nothing was deleted."
         : "That backup was already here. Nothing changed.";
