@@ -363,7 +363,6 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .fhead span{color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums}
   #g4 .fnone{color:var(--muted);font-size:13px;text-align:center;padding:26px 16px;
     border:1px dashed var(--line);border-radius:12px;margin-top:10px;line-height:1.7}
-  #g4 .frtl{direction:rtl;text-align:right}
   #g4 .fsearch,#g4 .fsel,#g4 .ftext{width:100%;background:var(--surface);border:1px solid var(--line);
     color:var(--chalk);border-radius:10px;padding:12px;font-family:inherit;font-size:16px}
   #g4 .fsearch:focus,#g4 .fsel:focus,#g4 .ftext:focus{outline:none;border-color:var(--aqua)}
@@ -376,17 +375,17 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     padding:calc(12px + env(safe-area-inset-top)) 16px 13px}
   #g4 .fsbar{display:flex;align-items:center;gap:10px}
   #g4 .fsbar h2{flex:1;min-width:0;margin:0;font-size:17px;font-weight:650;letter-spacing:-.2px;
-    direction:rtl;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   #g4 .fsx{background:none;border:1px solid var(--line);color:var(--muted);border-radius:9px;
     width:34px;height:34px;font-size:17px;line-height:1;font-family:inherit;cursor:pointer;flex:0 0 auto}
   #g4 .fsx:active{background:var(--surface-2)}
-  #g4 .fstop .fsub{color:var(--muted);font-size:12px;margin:4px 0 0;direction:rtl;text-align:right}
+  #g4 .fstop .fsub{color:var(--muted);font-size:12px;margin:4px 0 0}
   #g4 .fstop .fsearch{margin-top:12px}
   #g4 .fsbody{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
     padding:0 16px calc(28px + env(safe-area-inset-bottom))}
   #g4 .fcat{position:sticky;top:0;z-index:1;background:var(--deep);color:var(--muted);
     font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
-    padding:16px 0 8px;margin:0;direction:rtl;text-align:right}
+    padding:16px 0 8px;margin:0}
   #g4 .fpick{display:flex;align-items:center;gap:12px;padding:12px 0;
     border-top:1px solid var(--line);cursor:pointer}
   #g4 .fpick:active{background:rgba(27,64,85,.4)}
@@ -400,6 +399,26 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .fnewrow{width:100%;margin-top:18px;background:transparent;border:1px dashed var(--line);
     color:var(--aqua);border-radius:10px;padding:14px;font-family:inherit;font-size:14px;
     font-weight:650;cursor:pointer}
+  #g4 .fclose{width:100%;margin-top:20px;background:var(--surface);border:1px solid var(--line);
+    color:var(--chalk);border-radius:11px;padding:14px;font-family:inherit;font-size:14px;
+    font-weight:650;cursor:pointer}
+  #g4 .fclose:active{background:var(--surface-2)}
+  #g4 .fclose[data-arm="1"]{background:rgba(217,112,95,.14);border-color:var(--rose);color:var(--rose)}
+  #g4 .fopen{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:11.5px;
+    font-variant-numeric:tabular-nums;margin:14px 0 0;justify-content:center}
+  #g4 .fopen b{color:var(--chalk);font-weight:600}
+  #g4 .fdot2{width:7px;height:7px;border-radius:50%;background:var(--aqua);flex:0 0 auto}
+  #g4 .flong{background:rgba(233,166,60,.12);border:1px solid rgba(233,166,60,.4);color:var(--amber);
+    border-radius:10px;padding:11px 13px;font-size:12.5px;margin:14px 0 0;line-height:1.6}
+  #g4 .hday{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line);padding:13px 0}
+  #g4 .hday:first-of-type{border-top:none}
+  #g4 .hday .ht{flex:1;min-width:0}
+  #g4 .hday .hd{font-size:14px;font-weight:650;font-variant-numeric:tabular-nums}
+  #g4 .hday .hd i{font-style:normal;color:var(--muted);font-weight:400;font-size:11.5px;margin-left:7px}
+  #g4 .hday .hm{color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums;margin-top:3px}
+  #g4 .hday .hk{font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
+  #g4 .hday .hk em{font-style:normal;color:var(--muted);font-size:10px;font-weight:500;
+    margin-left:2px;text-transform:uppercase}
   #g4 .qgrid{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:center;margin-top:4px}
   #g4 .qgrid input{width:100%;background:var(--surface);border:1px solid var(--line);color:var(--chalk);
     border-radius:10px;padding:14px;font-family:inherit;font-size:19px;font-weight:650;
@@ -601,7 +620,7 @@ function seed(){
    per 100 ml, except the ones marked as a piece. k=calories p=protein f=fat b=carbs. */
 function seedLib(){
   const G=[
-   ["\u0628\u0631\u0648\u062a\u064a\u0646",[
+   ["Protein",[
     ["\u0635\u062f\u0648\u0631 \u0641\u0631\u0627\u062e","g",165,31,3.6,0],
     ["\u0641\u062e\u062f\u0629 \u0641\u0631\u0627\u062e","g",209,26,11,0],
     ["\u0644\u062d\u0645\u0629 \u0628\u0642\u0631\u064a \u0642\u0644\u064a\u0644\u0629 \u0627\u0644\u062f\u0647\u0646","g",212,30,9,0],
@@ -612,7 +631,7 @@ function seedLib(){
     ["\u0628\u064a\u0636\u0629","pc",72,6.3,4.8,0.4],
     ["\u0633\u0643\u0648\u0628 \u0628\u0631\u0648\u062a\u064a\u0646","pc",163,40,0,0.4],
     ["\u0646\u062f\u064a","ml",87,9.5,0.1,11]]],
-   ["\u0646\u0634\u0648\u064a\u0627\u062a",[
+   ["Carbs",[
     ["\u0631\u0632 \u0623\u0628\u064a\u0636","g",130,2.7,0.3,28],
     ["\u0645\u0643\u0631\u0648\u0646\u0629","g",158,5.8,0.9,31],
     ["\u0628\u0637\u0627\u0637\u0633 \u0645\u0633\u0644\u0648\u0642\u0629 \u0623\u0648 \u0645\u0634\u0648\u064a\u0629","g",87,2,0.1,20],
@@ -620,21 +639,21 @@ function seedLib(){
     ["\u062a\u0648\u0633\u062a \u0628\u0631\u0648\u062a\u064a\u0646 \u2014 \u0634\u0631\u064a\u062d\u0629","pc",172,9.5,6,20.4],
     ["\u062e\u0628\u0632 \u0627\u0644\u062d\u0627\u0637\u0628 \u2014 \u0631\u063a\u064a\u0641","pc",147,14,3.7,16.2],
     ["\u0633\u0643\u0648\u0628 \u0645\u0627\u0643\u0631\u0648 \u0643\u0627\u0631\u0628","pc",172,0,0,43]]],
-   ["\u0623\u0644\u0628\u0627\u0646",[
+   ["Dairy",[
     ["\u062d\u0644\u064a\u0628 \u0627\u0644\u0645\u0631\u0627\u0639\u064a \u0643\u0627\u0645\u0644 \u0627\u0644\u062f\u0633\u0645","ml",63,3.2,3.4,4.7],
     ["\u062d\u0644\u064a\u0628 \u0627\u0644\u0645\u0631\u0627\u0639\u064a \u0642\u0644\u064a\u0644 \u0627\u0644\u062f\u0633\u0645","ml",46,3.4,1.5,4.8],
     ["\u062c\u0628\u0646\u0629 \u0634\u064a\u062f\u0631","g",403,25,33,1.3],
     ["\u062c\u0628\u0646\u0629 \u0631\u0648\u0645\u064a","g",390,26,31,1.5]]],
-   ["\u0641\u0627\u0643\u0647\u0629 \u0648\u062e\u0636\u0627\u0631",[
+   ["Fruit & veg",[
     ["\u0645\u0648\u0632\u0629","pc",105,1.3,0.4,27],
     ["\u062a\u0641\u0627\u062d\u0629","pc",95,0.5,0.3,25],
     ["\u062e\u064a\u0627\u0631\u0629","pc",23,1,0.2,5]]],
-   ["\u0645\u0643\u0633\u0631\u0627\u062a \u0648\u062f\u0647\u0648\u0646",[
+   ["Nuts & fats",[
     ["\u0643\u0627\u062c\u0648","g",553,18,44,30],
     ["\u0644\u0648\u0632","g",579,21,50,22],
     ["\u0639\u064a\u0646 \u062c\u0645\u0644","g",654,15,65,14],
     ["\u0632\u064a\u062a \u2014 \u0645\u0639\u0644\u0642\u0629 \u0643\u0628\u064a\u0631\u0629","pc",120,0,14,0]]],
-   ["\u062a\u0627\u0646\u064a",[
+   ["Other",[
     ["\u0645\u0639\u0645\u0648\u0644 \u2014 \u0642\u0637\u0639\u0629","pc",238,14.5,11.2,20.4],
     ["\u0639\u0633\u0644 \u2014 \u0645\u0639\u0644\u0642\u0629 \u0635\u063a\u064a\u0631\u0629","pc",21,0,0,5.7],
     ["\u0648\u062c\u0628\u0629 \u0628\u0631\u0647 (\u062a\u0642\u062f\u064a\u0631\u064a)","pc",900,40,40,90]]]
@@ -688,27 +707,34 @@ function prevFor(exId){
 const libOf=()=>store.lib||[];
 const dietOf=()=>Object.assign(seedDiet(),store.diet||{});
 const r1=n=>Math.round(n*10)/10;
-function eatToday(){ const a=(store.eat||{})[iso()]; return Array.isArray(a)?a:[]; }
-function eatTodayW(){
-  store.eat=store.eat||{};
-  const t=iso();
-  if(!Array.isArray(store.eat[t])) store.eat[t]=[];
-  return store.eat[t];
+/* The day runs from when it was opened to when HE closes it, not midnight to
+   midnight. Nothing here looks at the clock to decide where an entry belongs. */
+const eatNow=()=>{ const e=store.eatNow; return (e&&Array.isArray(e.rows))?e:{start:0,rows:[]}; };
+function eatNowW(){
+  if(!store.eatNow||!Array.isArray(store.eatNow.rows)) store.eatNow={start:Date.now(),rows:[]};
+  if(!store.eatNow.start) store.eatNow.start=Date.now();
+  return store.eatNow;
 }
-function eatTotal(){
-  return eatToday().reduce((a,x)=>({
+function eatToday(){ return eatNow().rows; }
+function eatTodayW(){ return eatNowW().rows; }
+const hm=ts=>{ const d=new Date(ts||Date.now());
+  return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); };
+const dshort=ts=>new Date(ts||Date.now()).toLocaleDateString("en-GB",{weekday:"short"});
+function sumRows(rows){
+  return (rows||[]).reduce((a,x)=>({
     k:a.k+(+x.k||0), p:a.p+(+x.p||0), f:a.f+(+x.f||0), b:a.b+(+x.b||0)
   }),{k:0,p:0,f:0,b:0});
 }
+function eatTotal(){ return sumRows(eatToday()); }
 /* An entry stores its own finished numbers, so editing or deleting a list item
    later never rewrites a day you already logged. */
 function fdCalc(x,q){
   const m=(x.u==="pc")?q:q/100;
   return {k:(+x.k||0)*m, p:(+x.p||0)*m, f:(+x.f||0)*m, b:(+x.b||0)*m};
 }
-const unitLab=u=>u==="pc"?"\u0642\u0637\u0639\u0629":(u==="ml"?"ml":"g");
+const unitLab=u=>u==="pc"?"pcs":(u==="ml"?"ml":"g");
 const qtyTxt=x=>x.u==="pc"?("\u00d7"+r1(+x.q||0)):(r1(+x.q||0)+(x.u==="ml"?"ml":"g"));
-const perLab=u=>u==="pc"?"\u0644\u0644\u0642\u0637\u0639\u0629":(u==="ml"?"/100ml":"/100g");
+const perLab=u=>u==="pc"?"/piece":(u==="ml"?"/100ml":"/100g");
 
 let flash=null;
 function save(){
@@ -1083,19 +1109,46 @@ function foodView(){
   h+='<div class="fsum"><span>Eaten <b>'+Math.round(t.k)+'</b></span>'+
      '<span>Goal <b>'+Math.round(g.k)+'</b></span>'+
      '<span>'+rows.length+' item'+(rows.length===1?"":"s")+'</span></div>';
-  h+='<button class="fadd" onclick="GYM4.fdPick()">\u0623\u0636\u0641 \u0623\u0643\u0644</button>';
-  h+='<div class="fhead"><h3>\u0623\u0643\u0644 \u0627\u0644\u0646\u0647\u0627\u0631\u062f\u0647</h3>'+
+  const op=eatNow().start||0;
+  if(op) h+='<div class="fopen"><span class="fdot2"></span>'+
+     'Open since <b>'+dshort(op)+' '+hm(op)+'</b></div>';
+  /* forgetting to close it piles two days into one, so say so rather than guess */
+  const hrs=op?(Date.now()-op)/36e5:0;
+  if(hrs>30) h+='<div class="flong">This day has been open for '+Math.floor(hrs)+
+     ' hours. If you forgot to close it, the totals above are adding up more than one day.</div>';
+  h+='<button class="fadd" onclick="GYM4.fdPick()">Add food</button>';
+  h+='<div class="fhead"><h3>Open day</h3>'+
      '<span>'+fmt(iso())+'</span></div>';
   if(!rows.length)
-    return h+'<p class="fnone">\u0644\u0633\u0647 \u0645\u062f\u062e\u0644\u062a\u0634 \u062d\u0627\u062c\u0629 \u0627\u0644\u0646\u0647\u0627\u0631\u062f\u0647.<br>'+
-      '\u062f\u0648\u0633 <b>\u0623\u0636\u0641 \u0623\u0643\u0644</b> \u0648\u0627\u062e\u062a\u0627\u0631 \u0645\u0646 \u0627\u0644\u0642\u0627\u064a\u0645\u0629.</p>';
+    return h+'<p class="fnone">Nothing logged yet.<br>'+
+      'Tap <b>Add food</b> and pick from the list.</p>'+fdHist();
   return h+rows.map((x,i)=>
     '<div class="frow"><span class="fdot '+fdTone(x)+'"></span>'+
       '<div class="ft"><div class="fn">'+esc(x.n)+'</div>'+
       '<div class="fq">'+(x.t?'<s>'+esc(x.t)+'</s> \u00b7 ':'')+qtyTxt(x)+
         ' \u00b7 '+r1(+x.p||0)+'P \u00b7 '+r1(+x.f||0)+'F \u00b7 '+r1(+x.b||0)+'C</div></div>'+
     '<span class="fk">'+Math.round(+x.k||0)+'<em>kcal</em></span>'+
-    '<button class="fx" onclick="GYM4.fdDel('+i+')" aria-label="Remove">\u00d7</button></div>').join("");
+    '<button class="fx" onclick="GYM4.fdDel('+i+')" aria-label="Remove">\u00d7</button></div>').join("")+
+    '<button class="fclose" onclick="GYM4.fdClose(this)">'+CLOSE_LABEL+'</button>'+fdHist();
+}
+
+/* the days he has closed, newest first */
+const CLOSE_LABEL="Close this day and start a new one";
+function fdHist(){
+  const L=store.eatLog||[];
+  if(!L.length) return "";
+  const show=L.slice(-14).reverse();
+  return '<div class="fhead"><h3>Closed days</h3>'+
+    '<span>'+L.length+'</span></div>'+
+    show.map(x=>{
+      const t=sumRows(x.rows);
+      const when=(x.start&&x.end)?hm(x.start)+" \u2192 "+hm(x.end):"";
+      return '<div class="hday"><div class="ht">'+
+        '<div class="hd">'+fmt(x.d)+(when?'<i>'+when+'</i>':'')+'</div>'+
+        '<div class="hm">'+r1(t.p)+'P \u00b7 '+r1(t.f)+'F \u00b7 '+r1(t.b)+'C \u00b7 '+
+          x.rows.length+' item'+(x.rows.length===1?"":"s")+'</div></div>'+
+        '<span class="hk">'+Math.round(t.k)+'<em>kcal</em></span></div>';
+    }).join("");
 }
 
 function foodEditView(){
@@ -1515,10 +1568,32 @@ function normalize(){
   if(!store.mig.food1){ delete store.meals; delete store.food; store.mig.food1=1; }
   if(!store.lib||!store.lib.length) store.lib=seedLib();
   if(!store.diet) store.diet=seedDiet();
-  if(!store.eat||typeof store.eat!=="object") store.eat={};
-  // keep the food log small: drop anything older than 60 days
-  const cut=iso(new Date(Date.now()-60*864e5));
-  Object.keys(store.eat).forEach(d=>{ if(d<cut) delete store.eat[d]; });
+  /* one-off: the day used to turn over at midnight. It is closed by hand now, so
+     move each stored date into the closed list and keep today's as the open one. */
+  if(!store.mig.food2){
+    store.eatLog=Array.isArray(store.eatLog)?store.eatLog:[];
+    if(store.eat&&typeof store.eat==="object"){
+      Object.keys(store.eat).sort().forEach(d=>{
+        const rows=store.eat[d];
+        if(!Array.isArray(rows)||!rows.length) return;
+        if(d===iso()) store.eatNow={start:Date.now(),rows:rows};
+        else store.eatLog.push({d:d,start:0,end:0,rows:rows});
+      });
+    }
+    delete store.eat;
+    store.mig.food2=1;
+  }
+  /* one-off: the list labels are in English now; the food names stay as they are */
+  if(!store.mig.food3){
+    const MAP={"\u0628\u0631\u0648\u062a\u064a\u0646":"Protein","\u0646\u0634\u0648\u064a\u0627\u062a":"Carbs","\u0623\u0644\u0628\u0627\u0646":"Dairy",
+      "\u0641\u0627\u0643\u0647\u0629 \u0648\u062e\u0636\u0627\u0631":"Fruit & veg","\u0645\u0643\u0633\u0631\u0627\u062a \u0648\u062f\u0647\u0648\u0646":"Nuts & fats","\u062a\u0627\u0646\u064a":"Other"};
+    (store.lib||[]).forEach(x=>{ if(x&&MAP[x.c]) x.c=MAP[x.c]; });
+    store.mig.food3=1;
+  }
+  if(!Array.isArray(store.eatLog)) store.eatLog=[];
+  if(!store.eatNow||!Array.isArray(store.eatNow.rows)) store.eatNow={start:Date.now(),rows:[]};
+  // keep the closed list small: the last 60 days
+  while(store.eatLog.length>60) store.eatLog.shift();
   const ref={};
   seed().forEach(p=>p.ex.forEach(e=>{ ref[e.n]={m:e.m,h:e.h}; }));
   store.program.forEach(p=>p.ex.forEach(e=>{
@@ -1656,15 +1731,30 @@ function mergeIn(d){
     store.measures.sort((a,b)=>a.d<b.d?-1:1);
   }
 
+  if(Array.isArray(d.eatLog)){
+    store.eatLog=Array.isArray(store.eatLog)?store.eatLog:[];
+    d.eatLog.forEach(x=>{
+      if(!x||!x.d||!Array.isArray(x.rows)||!x.rows.length) return;
+      // a day already closed here is never added twice
+      if(store.eatLog.some(y=>y.d===x.d)) return;
+      store.eatLog.push(clone(x)); n.eat+=x.rows.length;
+    });
+    store.eatLog.sort((a,b)=>a.d<b.d?-1:1);
+  }
+  /* an older backup may still hold the date-keyed shape */
   if(d.eat&&typeof d.eat==="object"){
-    store.eat=store.eat||{};
-    Object.keys(d.eat).forEach(dt=>{
+    store.eatLog=Array.isArray(store.eatLog)?store.eatLog:[];
+    Object.keys(d.eat).sort().forEach(dt=>{
       const inc=d.eat[dt];
       if(!Array.isArray(inc)||!inc.length) return;
-      // only fill a day that is empty here, so a day already logged is never doubled
-      if(Array.isArray(store.eat[dt])&&store.eat[dt].length) return;
-      store.eat[dt]=clone(inc); n.eat+=inc.length;
+      if(store.eatLog.some(y=>y.d===dt)) return;
+      store.eatLog.push({d:dt,start:0,end:0,rows:clone(inc)}); n.eat+=inc.length;
     });
+    store.eatLog.sort((a,b)=>a.d<b.d?-1:1);
+  }
+  if(d.eatNow&&Array.isArray(d.eatNow.rows)&&d.eatNow.rows.length
+     &&!(store.eatNow&&Array.isArray(store.eatNow.rows)&&store.eatNow.rows.length)){
+    store.eatNow=clone(d.eatNow); n.eat+=d.eatNow.rows.length;
   }
 
   if(d.bk) store.bk=Math.max(store.bk||0,d.bk);
@@ -1739,12 +1829,12 @@ const API={
   /* ---- food: pick from the list, weigh it, log it ---- */
   fdPick(){
     closeAll();
-    fsheet("\u0627\u062e\u062a\u0627\u0631 \u0645\u0646 \u0627\u0644\u0642\u0627\u064a\u0645\u0629",
-      "\u0643\u0644 \u0627\u0644\u0623\u0631\u0642\u0627\u0645 \u0644\u0644\u0623\u0643\u0644 \u0628\u0639\u062f \u0627\u0644\u0637\u0628\u062e",
-      '<input class="fsearch" type="search" id="g4fq" placeholder="\u062f\u0648\u0651\u0631..." '+
+    fsheet("Pick from the list",
+      "Every number is for the food as eaten, after cooking",
+      '<input class="fsearch" type="search" id="g4fq" placeholder="Search" '+
         'autocomplete="off" oninput="GYM4.fdFilt(this.value)">',
       '<div id="g4flist"></div>'+
-      '<button class="fnewrow" onclick="GYM4.fdNew()">+ \u0623\u0636\u0641 \u0635\u0646\u0641 \u062c\u062f\u064a\u062f</button>');
+      '<button class="fnewrow" onclick="GYM4.fdNew()">+ Add a new food</button>');
     API.fdFilt("");
   },
   fdFilt(q){
@@ -1753,13 +1843,13 @@ const API={
     const groups=[], by={};
     libOf().forEach(x=>{
       if(q&&String(x.n||"").toLowerCase().indexOf(q)<0) return;
-      const c=x.c||"\u062a\u0627\u0646\u064a";
+      const c=x.c||"Other";
       if(!by[c]){ by[c]=[]; groups.push(c); }
       by[c].push(x);
     });
     if(!groups.length){
-      box.innerHTML='<p class="fnone">\u0645\u0641\u064a\u0634 \u0646\u062a\u064a\u062c\u0629 \u0644\u0640 \u00ab'+esc(q)+'\u00bb.<br>'+
-        '\u062f\u0648\u0633 <b>\u0623\u0636\u0641 \u0635\u0646\u0641 \u062c\u062f\u064a\u062f</b> \u0648\u0627\u0643\u062a\u0628\u0647 \u0628\u0646\u0641\u0633\u0643.</p>';
+      box.innerHTML='<p class="fnone">No match for \u201c'+esc(q)+'\u201d.<br>'+
+        'Tap <b>Add a new food</b> and enter it yourself.</p>';
       return;
     }
     box.innerHTML=groups.map(c=>'<p class="fcat">'+esc(c)+'</p>'+
@@ -1777,14 +1867,14 @@ const API={
     const chips=(pc?[1,2,3]:[50,100,150,200,250,300])
       .map(v=>'<button onclick="GYM4.fdQ('+v+',\''+id+'\')">'+v+'</button>').join("");
     fsheet(esc(x.n),
-      (pc?"\u0627\u0643\u062a\u0628 \u0627\u0644\u0639\u062f\u062f":"\u0627\u0643\u062a\u0628 \u0627\u0644\u0648\u0632\u0646 \u0628\u0627\u0644\u062c\u0631\u0627\u0645")+
+      (pc?"How many pieces":"Weight in grams")+
         " \u00b7 "+Math.round(+x.k||0)+" kcal "+perLab(x.u),
       '',
       '<div class="qgrid" style="margin-top:16px"><input type="number" inputmode="decimal" min="0" id="g4fqty" '+
         'value="'+(pc?1:100)+'" oninput="GYM4.fdPrev(\''+id+'\')"><span class="qu">'+unitLab(x.u)+'</span></div>'+
       '<div class="chips">'+chips+'</div>'+
       '<div class="prev" id="g4fprev"></div>'+
-      '<button class="fgo" onclick="GYM4.fdAdd(\''+id+'\')">\u0623\u0636\u0641</button>');
+      '<button class="fgo" onclick="GYM4.fdAdd(\''+id+'\')">Add</button>');
     API.fdPrev(id);
   },
   fdQ(v,id){ const e=$("g4fqty"); if(e){ e.value=v; API.fdPrev(id); } },
@@ -1812,10 +1902,30 @@ const API={
     if(i<0||i>=a.length) return;
     a.splice(i,1); save(); render();
   },
+  /* File the open day and start a fresh one. The clock plays no part: it closes
+     when he says so. Two taps, because a stray tap would split his day in half. */
+  fdClose(btn){
+    if(btn&&btn.getAttribute("data-arm")!=="1"){
+      btn.setAttribute("data-arm","1");
+      btn.textContent="Sure? Tap again";
+      setTimeout(function(){
+        if(btn&&btn.parentNode){ btn.removeAttribute("data-arm"); btn.textContent=CLOSE_LABEL; }
+      },4000);
+      return;
+    }
+    const cur=eatNowW();
+    if(cur.rows.length){
+      store.eatLog=Array.isArray(store.eatLog)?store.eatLog:[];
+      store.eatLog.push({d:iso(),start:cur.start||Date.now(),end:Date.now(),rows:cur.rows});
+      while(store.eatLog.length>60) store.eatLog.shift();
+    }
+    store.eatNow={start:Date.now(),rows:[]};
+    save(); render();
+  },
   fdNew(){
     closeAll();
-    fsheet("\u0635\u0646\u0641 \u062c\u062f\u064a\u062f",
-      "\u0627\u0646\u0642\u0644 \u0627\u0644\u0623\u0631\u0642\u0627\u0645 \u0645\u0646 \u0639\u0644\u0649 \u0627\u0644\u0639\u0644\u0628\u0629 \u0632\u064a \u0645\u0627 \u0647\u064a",'',
+    fsheet("New food",
+      "Copy the numbers straight off the label",'',
       '<p class="clab">Name</p><input class="ftext" type="text" id="g4nn">'+
       '<p class="clab">Measured</p><select class="fsel" id="g4nu">'+
         '<option value="g">per 100 g</option><option value="ml">per 100 ml</option>'+
@@ -1839,7 +1949,7 @@ const API={
     if(!isFinite(k)||k<0) k=Math.round(pr*4+ft*9+cb*4);
     const u=V("g4nu")||"g";
     store.lib=store.lib||[];
-    store.lib.push({id:uid(),c:"\u062a\u0627\u0646\u064a",n:n,
+    store.lib.push({id:uid(),c:"Other",n:n,
       u:(u==="ml"||u==="pc")?u:"g",k:k,p:pr,f:ft,b:cb});
     closeAll(); save(); render();
   },
