@@ -330,8 +330,35 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     text-transform:uppercase;letter-spacing:.5px}
   #g4 .fm .l b{font-size:13px;font-weight:650;font-variant-numeric:tabular-nums}
   #g4 .fm .l b em{font-style:normal;color:var(--muted);font-weight:400}
-  #g4 .pbar{height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+  #g4 .pbar{position:relative;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
   #g4 .pbar i{display:block;height:100%;background:var(--aqua);border-radius:3px}
+  /* where his last seven days sit, so one odd day does not look like a trend */
+  #g4 .pbar .avgm{position:absolute;top:-2px;width:2px;height:10px;border-radius:1px;
+    background:var(--chalk);opacity:.55;transform:translateX(-1px)}
+  #g4 .fm{cursor:pointer}
+  #g4 .fm:active .l b{color:var(--aqua)}
+  #g4 .fm .l i .d{font-style:normal;font-size:11px;font-weight:700;margin-left:6px;
+    letter-spacing:0;text-transform:none;font-variant-numeric:tabular-nums}
+  #g4 .fm .l i .d.ok{color:var(--aqua)}
+  #g4 .fm .l i .d.over{color:var(--rose)}
+  #g4 .fm .l i .d.under{color:var(--muted);font-weight:500}
+  #g4 .fring{cursor:pointer}
+  #g4 .mrow{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line);padding:12px 0}
+  #g4 .mrow:first-of-type{border-top:none}
+  #g4 .mrow .mt{flex:1;min-width:0}
+  #g4 .mrow .mn{font-size:14.5px;font-weight:600;line-height:1.3;direction:rtl;text-align:left}
+  #g4 .mrow .ms{color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums;margin-top:3px}
+  #g4 .mrow .mv{font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
+  #g4 .mrow .mv em{font-style:normal;color:var(--muted);font-size:10px;font-weight:500;margin-left:2px}
+  #g4 .mbar{height:4px;border-radius:2px;background:var(--surface-2);overflow:hidden;margin-top:7px}
+  #g4 .mbar i{display:block;height:100%;border-radius:2px;background:var(--aqua)}
+  #g4 .mbar.f i{background:var(--amber)} #g4 .mbar.c i{background:#7FA8C4}
+  #g4 .mhead{background:var(--surface);border:1px solid var(--line);border-radius:12px;
+    padding:13px 14px;margin:16px 0 4px}
+  #g4 .mhead .r{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;
+    color:var(--muted);font-variant-numeric:tabular-nums}
+  #g4 .mhead .r b{color:var(--chalk);font-weight:650}
+  #g4 .mhead .r b.over{color:var(--rose)} #g4 .mhead .r b.ok{color:var(--aqua)}
   #g4 .fm.f .pbar i{background:var(--amber)}
   #g4 .fm.c .pbar i{background:#7FA8C4}
   #g4 .pbar i.over{background:var(--rose)}
@@ -419,6 +446,43 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .hday .hk{font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;white-space:nowrap}
   #g4 .hday .hk em{font-style:normal;color:var(--muted);font-size:10px;font-weight:500;
     margin-left:2px;text-transform:uppercase}
+  #g4 .hday .hrep{background:none;border:1px solid var(--line);color:var(--aqua);border-radius:8px;
+    padding:7px 11px;font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;flex:0 0 auto}
+  #g4 .hday .hrep:active{background:var(--surface-2)}
+  #g4 .favs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 0}
+  #g4 .favs button{background:var(--surface);border:1px solid var(--line);color:var(--chalk);
+    border-radius:10px;padding:9px 12px;font-family:inherit;font-size:13px;font-weight:600;
+    cursor:pointer;display:flex;align-items:baseline;gap:7px;max-width:100%}
+  #g4 .favs button:active{border-color:var(--aqua);background:var(--surface-2)}
+  #g4 .favs button span{direction:rtl;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #g4 .favs button em{font-style:normal;color:var(--muted);font-size:11px;
+    font-variant-numeric:tabular-nums;flex:0 0 auto}
+  #g4 .fcombo{width:100%;margin-top:10px;background:transparent;border:1px dashed var(--line);
+    color:var(--muted);border-radius:11px;padding:12px;font-family:inherit;font-size:13px;
+    font-weight:600;cursor:pointer}
+  #g4 .fcombo:active{color:var(--aqua);border-color:var(--aqua)}
+  #g4 .coach{background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:15px 15px 16px;margin-top:10px}
+  #g4 .coach .cr{display:flex;justify-content:space-between;align-items:baseline;
+    font-size:13px;padding:5px 0;color:var(--muted);font-variant-numeric:tabular-nums}
+  #g4 .coach .cr b{color:var(--chalk);font-weight:650;font-size:14px}
+  #g4 .coach .cr b.up{color:var(--rose)} #g4 .coach .cr b.down{color:var(--aqua)}
+  #g4 .coach .cmain{border-top:1px solid var(--line);margin-top:9px;padding-top:12px}
+  #g4 .coach .cmain .ck{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+  #g4 .coach .cmain .cv{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums;
+    letter-spacing:-.6px;line-height:1.1;margin-top:3px}
+  #g4 .coach .cv em{font-style:normal;color:var(--muted);font-size:13px;font-weight:500;margin-left:5px}
+  #g4 .coach .rate{display:flex;gap:7px;margin-top:11px}
+  #g4 .coach .rate button{flex:1;background:var(--surface-2);border:1px solid var(--line);
+    color:var(--muted);border-radius:9px;padding:9px 4px;font-family:inherit;font-size:12.5px;
+    font-variant-numeric:tabular-nums;cursor:pointer}
+  #g4 .coach .rate button[aria-pressed="true"]{background:var(--aqua);border-color:var(--aqua);
+    color:#062028;font-weight:700}
+  #g4 .coach .capply{width:100%;margin-top:11px;background:var(--aqua);border:none;color:#062028;
+    border-radius:10px;padding:13px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer}
+  #g4 .coach .cnote{color:var(--muted);font-size:11.5px;line-height:1.6;margin:11px 0 0}
+  #g4 .coach .cwait{color:var(--muted);font-size:12.5px;line-height:1.7;margin:0}
+  #g4 .coach .cwait b{color:var(--chalk)}
   #g4 .qgrid{display:grid;grid-template-columns:1fr auto;gap:9px;align-items:center;margin-top:4px}
   #g4 .qgrid input{width:100%;background:var(--surface);border:1px solid var(--line);color:var(--chalk);
     border-radius:10px;padding:14px;font-family:inherit;font-size:19px;font-weight:650;
@@ -719,6 +783,68 @@ function eatToday(){ return eatNow().rows; }
 function eatTodayW(){ return eatNowW().rows; }
 const hm=ts=>{ const d=new Date(ts||Date.now());
   return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); };
+const nowHM=()=>hm(Date.now());
+const comboOf=()=>Array.isArray(store.combo)?store.combo:[];
+/* What he logs over and over, newest amount wins. Needs two sightings before it
+   shows, so the row stays empty until there is really a habit to shortcut. */
+function fdFavs(){
+  const seen={}, order=[];
+  const scan=rows=>(rows||[]).forEach(r=>{
+    if(!r||!r.n) return;
+    const key=r.n+"|"+r.u;
+    if(!seen[key]){ seen[key]={n:r.n,u:r.u,c:0}; order.push(key); }
+    const f=seen[key];
+    f.c++; f.q=r.q; f.k=r.k; f.p=r.p; f.f=r.f; f.b=r.b;
+  });
+  (store.eatLog||[]).slice(-30).forEach(d=>scan(d.rows));
+  scan(eatToday());
+  return order.map(k=>seen[k]).filter(x=>x.c>=2).sort((a,b)=>b.c-a.c).slice(0,6);
+}
+/* Average intake against the weight trend: what his own numbers say his
+   maintenance is, rather than a formula's guess. */
+function fdCalib(){
+  const WIN=21, KCAL_PER_KG=7700;
+  const cut=iso(new Date(Date.now()-WIN*864e5));
+  const byDay={};
+  (store.eatLog||[]).forEach(x=>{
+    if(!x||!x.d||x.d<cut||!Array.isArray(x.rows)||!x.rows.length) return;
+    byDay[x.d]=(byDay[x.d]||0)+sumRows(x.rows).k;
+  });
+  const dates=Object.keys(byDay).sort();
+  const W=(store.weights||[]).filter(w=>w&&w.d>=cut&&isFinite(+w.v))
+    .slice().sort((a,b)=>a.d<b.d?-1:1);
+  const span=W.length>1?Math.round((t0(W[W.length-1].d)-t0(W[0].d))/864e5):0;
+  const need={days:dates.length, weighs:W.length, span:span};
+  if(dates.length<10) return {ok:false,why:"days",need:need};
+  if(W.length<2||span<10) return {ok:false,why:"weight",need:need};
+  const covered=dates.filter(d=>d>=W[0].d&&d<=W[W.length-1].d).length;
+  if(covered<Math.ceil(span*0.6)) return {ok:false,why:"gaps",need:{days:covered,span:span,weighs:W.length}};
+  const avg=dates.reduce((a,d)=>a+byDay[d],0)/dates.length;
+  const dkg=(+W[W.length-1].v)-(+W[0].v);
+  const maint=avg-(dkg*KCAL_PER_KG/span);
+  const rate=fdRate();
+  const raw=Math.round((maint-rate*KCAL_PER_KG/7)/10)*10;
+  /* never suggest starving: below this the number stops being advice */
+  const target=Math.max(1200,raw);
+  return {ok:true,avg:avg,dkg:dkg,span:span,days:dates.length,
+    maint:Math.round(maint/10)*10,target:target,rate:rate,floored:raw<1200};
+}
+const fdRate=()=>{ const r=store.diet&&+store.diet.rate; return (isFinite(r)&&r>0)?r:0.5; };
+/* His last seven logged days, averaged. One day means nothing on its own. */
+function fdAvg7(){
+  const byDay={};
+  (store.eatLog||[]).forEach(x=>{
+    if(!x||!x.d||!Array.isArray(x.rows)||!x.rows.length) return;
+    const t=sumRows(x.rows), a=byDay[x.d]=byDay[x.d]||{k:0,p:0,f:0,b:0};
+    a.k+=t.k; a.p+=t.p; a.f+=t.f; a.b+=t.b;
+  });
+  const ds=Object.keys(byDay).sort().slice(-7);
+  if(ds.length<3) return null;
+  const n=ds.length;
+  const s=ds.reduce((a,d)=>({k:a.k+byDay[d].k,p:a.p+byDay[d].p,
+    f:a.f+byDay[d].f,b:a.b+byDay[d].b}),{k:0,p:0,f:0,b:0});
+  return {k:s.k/n,p:s.p/n,f:s.f/n,b:s.b/n,n:n};
+}
 const dshort=ts=>new Date(ts||Date.now()).toLocaleDateString("en-GB",{weekday:"short"});
 function sumRows(rows){
   return (rows||[]).reduce((a,x)=>({
@@ -1073,7 +1199,7 @@ function fdRing(got,goal){
   const p=goal>0?Math.min(1,got/goal):0;
   const over=got>goal;
   const left=goal-got;
-  return '<div class="fring'+(over?" over":"")+'">'+
+  return '<div class="fring'+(over?" over":"")+'" onclick="GYM4.fdMacro(\'k\')">'+
     '<svg viewBox="0 0 120 120" aria-hidden="true">'+
       '<circle cx="60" cy="60" r="'+R+'" fill="none" stroke="var(--surface-2)" stroke-width="9"/>'+
       '<circle cx="60" cy="60" r="'+R+'" fill="none" stroke-width="9" stroke-linecap="round" '+
@@ -1084,13 +1210,27 @@ function fdRing(got,goal){
     '<div class="rtx"><b>'+Math.abs(Math.round(left))+'</b>'+
       '<span>'+(over?"kcal over":"kcal left")+'</span></div></div>';
 }
-function fdMac(cls,lab,v,go,unit){
+/* Protein is a floor to reach; fat and carbs are budgets not to pass. The badge
+   says which side of that line he is on, so he stops doing the sum himself. */
+function fdMac(key,cls,lab,v,go,unit,avg){
   const pct=go>0?Math.min(100,v/go*100):0;
-  /* being over on protein is not a problem on a cut, so only fat and carbs go red */
-  const flag=(cls!=="p")&&v>go;
-  return '<div class="fm '+cls+'"><div class="l"><i>'+lab+'</i>'+
+  const over=v>go, d=Math.abs(v-go);
+  const flag=(key!=="p")&&over;
+  let badge="";
+  if(over) badge=(key==="p")
+    ? '<span class="d ok">\u2713</span>'
+    : '<span class="d over">+'+r1(d)+'</span>';
+  /* an untouched day does not need telling how far it is from everything */
+  else if(d>=0.5&&v>0) badge='<span class="d under">\u2212'+r1(d)+'</span>';
+  let mark="";
+  if(avg&&go>0){
+    const ap=Math.max(0,Math.min(100,avg/go*100));
+    mark='<span class="avgm" style="left:'+ap.toFixed(1)+'%"></span>';
+  }
+  return '<div class="fm '+cls+'" onclick="GYM4.fdMacro(\''+key+'\')">'+
+    '<div class="l"><i>'+lab+badge+'</i>'+
     '<b>'+r1(v)+' <em>/ '+r1(go)+(unit||"")+'</em></b></div>'+
-    '<div class="pbar"><i class="'+(flag?"over":"")+'" style="width:'+pct.toFixed(1)+'%"></i></div></div>';
+    '<div class="pbar"><i class="'+(flag?"over":"")+'" style="width:'+pct.toFixed(1)+'%"></i>'+mark+'</div></div>';
 }
 /* colour each entry by whatever supplies most of its calories */
 function fdTone(x){
@@ -1102,13 +1242,15 @@ function fdTone(x){
 
 function foodView(){
   const t=eatTotal(), g=dietOf(), rows=eatToday();
+  const A=fdAvg7();
   let h='<div class="fcard">'+fdRing(t.k,g.k)+'<div class="fmac">'+
-    fdMac("p","Protein",t.p,g.p,"g")+
-    fdMac("f","Fat",t.f,g.f,"g")+
-    fdMac("c","Carbs",t.b,g.b,"g")+'</div></div>';
+    fdMac("p","p","Protein",t.p,g.p,"g",A&&A.p)+
+    fdMac("f","f","Fat",t.f,g.f,"g",A&&A.f)+
+    fdMac("b","c","Carbs",t.b,g.b,"g",A&&A.b)+'</div></div>';
   h+='<div class="fsum"><span>Eaten <b>'+Math.round(t.k)+'</b></span>'+
      '<span>Goal <b>'+Math.round(g.k)+'</b></span>'+
-     '<span>'+rows.length+' item'+(rows.length===1?"":"s")+'</span></div>';
+     (A?'<span>'+A.n+'-day avg <b>'+Math.round(A.k)+'</b></span>'
+       :'<span>'+rows.length+' item'+(rows.length===1?"":"s")+'</span>')+'</div>';
   const op=eatNow().start||0;
   if(op) h+='<div class="fopen"><span class="fdot2"></span>'+
      'Open since <b>'+dshort(op)+' '+hm(op)+'</b></div>';
@@ -1116,6 +1258,9 @@ function foodView(){
   const hrs=op?(Date.now()-op)/36e5:0;
   if(hrs>30) h+='<div class="flong">This day has been open for '+Math.floor(hrs)+
      ' hours. If you forgot to close it, the totals above are adding up more than one day.</div>';
+  const F=fdFavs();
+  if(F.length) h+='<div class="favs">'+F.map((x,i)=>
+    '<button onclick="GYM4.fdFav('+i+')"><span>'+esc(x.n)+'</span><em>'+qtyTxt(x)+'</em></button>').join("")+'</div>';
   h+='<button class="fadd" onclick="GYM4.fdPick()">Add food</button>';
   h+='<div class="fhead"><h3>Open day</h3>'+
      '<span>'+fmt(iso())+'</span></div>';
@@ -1129,7 +1274,51 @@ function foodView(){
         ' \u00b7 '+r1(+x.p||0)+'P \u00b7 '+r1(+x.f||0)+'F \u00b7 '+r1(+x.b||0)+'C</div></div>'+
     '<span class="fk">'+Math.round(+x.k||0)+'<em>kcal</em></span>'+
     '<button class="fx" onclick="GYM4.fdDel('+i+')" aria-label="Remove">\u00d7</button></div>').join("")+
-    '<button class="fclose" onclick="GYM4.fdClose(this)">'+CLOSE_LABEL+'</button>'+fdHist();
+    '<button class="fcombo" onclick="GYM4.fdComboNew()">Save these as a combo</button>'+
+    '<button class="fclose" onclick="GYM4.fdClose(this)">'+CLOSE_LABEL+'</button>'+
+    fdCoachView()+fdHist();
+}
+
+/* What his own intake and weight say, rather than a formula's guess */
+function fdCoachView(){
+  const c=fdCalib();
+  let h='<div class="fhead"><h3>Calibration</h3><span>last 21 days</span></div><div class="coach">';
+  if(!c.ok){
+    const n=c.need;
+    if(c.why==="days")
+      h+='<p class="cwait">Close <b>'+Math.max(0,10-n.days)+' more day'+((10-n.days)===1?"":"s")+
+        '</b> and this works out what you actually burn, from your own numbers. '+
+        n.days+' of 10 so far.</p>';
+    else if(c.why==="weight")
+      h+='<p class="cwait">Now weigh yourself on the <b>Body</b> tab. '+
+        'It needs two weigh-ins at least <b>10 days apart</b> to read the trend. '+
+        n.weighs+' so far'+(n.span?', '+n.span+' days apart':'')+'.</p>';
+    else
+      h+='<p class="cwait">Too many days missing between your weigh-ins — <b>'+n.days+
+        '</b> logged out of <b>'+n.span+'</b>. Keep closing your days and it will read the trend.</p>';
+    return h+'</div>';
+  }
+  const up=c.dkg>0.05, dn=c.dkg<-0.05;
+  h+='<div class="cr"><span>Average intake</span><b>'+Math.round(c.avg)+' kcal</b></div>'+
+     '<div class="cr"><span>Over</span><b>'+c.days+' logged days</b></div>'+
+     '<div class="cr"><span>Weight</span><b class="'+(up?"up":dn?"down":"")+'">'+
+       (c.dkg>=0?"+":"")+c.dkg.toFixed(1)+' kg in '+c.span+' days</b></div>'+
+     '<div class="cr"><span>So you burn about</span><b>'+c.maint+' kcal</b></div>'+
+     '<div class="cmain"><div class="ck">To lose '+c.rate+' kg a week, eat</div>'+
+       '<div class="cv">'+c.target+'<em>kcal a day</em></div>'+
+     '<div class="rate">'+[0.25,0.5,0.75].map(r=>
+       '<button aria-pressed="'+(Math.abs(r-c.rate)<0.01)+'" onclick="GYM4.fdSetRate('+r+')">'+
+       r+' kg/wk</button>').join("")+'</div>'+
+     (c.floored
+       ? '<p class="cnote" style="color:var(--amber)">'+c.rate+
+         ' kg a week is more than your numbers support \u2014 it would put you under 1200 kcal. '+
+         'Pick a slower rate.</p>'
+       : (Math.round(dietOf().k)===c.target?'':
+          '<button class="capply" onclick="GYM4.fdApply('+c.target+')">Use '+c.target+' as my goal</button>'))+
+     '</div>'+
+     '<p class="cnote">Worked out from what you logged and what the scale did, not from a formula. '+
+     'It sharpens every day you log, and it moves on its own as you get lighter.</p>';
+  return h+'</div>';
 }
 
 /* the days he has closed, newest first */
@@ -1137,17 +1326,19 @@ const CLOSE_LABEL="Close this day and start a new one";
 function fdHist(){
   const L=store.eatLog||[];
   if(!L.length) return "";
-  const show=L.slice(-14).reverse();
+  const start=Math.max(0,L.length-14);
+  const show=L.slice(start).map((x,j)=>({x:x,i:start+j})).reverse();
   return '<div class="fhead"><h3>Closed days</h3>'+
     '<span>'+L.length+'</span></div>'+
-    show.map(x=>{
-      const t=sumRows(x.rows);
+    show.map(o=>{
+      const x=o.x, t=sumRows(x.rows);
       const when=(x.start&&x.end)?hm(x.start)+" \u2192 "+hm(x.end):"";
       return '<div class="hday"><div class="ht">'+
         '<div class="hd">'+fmt(x.d)+(when?'<i>'+when+'</i>':'')+'</div>'+
         '<div class="hm">'+r1(t.p)+'P \u00b7 '+r1(t.f)+'F \u00b7 '+r1(t.b)+'C \u00b7 '+
           x.rows.length+' item'+(x.rows.length===1?"":"s")+'</div></div>'+
-        '<span class="hk">'+Math.round(t.k)+'<em>kcal</em></span></div>';
+        '<span class="hk">'+Math.round(t.k)+'<em>kcal</em></span>'+
+        '<button class="hrep" onclick="GYM4.fdRepeat('+o.i+')">Repeat</button></div>';
     }).join("");
 }
 
@@ -1184,7 +1375,25 @@ function foodEditView(){
       '<div class="egrid three">'+num(i,"p","Protein",x.p)+num(i,"f","Fat",x.f)+num(i,"b","Carbs",x.b)+'</div>'+
     '</section>';
   }).join("");
-  return h+'<button class="addex" onclick="GYM4.fdNew()">+ Add a food</button>';
+  h+='<button class="addex" onclick="GYM4.fdNew()">+ Add a food</button>';
+  const CB=comboOf();
+  if(CB.length){
+    h+='<h3>Combos, '+CB.length+'</h3>';
+    h+=CB.map((c,i)=>{
+      if(confirmId===c.id)
+        return '<section class="ex"><div class="confirm">'+
+          '<p>Delete the combo <b>'+esc(c.n)+'</b>?</p><div class="row">'+
+          '<button class="yes" onclick="GYM4.fdComboDel('+i+')">Delete</button>'+
+          '<button onclick="GYM4.cancel()">Keep it</button></div></div></section>';
+      const t=sumRows(c.rows);
+      return '<div class="hday"><div class="ht"><div class="hd">'+esc(c.n)+'</div>'+
+        '<div class="hm">'+r1(t.p)+'P \u00b7 '+r1(t.f)+'F \u00b7 '+r1(t.b)+'C \u00b7 '+
+        c.rows.length+' item'+(c.rows.length===1?"":"s")+'</div></div>'+
+        '<span class="hk">'+Math.round(t.k)+'<em>kcal</em></span>'+
+        '<button class="fx" onclick="GYM4.fdAsk(\''+c.id+'\')" aria-label="Delete">\u00d7</button></div>';
+    }).join("");
+  }
+  return h;
 }
 
 function statsView(){
@@ -1591,6 +1800,7 @@ function normalize(){
     store.mig.food3=1;
   }
   if(!Array.isArray(store.eatLog)) store.eatLog=[];
+  if(!Array.isArray(store.combo)) store.combo=[];
   if(!store.eatNow||!Array.isArray(store.eatNow.rows)) store.eatNow={start:Date.now(),rows:[]};
   // keep the closed list small: the last 60 days
   while(store.eatLog.length>60) store.eatLog.shift();
@@ -1685,6 +1895,14 @@ function mergeIn(d){
     });
   }
 
+  if(Array.isArray(d.combo)){
+    store.combo=Array.isArray(store.combo)?store.combo:[];
+    d.combo.forEach(c=>{
+      if(!c||!c.id||!Array.isArray(c.rows)||!c.rows.length) return;
+      if(store.combo.some(x=>x.id===c.id)) return;
+      store.combo.push(clone(c)); n.lib++;
+    });
+  }
   if(Array.isArray(d.lib)){
     store.lib=store.lib||[];
     d.lib.forEach(im=>{
@@ -1847,12 +2065,23 @@ const API={
       if(!by[c]){ by[c]=[]; groups.push(c); }
       by[c].push(x);
     });
-    if(!groups.length){
+    if(!groups.length&&!comboOf().some(c=>!q||String(c.n||"").toLowerCase().indexOf(q)>=0)){
       box.innerHTML='<p class="fnone">No match for \u201c'+esc(q)+'\u201d.<br>'+
         'Tap <b>Add a new food</b> and enter it yourself.</p>';
       return;
     }
-    box.innerHTML=groups.map(c=>'<p class="fcat">'+esc(c)+'</p>'+
+    let head="";
+    const CB=comboOf().filter(c=>!q||String(c.n||"").toLowerCase().indexOf(q)>=0);
+    if(CB.length) head='<p class="fcat">Combos</p>'+CB.map(c=>{
+      const t=sumRows(c.rows);
+      return '<div class="fpick" onclick="GYM4.fdComboAdd(\''+c.id+'\')">'+
+        '<span class="fdot '+fdTone(t)+'"></span>'+
+        '<div class="fpt"><div class="fn">'+esc(c.n)+'</div>'+
+          '<div class="fpm">'+r1(t.p)+'P \u00b7 '+r1(t.f)+'F \u00b7 '+r1(t.b)+'C \u00b7 '+
+          c.rows.length+' item'+(c.rows.length===1?"":"s")+'</div></div>'+
+        '<div class="fpk"><b>'+Math.round(t.k)+'</b><span>total</span></div></div>';
+    }).join("");
+    box.innerHTML=head+groups.map(c=>'<p class="fcat">'+esc(c)+'</p>'+
       by[c].map(x=>'<div class="fpick" onclick="GYM4.fdChoose(\''+x.id+'\')">'+
         '<span class="fdot '+fdTone(x)+'"></span>'+
         '<div class="fpt"><div class="fn">'+esc(x.n)+'</div>'+
@@ -1892,15 +2121,97 @@ const API={
     const e=$("g4fqty"), q=e?parseFloat(e.value):0;
     if(!isFinite(q)||q<=0) return;
     const v=fdCalc(x,q);
-    const now=new Date();
-    const hhmm=String(now.getHours()).padStart(2,"0")+":"+String(now.getMinutes()).padStart(2,"0");
-    eatTodayW().push({t:hhmm,n:x.n,u:x.u,q:q,k:v.k,p:v.p,f:v.f,b:v.b});
+    eatTodayW().push({t:nowHM(),n:x.n,u:x.u,q:q,k:v.k,p:v.p,f:v.f,b:v.b});
     closeAll(); save(); render();
   },
   fdDel(i){
     const a=eatTodayW();
     if(i<0||i>=a.length) return;
     a.splice(i,1); save(); render();
+  },
+  /* One tap puts a whole day back: his food repeats, so this is the difference
+     between four taps and thirty. */
+  fdRepeat(i){
+    const x=(store.eatLog||[])[i];
+    if(!x||!Array.isArray(x.rows)||!x.rows.length) return;
+    const cur=eatNowW(), t=nowHM();
+    x.rows.forEach(r=>cur.rows.push({t:t,n:r.n,u:r.u,q:r.q,k:r.k,p:r.p,f:r.f,b:r.b}));
+    save(); render();
+  },
+  /* Tap a bar and it says which foods made that number, biggest first. The card
+     stops being a scoreboard and starts answering "why". */
+  fdMacro(key){
+    const LAB={k:"Calories",p:"Protein",f:"Fat",b:"Carbs"};
+    const UN={k:" kcal",p:"g",f:"g",b:"g"};
+    const TONE={k:"",p:"",f:"f",b:"c"};
+    if(!LAB[key]) return;
+    const rows=eatToday().map(r=>({n:r.n,v:+r[key]||0,q:qtyTxt(r)}))
+      .filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+    const tot=rows.reduce((a,x)=>a+x.v,0);
+    const g=dietOf(), goal=(key==="k")?g.k:g[key];
+    const over=tot>goal, d=Math.abs(tot-goal);
+    closeAll();
+    let body='<div class="mhead">'+
+      '<div class="r"><span>Today</span><b>'+r1(tot)+UN[key]+'</b></div>'+
+      '<div class="r"><span>Goal</span><b>'+r1(goal)+UN[key]+'</b></div>'+
+      '<div class="r"><span>'+(over?"Over by":"Left")+'</span><b class="'+
+        (over?(key==="p"?"ok":"over"):"")+'">'+r1(d)+UN[key]+'</b></div></div>';
+    if(!rows.length) body+='<p class="fnone">Nothing logged yet.</p>';
+    else{
+      const top=rows[0].v||1;
+      body+=rows.map(x=>
+        '<div class="mrow"><div class="mt"><div class="mn">'+esc(x.n)+'</div>'+
+        '<div class="ms">'+x.q+' \u00b7 '+(tot>0?Math.round(x.v/tot*100):0)+'% of today\u2019s '+
+          LAB[key].toLowerCase()+'</div>'+
+        '<div class="mbar '+TONE[key]+'"><i style="width:'+(x.v/top*100).toFixed(1)+'%"></i></div></div>'+
+        '<span class="mv">'+r1(x.v)+'<em>'+UN[key].trim()+'</em></span></div>').join("");
+    }
+    fsheet("What made your "+LAB[key].toLowerCase(),
+      rows.length+" item"+(rows.length===1?"":"s")+" in the open day, biggest first",'',body);
+  },
+  fdFav(i){
+    const x=fdFavs()[i]; if(!x) return;
+    eatTodayW().push({t:nowHM(),n:x.n,u:x.u,q:x.q,k:x.k,p:x.p,f:x.f,b:x.b});
+    save(); render();
+  },
+  fdComboNew(){
+    const rows=eatToday();
+    if(!rows.length) return;
+    closeAll();
+    fsheet("Save as a combo",
+      "The "+rows.length+" item"+(rows.length===1?"":"s")+" in the open day, kept together under one name",'',
+      '<p class="clab">Name</p><input class="ftext" type="text" id="g4cbn" placeholder="Post-workout shake">'+
+      '<button class="fgo" onclick="GYM4.fdComboSave()">Save the combo</button>');
+    const f=$("g4cbn"); if(f) f.focus();
+  },
+  fdComboSave(){
+    const e=$("g4cbn"), n=e?String(e.value).trim():"";
+    if(!n){ if(e) e.focus(); return; }
+    const rows=eatToday();
+    if(!rows.length){ closeAll(); return; }
+    store.combo=comboOf();
+    store.combo.push({id:uid(),n:n,
+      rows:rows.map(r=>({n:r.n,u:r.u,q:r.q,k:r.k,p:r.p,f:r.f,b:r.b}))});
+    closeAll(); save(); render();
+  },
+  fdComboAdd(id){
+    const c=comboOf().find(x=>x.id===id); if(!c) return;
+    const cur=eatNowW(), t=nowHM();
+    (c.rows||[]).forEach(r=>cur.rows.push({t:t,n:r.n,u:r.u,q:r.q,k:r.k,p:r.p,f:r.f,b:r.b}));
+    closeAll(); save(); render();
+  },
+  fdComboDel(i){
+    const L=comboOf(); if(i<0||i>=L.length) return;
+    L.splice(i,1); confirmId=null; save(); render();
+  },
+  fdSetRate(r){
+    store.diet=Object.assign(seedDiet(),store.diet||{});
+    store.diet.rate=r; save(); render();
+  },
+  fdApply(k){
+    store.diet=Object.assign(seedDiet(),store.diet||{});
+    store.diet.k=Math.max(0,+k||0);
+    save(); render();
   },
   /* File the open day and start a fresh one. The clock plays no part: it closes
      when he says so. Two taps, because a stray tap would split his day in half. */
@@ -1960,7 +2271,9 @@ const API={
     else if(key==="k"||key==="p"||key==="f"||key==="b") x[key]=Math.max(0,parseFloat(val)||0);
     save(); render();
   },
-  fdAsk(id){ if((store.lib||[]).some(x=>x.id===id)){ confirmId=id; render(); } },
+  fdAsk(id){
+    if((store.lib||[]).some(x=>x.id===id)||comboOf().some(x=>x.id===id)){ confirmId=id; render(); }
+  },
   fdLibDel(i){
     const x=(store.lib||[])[i]; if(!x) return;
     store.lib.splice(i,1); confirmId=null; save(); render();
