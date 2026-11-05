@@ -462,6 +462,15 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .fday{text-align:center;font-size:11px;font-weight:700;letter-spacing:.09em;
     text-transform:uppercase;color:var(--muted);margin:10px 0 0}
   #g4 .fday.on{color:var(--aqua)}
+  #g4 .fday em{display:block;font-style:normal;font-size:10.5px;font-weight:400;
+    letter-spacing:0;text-transform:none;color:var(--muted);margin-top:3px}
+  #g4 .wk{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;margin-top:10px}
+  #g4 .wd{background:var(--surface-2);border:1px solid var(--line);border-radius:9px;
+    padding:8px 2px;font-family:inherit;cursor:pointer;display:flex;flex-direction:column;
+    align-items:center;gap:3px;color:var(--muted)}
+  #g4 .wd b{font-size:11.5px;font-weight:650}
+  #g4 .wd em{font-style:normal;font-size:8.5px;letter-spacing:.3px;text-transform:uppercase;opacity:.8}
+  #g4 .wd.on{background:rgba(53,196,192,.16);border-color:var(--aqua);color:var(--aqua)}
   #g4 .cyc{background:var(--surface);border:1px solid var(--line);border-radius:12px;
     padding:12px 13px;margin-top:11px}
   #g4 .cyc .cr{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
@@ -713,7 +722,7 @@ function seedLib(){
     ["\u0628\u0644\u0637\u064a \u0645\u0634\u0648\u064a","g",129,26,3,0],
     ["\u062a\u0648\u0646\u0629 \u0645\u0635\u0641\u0627\u0629","g",219,26,12,0],
     ["\u0628\u064a\u0636\u0629","pc",72,6.3,4.8,0.4],
-    ["\u0633\u0643\u0648\u0628 \u0628\u0631\u0648\u062a\u064a\u0646","pc",163,40,0,0.4],
+    ["\u0633\u0643\u0648\u0628 \u0628\u0631\u0648\u062a\u064a\u0646","pc",137,33.6,0.1,0.6],
     ["\u0646\u062f\u064a","ml",87,9.5,0.1,11]]],
    ["Carbs",[
     ["\u0631\u0632 \u0623\u0628\u064a\u0636","g",130,2.7,0.3,28],
@@ -722,7 +731,7 @@ function seedLib(){
     ["\u0628\u0637\u0627\u0637\u0633 \u0645\u062d\u0645\u0631\u0629","g",312,3.4,15,41],
     ["\u062a\u0648\u0633\u062a \u0628\u0631\u0648\u062a\u064a\u0646 \u2014 \u0634\u0631\u064a\u062d\u0629","pc",172,9.5,6,20.4],
     ["\u062e\u0628\u0632 \u0627\u0644\u062d\u0627\u0637\u0628 \u2014 \u0631\u063a\u064a\u0641","pc",147,14,3.7,16.2],
-    ["\u0633\u0643\u0648\u0628 \u0645\u0627\u0643\u0631\u0648 \u0643\u0627\u0631\u0628","pc",172,0,0,43]]],
+    ["\u0633\u0643\u0648\u0628 \u0645\u0627\u0643\u0631\u0648 \u0643\u0627\u0631\u0628","pc",174,0,0,43.2]]],
    ["Dairy",[
     ["\u062d\u0644\u064a\u0628 \u0627\u0644\u0645\u0631\u0627\u0639\u064a \u0643\u0627\u0645\u0644 \u0627\u0644\u062f\u0633\u0645","ml",63,3.2,3.4,4.7],
     ["\u062d\u0644\u064a\u0628 \u0627\u0644\u0645\u0631\u0627\u0639\u064a \u0642\u0644\u064a\u0644 \u0627\u0644\u062f\u0633\u0645","ml",46,3.4,1.5,4.8],
@@ -748,7 +757,7 @@ function seedLib(){
   }));
   return out;
 }
-function seedDiet(){ return {k:2450,p:190,f:70,b:265,shift:0}; }
+function seedDiet(){ return {k:2450,p:190,f:70,b:265,shift:0,days:DAYLOAD.slice()}; }
 
 let store={}, day="sun", editing=false, confirmId=null, timer=null, audio=null, wake=null;
 
@@ -794,23 +803,28 @@ const dietBase=()=>Object.assign(seedDiet(),store.diet||{});
    carbs as a leg day, so the week's total is the same and the carbs sit where
    the work is. Protein and fat do not move. */
 const DAYNAMES=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-function trainDays(){
-  const out={};
-  (store.program||[]).forEach(p=>{ if(p&&p.day) out[String(p.day).toLowerCase()]=1; });
-  return out;
-}
-function isTrainDay(d){
-  const nm=DAYNAMES[(d||new Date()).getDay()].toLowerCase();
-  return !!trainDays()[nm];
+/* Which days are heavy is about the whole day, not the gym hour. School mornings
+   and poolside afternoons cost more than the session does, and the two days with
+   no academy are also the two with a long midday sleep. Index 0 is Sunday. */
+const DAYLOAD=[0,1,1,0,1,1,0];
+const DAYWHY=["school + gym, no academy","school + academy","school + academy + gym",
+  "school + gym, no academy","school + academy","academy + gym, no school","academy only"];
+const dayLoad=()=>{
+  const d=store.diet&&store.diet.days;
+  return (Array.isArray(d)&&d.length===7)?d.map(x=>x?1:0):DAYLOAD.slice();
+};
+function isHeavy(d){ return !!dayLoad()[(d||new Date()).getDay()]; }
+function loadCount(){
+  const L=dayLoad(), hi=L.reduce((a,x)=>a+(x?1:0),0);
+  return {hi:hi,lo:7-hi};
 }
 function dietOf(d){
   const g=dietBase();
   const shift=Math.max(0,+g.shift||0);
   if(!shift) return g;
-  const T=Object.keys(trainDays()).length;
-  const R=7-T;
+  const C=loadCount(), T=C.hi, R=C.lo;
   if(T<1||R<1) return g;
-  const on=isTrainDay(d);
+  const on=isHeavy(d);
   /* what the training days gain, the rest days give back, so the week is level */
   let db=on?shift:-(shift*T/R);
   /* never strip a rest day past a workable floor */
@@ -819,7 +833,7 @@ function dietOf(d){
   const out=Object.assign({},g);
   out.b=Math.round((g.b+db)*10)/10;
   out.k=Math.round(g.k+db*4);
-  out.train=on;
+  out.heavy=on;
   return out;
 }
 const r1=n=>Math.round(n*10)/10;
@@ -910,10 +924,10 @@ function fdCalib(){
 }
 const fdRate=()=>{ const r=store.diet&&+store.diet.rate; return (isFinite(r)&&r>0)?r:0.5; };
 /* a date that is the kind of day we want, so the editor can show both versions */
-function nextDayOfKind(train){
+function nextDayOfKind(heavy){
   for(let i=0;i<7;i++){
     const d=new Date(Date.now()+i*864e5);
-    if(isTrainDay(d)===train) return d;
+    if(isHeavy(d)===heavy) return d;
   }
   return new Date();
 }
@@ -1338,9 +1352,12 @@ function foodView(){
      '<span>Goal <b>'+Math.round(g.k)+'</b></span>'+
      (A?'<span>'+A.n+'-day avg <b>'+Math.round(A.k)+'</b></span>'
        :'<span>'+rows.length+' item'+(rows.length===1?"":"s")+'</span>')+'</div>';
-  if(g.train!==undefined)
-    h+='<div class="fday'+(g.train?" on":"")+'">'+
-       (g.train?"Training day \u00b7 carbs up":"Rest day \u00b7 carbs down")+'</div>';
+  if(g.heavy!==undefined){
+    const wd=new Date().getDay();
+    h+='<div class="fday'+(g.heavy?" on":"")+'">'+
+       (g.heavy?"Heavy day \u00b7 carbs up":"Lighter day \u00b7 carbs down")+
+       '<em>'+DAYNAMES[wd]+' \u2014 '+DAYWHY[wd]+'</em></div>';
+  }
   const op=eatNow().start||0;
   if(op) h+='<div class="fopen"><span class="fdot2"></span>'+
      'Open since <b>'+dshort(op)+' '+hm(op)+'</b></div>';
@@ -1449,27 +1466,33 @@ function foodEditView(){
      '<div class="egrid two">'+
      tgt("k","Calories",Math.round(g.k))+tgt("p","Protein (g)",r1(g.p))+
      tgt("f","Fat (g)",r1(g.f))+tgt("b","Carbs (g)",r1(g.b))+'</div>';
-  const T=Object.keys(trainDays()).length, R=7-T, sh=Math.max(0,+g.shift||0);
-  h+='<h3>Carb cycling</h3>';
-  if(T<1||R<1){
-    h+='<div class="hint">This needs both training days and rest days in your program.</div>';
-  }else{
+  const C=loadCount(), T=C.hi, R=C.lo, sh=Math.max(0,+g.shift||0);
+  const WK=dayLoad();
+  h+='<h3>Carb cycling</h3>'+
+    '<div class="hint">Set to your week: school, the academy and the gym together, '+
+    'not the gym on its own. Tap a day to move it.</div>';
+  h+='<div class="rate">'+[0,30,50,70].map(v=>
+      '<button aria-pressed="'+(sh===v)+'" onclick="GYM4.fdShift('+v+')">'+
+      (v?"+"+v+"g":"Off")+'</button>').join("")+'</div>';
+  h+='<div class="wk">'+WK.map((on,i)=>
+      '<button class="wd'+(on?" on":"")+'" onclick="GYM4.fdDayLoad('+i+')">'+
+      '<b>'+DAYNAMES[i].slice(0,3)+'</b><em>'+(on?"heavy":"light")+'</em></button>').join("")+'</div>';
+  if(sh&&T>0&&R>0){
     const tD=dietOf(nextDayOfKind(true)), rD=dietOf(nextDayOfKind(false));
-    h+='<div class="rate">'+[0,30,50,70].map(v=>
-        '<button aria-pressed="'+(sh===v)+'" onclick="GYM4.fdShift('+v+')">'+
-        (v?"+"+v+"g":"Off")+'</button>').join("")+'</div>';
-    h+=sh
-      ? '<div class="cyc"><div class="cr"><span>'+T+' training days</span><b>'+
-          Math.round(tD.k)+' kcal \u00b7 '+r1(tD.b)+'g carbs</b></div>'+
-        '<div class="cr"><span>'+R+' rest days</span><b>'+
-          Math.round(rD.k)+' kcal \u00b7 '+r1(rD.b)+'g carbs</b></div>'+
-        '<div class="cr"><span>Week</span><b>'+(function(){
-          const got=Math.round(tD.k*T+rD.k*R), base=Math.round(g.k*7);
-          return Math.abs(got-base)<=10
-            ? base+' kcal, unchanged'
-            : got+' kcal instead of '+base;
-        })()+'</b></div></div>'
-      : '<div class="hint">Off. Every day gets the same target.</div>';
+    h+='<div class="cyc"><div class="cr"><span>'+T+' heavy days</span><b>'+
+        Math.round(tD.k)+' kcal \u00b7 '+r1(tD.b)+'g carbs</b></div>'+
+      '<div class="cr"><span>'+R+' lighter days</span><b>'+
+        Math.round(rD.k)+' kcal \u00b7 '+r1(rD.b)+'g carbs</b></div>'+
+      '<div class="cr"><span>Week</span><b>'+(function(){
+        const got=Math.round(tD.k*T+rD.k*R), base=Math.round(g.k*7);
+        return Math.abs(got-base)<=10
+          ? base+' kcal, unchanged'
+          : got+' kcal instead of '+base;
+      })()+'</b></div></div>';
+  }else if(sh){
+    h+='<div class="hint">Mark at least one heavy day and one lighter day.</div>';
+  }else{
+    h+='<div class="hint">Off. Every day gets the same target.</div>';
   }
   h+='<h3>Food list, '+L.length+' items</h3>';
   h+=L.map((x,i)=>{
@@ -1929,6 +1952,16 @@ function normalize(){
     (store.lib||[]).forEach(x=>{ if(x&&MAP[x.c]) x.c=MAP[x.c]; });
     store.mig.food3=1;
   }
+  /* one-off: both powders were entered from memory before the tubs were read.
+     The protein scoop is now his weighed 37 g off a 90.7% label. */
+  if(!store.mig.food4){
+    const FIX={"\u0633\u0643\u0648\u0628 \u0628\u0631\u0648\u062a\u064a\u0646":[137,33.6,0.1,0.6],"\u0633\u0643\u0648\u0628 \u0645\u0627\u0643\u0631\u0648 \u0643\u0627\u0631\u0628":[174,0,0,43.2]};
+    (store.lib||[]).forEach(x=>{
+      const v=x&&FIX[x.n];
+      if(v){ x.k=v[0]; x.p=v[1]; x.f=v[2]; x.b=v[3]; }
+    });
+    store.mig.food4=1;
+  }
   if(!Array.isArray(store.eatLog)) store.eatLog=[];
   if(!Array.isArray(store.combo)) store.combo=[];
   if(!Array.isArray(store.pins)) store.pins=[];
@@ -2372,7 +2405,35 @@ const API={
         '<button class="fx" onclick="GYM4.fdDel('+j+')" aria-label="Remove">\u00d7</button></div>').join("")
       : '<p class="fnone">This day is empty now.</p>';
     body+='<button class="fgo" onclick="GYM4.fdPick()">Add food to this day</button>';
-    fsheet(fmt(x.d),"A day you already closed \u2014 fix it and it is counted again",'',body);
+    body+='<button class="fcombo" onclick="GYM4.fdDayMerge('+i+')">Move it all into the open day</button>';
+    body+='<button class="fclose" id="g4daydel" onclick="GYM4.fdDayDel('+i+',this)">Delete this day</button>';
+    fsheet(fmt(x.d),"A day you already closed \u2014 fix it and it counts again",'',body);
+  },
+  /* A day that got cut in half belongs with the one that continued it. */
+  fdDayMerge(i){
+    const x=(store.eatLog||[])[i];
+    if(!x||!Array.isArray(x.rows)) return;
+    const cur=eatNowW();
+    x.rows.forEach(r=>cur.rows.push(r));
+    /* the open day started when the older one did, so the hours stay honest */
+    if(x.start&&(!cur.start||x.start<cur.start)) cur.start=x.start;
+    store.eatLog.splice(i,1);
+    fdWhere=null;
+    closeAll(); save(); render();
+  },
+  fdDayDel(i,btn){
+    const x=(store.eatLog||[])[i]; if(!x) return;
+    if(btn&&btn.getAttribute("data-arm")!=="1"){
+      btn.setAttribute("data-arm","1");
+      btn.textContent="Sure? This cannot be undone";
+      setTimeout(function(){
+        if(btn&&btn.parentNode){ btn.removeAttribute("data-arm"); btn.textContent="Delete this day"; }
+      },4000);
+      return;
+    }
+    store.eatLog.splice(i,1);
+    fdWhere=null;
+    closeAll(); save(); render();
   },
   fdPinToggle(id){
     const x=libOf().find(y=>y.id===id); if(!x) return;
@@ -2450,6 +2511,14 @@ const API={
     const L=comboOf(); if(i<0||i>=L.length) return;
     L.splice(i,1); confirmId=null; save(); render();
   },
+  fdDayLoad(i){
+    if(i<0||i>6) return;
+    store.diet=Object.assign(seedDiet(),store.diet||{});
+    const week=dayLoad();
+    week[i]=week[i]?0:1;
+    store.diet.days=week;
+    save(); render();
+  },
   fdShift(v){
     store.diet=Object.assign(seedDiet(),store.diet||{});
     store.diet.shift=Math.max(0,+v||0);
@@ -2478,7 +2547,9 @@ const API={
     const cur=eatNowW();
     if(cur.rows.length){
       store.eatLog=Array.isArray(store.eatLog)?store.eatLog:[];
-      store.eatLog.push({d:iso(),start:cur.start||Date.now(),end:Date.now(),rows:cur.rows});
+      /* a day that runs past midnight is still that day, so date it by its start */
+      const st=cur.start||Date.now();
+      store.eatLog.push({d:iso(new Date(st)),start:st,end:Date.now(),rows:cur.rows});
       while(store.eatLog.length>60) store.eatLog.shift();
     }
     store.eatNow={start:Date.now(),rows:[]};
