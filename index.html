@@ -408,7 +408,24 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     width:34px;height:34px;font-size:17px;line-height:1;font-family:inherit;cursor:pointer;flex:0 0 auto}
   #g4 .fsx:active{background:var(--surface-2)}
   #g4 .fstop .fsub{color:var(--muted);font-size:12px;margin:4px 0 0}
-  #g4 .fstop .fsearch{margin-top:12px}
+  #g4 .fstop .fsearch{margin-top:0}
+  #g4 .srow{display:flex;gap:8px;align-items:stretch;margin-top:12px}
+  #g4 .srow .fsearch{flex:1;min-width:0}
+  #g4 .scanbtn{flex:0 0 auto;width:48px;background:var(--surface);border:1px solid var(--line);
+    color:var(--aqua);border-radius:10px;display:grid;place-items:center;cursor:pointer;padding:0}
+  #g4 .scanbtn svg{width:22px;height:22px}
+  #g4 .scanbtn:active{background:var(--surface-2);border-color:var(--aqua)}
+  #g4 #g4scanbox{width:100%;aspect-ratio:4/3;background:#06141c;border:1px solid var(--line);
+    border-radius:12px;overflow:hidden;margin-top:16px;position:relative}
+  #g4 #g4scanbox video,#g4 #g4scanbox canvas{width:100%!important;height:100%!important;
+    object-fit:cover;display:block}
+  #g4 #g4scanbox img{display:none}
+  #g4 .scanmsg{color:var(--muted);font-size:12.5px;line-height:1.6;margin:12px 0 0;text-align:center}
+  #g4 .scanmsg.bad{color:var(--amber)}
+  #g4 .scanmsg b{color:var(--chalk)}
+  #g4 .scansep{display:flex;align-items:center;gap:10px;margin:18px 0 10px;
+    color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+  #g4 .scansep:before,#g4 .scansep:after{content:"";flex:1;height:1px;background:var(--line)}
   #g4 .fsbody{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
     padding:0 16px calc(28px + env(safe-area-inset-bottom))}
   #g4 .fcat{position:sticky;top:0;z-index:1;background:var(--deep);color:var(--muted);
@@ -723,7 +740,11 @@ function seedLib(){
     ["\u062a\u0648\u0646\u0629 \u0645\u0635\u0641\u0627\u0629","g",219,26,12,0],
     ["\u0628\u064a\u0636\u0629","pc",72,6.3,4.8,0.4],
     ["\u0633\u0643\u0648\u0628 \u0628\u0631\u0648\u062a\u064a\u0646","pc",137,33.6,0.1,0.6],
-    ["\u0646\u062f\u064a","ml",87,9.5,0.1,11]]],
+    ["\u0646\u062f\u064a","ml",87,9.5,0.1,11],
+    ["\u0643\u0641\u062a\u0629 \u0644\u062d\u0645\u0629 \u2014 \u0635\u0628\u0627\u0639","pc",186,14,13,2],
+    ["\u0643\u0641\u062a\u0629 \u0641\u0631\u0627\u062e \u2014 \u0635\u0628\u0627\u0639","pc",147,15,9,2],
+    ["\u0634\u064a\u0634 \u0637\u0627\u0648\u0648\u0642 \u2014 \u0633\u064a\u062e","pc",209,32,8,2],
+    ["\u0633\u064a\u062e \u0644\u062d\u0645\u0629","pc",253,31,13,0]]],
    ["Carbs",[
     ["\u0631\u0632 \u0623\u0628\u064a\u0636","g",130,2.7,0.3,28],
     ["\u0645\u0643\u0631\u0648\u0646\u0629","g",158,5.8,0.9,31],
@@ -852,6 +873,54 @@ const hm=ts=>{ const d=new Date(ts||Date.now());
 const nowHM=()=>hm(Date.now());
 const comboOf=()=>Array.isArray(store.combo)?store.combo:[];
 const pinsOf=()=>Array.isArray(store.pins)?store.pins:[];
+
+/* ---------------- barcode ----------------
+   The decoder is 380 KB, so it is fetched only when the picker opens: by the
+   time he taps scan it is already there, which also keeps the camera call
+   inside the tap that Safari counts as a user gesture. */
+const H5Q_SRC="https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js";
+let h5qLoad=null, scanner=null;
+function loadH5Q(){
+  if(window.Html5Qrcode) return Promise.resolve();
+  if(h5qLoad) return h5qLoad;
+  h5qLoad=new Promise((res,rej)=>{
+    const t=document.createElement("script");
+    t.src=H5Q_SRC; t.async=true;
+    t.onload=()=>window.Html5Qrcode?res():rej(new Error("no global"));
+    t.onerror=()=>{ h5qLoad=null; rej(new Error("offline")); };
+    document.head.appendChild(t);
+  });
+  return h5qLoad;
+}
+async function stopScanner(){
+  const q=scanner; scanner=null;
+  if(!q) return;
+  try{ await q.stop(); }catch(e){}
+  try{ q.clear(); }catch(e){}
+}
+/* Open Food Facts: free, no key, CORS open. Values come back per 100 g. */
+async function offLookup(code){
+  const url="https://world.openfoodfacts.org/api/v2/product/"+encodeURIComponent(code)+
+    ".json?fields=product_name,product_name_ar,brands,nutriments";
+  let r;
+  try{ r=await fetch(url,{headers:{Accept:"application/json"}}); }
+  catch(e){ return {err:"net"}; }
+  if(r.status===404) return null;
+  if(!r.ok) return {err:"net"};
+  let j;
+  try{ j=await r.json(); }catch(e){ return {err:"net"}; }
+  if(!j||j.status!==1||!j.product) return null;
+  const pr=j.product, nu=pr.nutriments||{};
+  const num=v=>{ const x=parseFloat(v); return (isFinite(x)&&x>=0)?x:0; };
+  let k=num(nu["energy-kcal_100g"]);
+  if(!k) k=num(nu["energy_100g"])/4.184;            /* some entries store kJ only */
+  const nm=String(pr.product_name_ar||pr.product_name||"").trim();
+  const br=String(pr.brands||"").split(",")[0].trim();
+  const out={n:(nm||br||""),k:Math.round(k),p:num(nu.proteins_100g),
+    f:num(nu.fat_100g),b:num(nu.carbohydrates_100g)};
+  if(!out.k&&!out.p&&!out.f&&!out.b) return {err:"empty",n:out.n};
+  return out;
+}
 /* null means the open day; a number is an index into the closed list, so a day
    he already filed can still be corrected. */
 let fdWhere=null;
@@ -1962,6 +2031,17 @@ function normalize(){
     });
     store.mig.food4=1;
   }
+  /* one-off: the grilled plate, added after the fact, for a list already seeded */
+  if(!store.mig.food5){
+    const ADD=[["\u0643\u0641\u062a\u0629 \u0644\u062d\u0645\u0629 \u2014 \u0635\u0628\u0627\u0639",186,14,13,2],["\u0643\u0641\u062a\u0629 \u0641\u0631\u0627\u062e \u2014 \u0635\u0628\u0627\u0639",147,15,9,2],
+               ["\u0634\u064a\u0634 \u0637\u0627\u0648\u0648\u0642 \u2014 \u0633\u064a\u062e",209,32,8,2],["\u0633\u064a\u062e \u0644\u062d\u0645\u0629",253,31,13,0]];
+    store.lib=store.lib||[];
+    ADD.forEach(a=>{
+      if(store.lib.some(x=>x&&x.n===a[0])) return;
+      store.lib.push({id:uid(),c:"Protein",n:a[0],u:"pc",k:a[1],p:a[2],f:a[3],b:a[4]});
+    });
+    store.mig.food5=1;
+  }
   if(!Array.isArray(store.eatLog)) store.eatLog=[];
   if(!Array.isArray(store.combo)) store.combo=[];
   if(!Array.isArray(store.pins)) store.pins=[];
@@ -2213,14 +2293,21 @@ const API={
 
   /* ---- food: pick from the list, weigh it, log it ---- */
   fdPick(){
+    stopScanner();
     closeAll();
     fsheet("Pick from the list",
       "Every number is for the food as eaten, after cooking",
-      '<input class="fsearch" type="search" id="g4fq" placeholder="Search" '+
-        'autocomplete="off" oninput="GYM4.fdFilt(this.value)">',
+      '<div class="srow"><input class="fsearch" type="search" id="g4fq" placeholder="Search" '+
+        'autocomplete="off" oninput="GYM4.fdFilt(this.value)">'+
+        '<button class="scanbtn" onclick="GYM4.fdScan()" aria-label="Scan a barcode">'+
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '+
+        'stroke-linecap="round"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2'+
+        'M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/>'+
+        '<path d="M7 8v8M10 8v8M13 8v8M17 8v8"/></svg></button></div>',
       '<div id="g4flist"></div>'+
       '<button class="fnewrow" onclick="GYM4.fdNew()">+ Add a new food</button>');
     API.fdFilt("");
+    loadH5Q().catch(()=>{});      /* warm it up so the scan tap is instant */
   },
   fdFilt(q){
     const box=$("g4flist"); if(!box) return;
@@ -2555,20 +2642,81 @@ const API={
     store.eatNow={start:Date.now(),rows:[]};
     save(); render();
   },
-  fdNew(){
+  /* Point the camera at the barcode, or type the digits printed under it.
+     Either way the numbers land in the New food form for him to check. */
+  fdScan(){
     closeAll();
+    fsheet("Scan a barcode","Point at the barcode on the pack",'',
+      '<div id="g4scanbox"></div>'+
+      '<p class="scanmsg" id="g4scanmsg">Starting the camera\u2026</p>'+
+      '<div class="scansep">or</div>'+
+      '<p class="clab">The number printed under the barcode</p>'+
+      '<input class="ftext" type="text" inputmode="numeric" id="g4bc" placeholder="6281000">'+
+      '<button class="fgo" onclick="GYM4.fdLookup()">Look it up</button>'+
+      '<button class="fpin" onclick="GYM4.fdNew()">Type the food in by hand</button>');
+    API.fdCam();
+  },
+  async fdCam(){
+    const msg=$("g4scanmsg");
+    const say=(t,bad)=>{ const m=$("g4scanmsg"); if(m){ m.innerHTML=t; m.className="scanmsg"+(bad?" bad":""); } };
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+      say("This browser will not open the camera here. Type the number instead.",1); return;
+    }
+    try{ await loadH5Q(); }
+    catch(e){ say("Could not load the scanner. Type the number instead.",1); return; }
+    if(!$("g4scanbox")) return;                /* he closed it while it loaded */
+    try{
+      const F=window.Html5QrcodeSupportedFormats;
+      const fmt=F?[F.EAN_13,F.EAN_8,F.UPC_A,F.UPC_E,F.UPC_EAN_EXTENSION,F.CODE_128].filter(x=>x!==undefined):undefined;
+      const q=new Html5Qrcode("g4scanbox",{formatsToSupport:fmt,verbose:false});
+      scanner=q;
+      await q.start({facingMode:"environment"},{fps:10,qrbox:{width:260,height:160}},
+        txt=>{ const c=String(txt||"").replace(/\D/g,""); if(!c) return;
+               stopScanner(); API.fdLookup(c); },
+        ()=>{});
+      say("Hold it steady, the whole barcode inside the frame.");
+    }catch(e){
+      scanner=null;
+      const m=String((e&&e.message)||e||"");
+      say(/permission|denied|NotAllowed/i.test(m)
+        ? "The camera is blocked for this site. Allow it in Safari settings, or type the number."
+        : "The camera would not start. Type the number instead.",1);
+    }
+  },
+  async fdLookup(code){
+    const el=$("g4bc");
+    const c=String(code||(el?el.value:"")||"").replace(/\D/g,"");
+    const say=(t,bad)=>{ const m=$("g4scanmsg"); if(m){ m.innerHTML=t; m.className="scanmsg"+(bad?" bad":""); } };
+    if(c.length<6){ say("That is not a barcode \u2014 it should be 8 to 13 digits.",1); return; }
+    await stopScanner();
+    say("Looking up <b>"+esc(c)+"</b>\u2026");
+    const r=await offLookup(c);
+    if(r&&r.err==="net"){ say("No answer from the food database. Check the connection, or type it in.",1); return; }
+    if(!r||r.err==="empty"){
+      API.fdNew({n:(r&&r.n)||"",note:"<b>"+esc(c)+"</b> is not in the database. Copy the numbers off the pack."});
+      return;
+    }
+    API.fdNew({n:r.n,k:r.k,p:r.p,f:r.f,b:r.b,
+      note:"From Open Food Facts for <b>"+esc(c)+"</b>, per 100 g. Check it against the pack."});
+  },
+  fdNew(pre){
+    stopScanner();
+    closeAll();
+    const P=(pre&&typeof pre==="object")?pre:{};
+    const V=x=>(x===undefined||x===null||x==="")?"":String(x);
     fsheet("New food",
       "Copy the numbers straight off the label",'',
-      '<p class="clab">Name</p><input class="ftext" type="text" id="g4nn">'+
+      (P.note?'<p class="scanmsg" style="text-align:left;margin:14px 0 0">'+P.note+'</p>':'')+
+      '<p class="clab">Name</p><input class="ftext" type="text" id="g4nn" value="'+esc(V(P.n))+'">'+
       '<p class="clab">Measured</p><select class="fsel" id="g4nu">'+
         '<option value="g">per 100 g</option><option value="ml">per 100 ml</option>'+
         '<option value="pc">per piece</option></select>'+
       '<p class="clab">Protein \u00b7 Fat \u00b7 Carbs</p>'+
-      '<div class="n3"><input type="number" inputmode="decimal" min="0" id="g4np" placeholder="P">'+
-        '<input type="number" inputmode="decimal" min="0" id="g4nf" placeholder="F">'+
-        '<input type="number" inputmode="decimal" min="0" id="g4nb" placeholder="C"></div>'+
+      '<div class="n3"><input type="number" inputmode="decimal" min="0" id="g4np" placeholder="P" value="'+esc(V(P.p))+'">'+
+        '<input type="number" inputmode="decimal" min="0" id="g4nf" placeholder="F" value="'+esc(V(P.f))+'">'+
+        '<input type="number" inputmode="decimal" min="0" id="g4nb" placeholder="C" value="'+esc(V(P.b))+'"></div>'+
       '<p class="clab">Calories \u2014 leave it empty and it works it out</p>'+
-      '<input class="ftext" type="number" inputmode="decimal" min="0" id="g4nk">'+
+      '<input class="ftext" type="number" inputmode="decimal" min="0" id="g4nk" value="'+esc(V(P.k))+'">'+
       '<button class="fgo" onclick="GYM4.fdSaveNew()">Save to the list</button>');
     const f=$("g4nn"); if(f) f.focus();
   },
@@ -2817,6 +2965,7 @@ const API={
   closeSheet(btn){
     const s=btn.closest(".sheet")||btn.closest(".fsheet");
     if(s) s.remove();
+    stopScanner();
     if(fdWhere!==null&&!document.querySelector("#g4 .fsheet")){ fdWhere=null; render(); }
   },
 
