@@ -21,7 +21,6 @@
   #g4{padding-top:env(safe-area-inset-top)}
   #g4 main{padding-bottom:calc(60px + 90px + env(safe-area-inset-bottom))!important}
   #g4 .tabs{padding-bottom:env(safe-area-inset-bottom)}
-  #g4 .tbar{bottom:calc(60px + 12px + env(safe-area-inset-bottom))!important}
   #g4 .sheet-inner{padding-bottom:calc(24px + env(safe-area-inset-bottom))!important}
   img,svg{max-width:100%}
   table,pre{max-width:100%;overflow-x:auto}
@@ -84,17 +83,13 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
 </div>
 <div id="g4">
   <header class="hdr">
+    <div class="mkid" aria-hidden="true">TS</div>
     <div class="id"><div class="d1" id="g4h1"></div><div class="d2" id="g4h2"></div></div>
     <span class="saved" id="g4saved">Saved</span>
     <button class="gear" id="g4edit" onclick="GYM4.toggleEdit()">Edit</button>
     <button class="gear" onclick="GYM4.settings()" aria-label="Settings">⚙</button>
   </header>
   <main id="g4main"><p class="boot">Loading…</p></main>
-  <div class="tbar" id="g4tbar">
-    <span class="big" id="g4tval">0</span>
-    <span class="who" id="g4twho"></span>
-    <button onclick="GYM4.stopTimer()">Stop</button>
-  </div>
   <nav class="tabs" id="g4tabs"></nav>
 </div>
 
@@ -129,7 +124,8 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .hint{background:rgba(53,196,192,.1);border:1px solid rgba(53,196,192,.35);
     color:var(--aqua);border-radius:10px;padding:11px 13px;font-size:12.5px;margin:12px 0;line-height:1.6}
 
-  #g4 .ex{border-top:1px solid var(--line);padding:16px 0 18px}
+  #g4 .ex{border:1px solid var(--line);border-radius:13px;background:var(--surface);
+    padding:14px 13px 14px 16px;margin:10px 0}
   #g4 .ex:first-of-type{border-top:none}
   #g4 .ex-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
   #g4 .ex-name{text-align:left;flex:1;font-size:16px;font-weight:650;line-height:1.28;letter-spacing:-.1px;
@@ -159,17 +155,19 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     border-radius:8px;padding:11px;font-family:inherit;font-size:13.5px;font-weight:700;cursor:pointer}
 
   #g4 .sets{display:flex;flex-direction:column;gap:8px}
-  #g4 .shead{display:grid;grid-template-columns:18px 1fr 1fr 56px 22px;gap:6px;
+  #g4 .shead{display:grid;grid-template-columns:18px 1fr 1fr 22px;gap:8px;
     color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px;padding:0 2px}
   #g4 .shead span:nth-child(1){text-align:center}
-  #g4 .set{display:grid;grid-template-columns:18px 1fr 1fr 56px 22px;gap:6px;align-items:center}
+  #g4 .set{display:grid;grid-template-columns:18px 1fr 1fr 22px;gap:8px;align-items:center}
   #g4 .set .n{color:var(--muted);font-size:12px;text-align:center;font-variant-numeric:tabular-nums}
+  #g4 .fillnext{display:block;width:100%;margin-top:10px;background:rgba(53,196,192,.12);
+    border:1px solid var(--aqua);color:var(--aqua);border-radius:9px;padding:11px;
+    font-family:inherit;font-size:13.5px;font-weight:650;cursor:pointer}
+  #g4 .fillnext:active{background:var(--aqua);color:#062028}
   #g4 .field{position:relative}
   #g4 .field input{width:100%;background:var(--surface);border:1px solid var(--line);color:var(--chalk);
     border-radius:10px;padding:13px 34px 13px 10px;font-family:inherit;font-size:17px;font-weight:600;
     font-variant-numeric:tabular-nums;text-align:left;appearance:none;-moz-appearance:textfield}
-  #g4 .field.rpe input{padding:13px 8px;text-align:center;font-size:15px;color:var(--muted)}
-  #g4 .field.rpe input:not(:placeholder-shown){color:var(--chalk)}
   #g4 .field input::-webkit-outer-spin-button,
   #g4 .field input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   #g4 .field input:focus{outline:none;border-color:var(--aqua);background:var(--surface-2)}
@@ -182,11 +180,6 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .mark[data-state="up"]{background:rgba(53,196,192,.18);border-color:var(--aqua);color:var(--aqua)}
   #g4 .mark[data-state="same"]{background:rgba(140,169,184,.12);border-color:var(--muted);color:var(--muted)}
   #g4 .mark[data-state="down"]{background:rgba(217,112,95,.15);border-color:var(--rose);color:var(--rose)}
-
-  #g4 .rest{margin-top:12px;background:transparent;border:1px solid var(--line);color:var(--muted);
-    border-radius:9px;padding:9px 15px;font-family:inherit;font-size:13px;cursor:pointer;
-    font-variant-numeric:tabular-nums}
-  #g4 .rest:active{background:var(--surface)}
 
   /* edit */
   #g4 .erow{display:flex;gap:7px;align-items:center;margin-bottom:9px}
@@ -216,14 +209,172 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     padding:13px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--chalk)}
   #g4 .confirm button.yes{background:var(--rose);border-color:var(--rose);color:#1E0B08}
 
-  #g4 .tbar{position:fixed;left:14px;right:14px;z-index:25;bottom:calc(var(--nav-h) + 12px);
-    background:var(--aqua);color:#062028;border-radius:13px;padding:13px 16px;
-    display:none;align-items:center;gap:12px;box-shadow:0 6px 22px rgba(0,0,0,.45)}
-  #g4 .tbar[data-on="1"]{display:flex}
-  #g4 .tbar .big{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums}
-  #g4 .tbar .who{flex:1;font-size:12.5px;opacity:.8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  #g4 .tbar button{background:rgba(6,32,40,.15);border:none;color:#062028;font-family:inherit;
-    font-size:13px;font-weight:600;border-radius:8px;padding:7px 13px;cursor:pointer}
+  /* ---- the strip that moves while he trains ---- */
+  #g4 .hdr .mkid{width:33px;height:33px;border-radius:9px;flex:0 0 auto;
+    background:linear-gradient(135deg,#35C4C0,#1B6E8C);display:grid;place-items:center;
+    font-weight:800;font-size:12.5px;color:#06202A;letter-spacing:-.5px}
+  #g4 .bkslim{display:flex;align-items:center;gap:10px;border:1px solid rgba(233,166,60,.3);
+    background:rgba(233,166,60,.07);border-radius:9px;padding:9px 11px;color:var(--amber);
+    font-size:11.5px;margin:10px 0}
+  #g4 .bkslim span{flex:1;min-width:0}
+  #g4 .bkslim button{background:none;border:1px solid rgba(233,166,60,.45);color:var(--amber);
+    border-radius:6px;padding:4px 10px;font-family:inherit;font-size:11px;font-weight:650;
+    cursor:pointer;flex:0 0 auto}
+  #g4 .live{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:11px;overflow:hidden;margin:12px 0 9px}
+  #g4 .live>div{background:#102A3A;padding:8px 4px;text-align:center}
+  #g4 .live .v{font-size:18px;font-weight:750;font-variant-numeric:tabular-nums;
+    letter-spacing:-.4px;line-height:1.1}
+  #g4 .live .v s{text-decoration:none;color:#55748A;font-weight:600;font-size:13px}
+  #g4 .live .v.on{color:var(--aqua)}
+  #g4 .live .v.gold{color:#F0C04A}
+  #g4 .live .l{color:var(--muted);font-size:9.5px;text-transform:uppercase;
+    letter-spacing:.6px;margin-top:2px}
+  #g4 .pbar{height:3px;background:#143040;border-radius:2px;overflow:hidden}
+  #g4 .pbar i{display:block;height:100%;background:linear-gradient(90deg,#35C4C0,#6FE3C4);
+    border-radius:2px;transition:width .35s ease}
+  #g4 .vsline{margin-top:8px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+  #g4 .vsline.up{color:var(--aqua)}
+  #g4 .vsline i{font-style:normal;color:#55748A}
+
+  /* ---- the week ---- */
+  #g4 .streak{display:flex;align-items:center;gap:6px;margin:11px 0 2px;flex-wrap:wrap}
+  #g4 .streak .lab{color:var(--muted);font-size:10px;text-transform:uppercase;
+    letter-spacing:.7px;margin-right:2px}
+  #g4 .streak .dot{width:23px;height:23px;border-radius:7px;display:grid;place-items:center;
+    font-size:9.5px;font-weight:700;color:var(--muted);border:1px solid var(--line);background:#102A3A}
+  #g4 .streak .dot.on{background:rgba(53,196,192,.18);border-color:var(--aqua);color:var(--aqua)}
+  #g4 .streak .dot.today{box-shadow:0 0 0 2px rgba(53,196,192,.28)}
+  #g4 .streak .dot.miss{border-color:#2A3F4E;color:#4E6878}
+  #g4 .streak .run{color:var(--aqua);font-size:11.5px;font-weight:700;margin-left:3px}
+
+  /* ---- a colour per muscle, and the two collapsed states ---- */
+  #g4 section.ex{position:relative;overflow:hidden}
+  #g4 section.ex:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
+    background:var(--mc,#35C4C0)}
+  #g4 section.ex.pend,#g4 section.ex.sk,#g4 section.ex:has(.done){padding-top:12px;padding-bottom:12px}
+  #g4 section.ex.cur{border-color:rgba(53,196,192,.45);box-shadow:0 0 0 1px rgba(53,196,192,.1)}
+  #g4 section.ex.pend,#g4 section.ex.sk{cursor:pointer}
+  #g4 section.ex.pend{opacity:.72}
+  #g4 section.ex.sk{opacity:.5}
+  #g4 .done{display:flex;align-items:center;gap:9px;cursor:pointer}
+  #g4 .done .tick{width:21px;height:21px;border-radius:50%;background:rgba(53,196,192,.16);
+    border:1px solid var(--aqua);color:var(--aqua);display:grid;place-items:center;
+    font-size:11px;flex:0 0 auto}
+  #g4 .done .nm{flex:1;min-width:0;font-size:14px;font-weight:600;color:#C9DAE2;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #g4 .done .res{font-size:12.5px;font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+  #g4 .done .res b{color:var(--chalk);font-weight:700}
+  #g4 .up{display:flex;align-items:center;gap:9px}
+  #g4 .up .idx{width:21px;height:21px;border-radius:50%;border:1px solid var(--line);
+    color:var(--muted);display:grid;place-items:center;font-size:10.5px;
+    font-variant-numeric:tabular-nums;flex:0 0 auto}
+  #g4 .up .nm{flex:1;min-width:0;font-size:14.5px;font-weight:600;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #g4 .up .t{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+  #g4 .prb{background:linear-gradient(135deg,#F0C04A,#E09A2B);color:#2A1C00;font-size:9.5px;
+    font-weight:800;padding:2.5px 6px;border-radius:5px;letter-spacing:.4px;flex:0 0 auto}
+  #g4 .rowq .prb{flex:0 0 auto}
+  #g4 .prb.hd{display:inline-block;vertical-align:2px;margin-left:6px}
+  #g4 .tagm{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.6px;
+    text-transform:uppercase;color:var(--mc,#35C4C0);background:rgba(255,255,255,.05);
+    border-radius:5px;padding:2px 6px;margin-bottom:7px}
+
+  /* ---- close the day ---- */
+  #g4 .closebar{margin:18px 0 6px}
+  #g4 .closebtn{width:100%;padding:16px;border-radius:12px;font-family:inherit;font-size:15.5px;
+    font-weight:750;border:1px solid var(--line);background:#102A3A;color:var(--muted);cursor:pointer}
+  #g4 .closebtn.ready{background:var(--aqua);border-color:var(--aqua);color:#062028}
+  #g4 .closenote{text-align:center;color:var(--muted);font-size:11.5px;margin-top:8px}
+  #g4 .sheetc{border:1px solid rgba(233,166,60,.4);border-radius:14px;margin-bottom:12px;
+    background:rgba(233,166,60,.06);overflow:hidden}
+  #g4 .sheetc .sh{padding:14px 14px 11px}
+  #g4 .sheetc .sh .t{font-size:16px;font-weight:750;color:var(--amber);letter-spacing:-.2px}
+  #g4 .sheetc .sh .s{color:#C9B48A;font-size:12.5px;margin-top:4px;line-height:1.45}
+  #g4 .sheetc.skip{border-color:var(--line);background:var(--surface)}
+  #g4 .sheetc.skip .sh .t{color:var(--chalk)}
+  #g4 .sheetc.skip .sh .s{color:var(--muted)}
+  #g4 .miss{display:flex;align-items:center;gap:10px;padding:12px 14px;
+    border-top:1px solid rgba(233,166,60,.2)}
+  #g4 .sheetc.skip .miss{border-top-color:var(--line)}
+  #g4 .miss .ic{width:24px;height:24px;border-radius:7px;background:rgba(233,166,60,.16);
+    border:1px solid rgba(233,166,60,.45);color:var(--amber);display:grid;place-items:center;
+    font-size:11px;font-weight:800;flex:0 0 auto}
+  #g4 .sheetc.skip .miss .ic{background:#102A3A;border-color:var(--line);color:#4E6878}
+  #g4 .miss .tx{flex:1;min-width:0}
+  #g4 .miss .tx b{display:block;font-size:13.5px;font-weight:650}
+  #g4 .miss .tx i{display:block;font-style:normal;color:var(--muted);font-size:11.5px;margin-top:2px}
+  #g4 .miss .go{border:1px solid var(--line);background:#102A3A;color:var(--aqua);border-radius:8px;
+    padding:7px 11px;font-size:12px;font-weight:650;font-family:inherit;flex:0 0 auto;cursor:pointer}
+  #g4 .miss .sw{width:44px;height:25px;border-radius:13px;background:#102A3A;
+    border:1px solid var(--line);position:relative;flex:0 0 auto;cursor:pointer;padding:0}
+  #g4 .miss .sw:after{content:"";position:absolute;top:2px;left:2px;width:19px;height:19px;
+    border-radius:50%;background:#4E6878;transition:left .15s}
+  #g4 .miss .sw.on{background:rgba(53,196,192,.22);border-color:var(--aqua)}
+  #g4 .miss .sw.on:after{left:21px;background:var(--aqua)}
+
+  /* ---- a closed day ---- */
+  #g4 .locked{border:1px solid rgba(53,196,192,.35);border-radius:14px;
+    background:rgba(53,196,192,.06);padding:15px;margin:12px 0}
+  #g4 .locked .t{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:750}
+  #g4 .locked .t span{width:24px;height:24px;border-radius:50%;background:rgba(53,196,192,.18);
+    border:1px solid var(--aqua);color:var(--aqua);display:grid;place-items:center;
+    font-size:12px;flex:0 0 auto}
+  #g4 .locked .s{color:var(--muted);font-size:12.5px;margin-top:6px;line-height:1.5}
+  #g4 .locked .st{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+  #g4 .locked .st>div{background:#102A3A;border:1px solid var(--line);border-radius:10px;
+    padding:9px;text-align:center}
+  #g4 .locked .st .v{font-size:17px;font-weight:750;font-variant-numeric:tabular-nums}
+  #g4 .locked .st .l{color:var(--muted);font-size:9px;text-transform:uppercase;
+    letter-spacing:.6px;margin-top:2px}
+  #g4 .reopen{width:100%;margin-top:11px;background:none;border:1px solid var(--line);
+    color:var(--muted);border-radius:9px;padding:10px;font-family:inherit;font-size:12.5px;
+    font-weight:600;cursor:pointer}
+  #g4 .qh{margin:18px 0 8px;font-size:10.5px;text-transform:uppercase;letter-spacing:1px;
+    color:var(--muted);font-weight:700}
+  #g4 .rowq{display:flex;align-items:center;gap:9px;background:var(--surface);
+    border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-bottom:7px}
+  #g4 .rowq .nm{flex:1;min-width:0;font-size:13px;color:#C9DAE2;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #g4 .rowq .rs{font-size:12px;font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+  #g4 .rowq .rs b{color:var(--chalk)}
+  #g4 .rowq.sk .nm{color:#55748A}
+  #g4 .rowq.sk .rs{color:#55748A;font-style:italic}
+
+  /* ---- the finish panel ---- */
+  #g4 .fin{padding-bottom:10px}
+  #g4 .ring{margin:4px auto 2px;width:136px;height:136px;position:relative}
+  #g4 .ring .rl{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+  #g4 .ring .rl b{display:block;font-size:29px;font-weight:800;letter-spacing:-1px;line-height:1;
+    font-variant-numeric:tabular-nums}
+  #g4 .ring .rl i{display:block;font-style:normal;color:var(--muted);font-size:10px;
+    text-transform:uppercase;letter-spacing:1px;margin-top:4px}
+  #g4 .vs{margin-top:14px;border:1px solid rgba(53,196,192,.32);background:rgba(53,196,192,.07);
+    border-radius:12px;padding:13px 14px;display:flex;align-items:center;gap:12px}
+  #g4 .vs .big{font-size:24px;font-weight:800;color:var(--aqua);letter-spacing:-.6px;
+    font-variant-numeric:tabular-nums;flex:0 0 auto}
+  #g4 .vs .big.sm{font-size:21px}
+  #g4 .vs .big s{text-decoration:none;font-size:12px;font-weight:600;margin-left:2px}
+  #g4 .vs .tx{font-size:13px;line-height:1.45;color:#CBDCE4}
+  #g4 .vs .tx b{color:var(--chalk)}
+  #g4 .grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+  #g4 .grid .cell{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px}
+  #g4 .grid .v{font-size:22px;font-weight:780;letter-spacing:-.6px;font-variant-numeric:tabular-nums}
+  #g4 .grid .v s{text-decoration:none;font-size:13px;color:var(--muted);font-weight:600}
+  #g4 .grid .l{color:var(--muted);font-size:10.5px;text-transform:uppercase;
+    letter-spacing:.7px;margin-top:3px}
+  #g4 .grid .d{font-size:11.5px;margin-top:5px;color:var(--muted);font-variant-numeric:tabular-nums}
+  #g4 .prc{display:flex;align-items:center;gap:11px;border-radius:12px;padding:12px 13px;
+    margin-bottom:8px;background:linear-gradient(100deg,rgba(240,192,74,.14),rgba(240,192,74,.04));
+    border:1px solid rgba(240,192,74,.4)}
+  #g4 .prc .m{width:30px;height:30px;border-radius:50%;
+    background:linear-gradient(135deg,#F0C04A,#DC9A24);color:#2A1C00;display:grid;place-items:center;
+    font-size:14px;flex:0 0 auto}
+  #g4 .prc .n{flex:1;min-width:0;font-size:14px;font-weight:650;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #g4 .prc .r{font-size:13px;font-variant-numeric:tabular-nums;color:#F0C04A;font-weight:700;flex:0 0 auto}
+  #g4 .finbtn{width:100%;margin-top:16px;background:var(--aqua);border:none;color:#062028;
+    border-radius:11px;padding:15px;font-family:inherit;font-size:15px;font-weight:750;cursor:pointer}
 
   #g4 .tabs{position:fixed;bottom:0;left:0;right:0;z-index:30;background:rgba(12,33,48,.96);
     backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
@@ -780,7 +931,7 @@ function seedLib(){
 }
 function seedDiet(){ return {k:2450,p:190,f:70,b:265,shift:50,days:DAYLOAD.slice()}; }
 
-let store={}, day="sun", editing=false, confirmId=null, timer=null, audio=null, wake=null;
+let store={}, day="sun", editing=false, confirmId=null, wake=null, openId=null;
 
 const iso=d=>{const x=d||new Date();
   return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0");};
@@ -792,6 +943,13 @@ const logs=id=>(store.days[id]=store.days[id]||{sessions:[]});
 const t0=s=>new Date(s+"T00:00:00").getTime();
 const filled=x=>x&&x[0]!==""&&x[0]!==undefined&&x[1]!==""&&x[1]!==undefined;
 
+/* How long the session ran, without a timer to start or stop: the first number
+   he types opens it and the last one closes it. */
+function stamp(s){
+  const n=Date.now();
+  if(!s.t0) s.t0=n;
+  s.t1=n;
+}
 function todaySess(){
   const d=logs(day), t=iso();
   let s=d.sessions.find(x=>x.date===t);
@@ -1239,15 +1397,224 @@ function hasLogs(){
   return Object.keys(store.days||{}).some(k=>
     ((store.days[k].sessions)||[]).some(s=>s.ex&&Object.keys(s.ex).length));
 }
+/* ================= the session as a whole ================= */
+/* A colour per muscle, so Push day and Pull day do not look like the same page. */
+const MCOL={chest:"#D9705F",back:"#5B9BD5",delts:"#35C4C0",biceps:"#C98BD9",
+  triceps:"#E9A63C",quads:"#6FD39A",hams:"#7FC8C4",glutes:"#E08FA8",
+  calves:"#9FB3C8",abs:"#D4C264",other:"#8CA9B8"};
+const mcol=e=>MCOL[e&&e.m]||MCOL.other;
+const half=x=>x!==""&&x!==undefined&&x!==null;
+
+/* every set of the exercise carries both numbers */
+function exDone(s,e){
+  const a=(s.ex||{})[e.id]||[];
+  for(let i=0;i<e.s;i++) if(!filled(a[i])) return false;
+  return e.s>0;
+}
+/* he started it: any box anywhere has something in it */
+function exTouched(s,e){
+  const a=(s.ex||{})[e.id]||[];
+  return a.some(x=>x&&(half(x[0])||half(x[1])));
+}
+const isSkipped=(s,e)=>Array.isArray(s.skip)&&s.skip.indexOf(e.id)>=0;
+
+/* kilos actually moved today: weight × reps over every finished set */
+function sessVol(s){
+  let v=0;
+  Object.keys((s||{}).ex||{}).forEach(k=>((s.ex[k])||[]).forEach(x=>{
+    if(!filled(x)) return;
+    const w=+x[0], r=+x[1];
+    if(isFinite(w)&&isFinite(r)) v+=w*r;
+  }));
+  return Math.round(v);
+}
+function sessSets(s){
+  let n=0;
+  Object.keys((s||{}).ex||{}).forEach(k=>((s.ex[k])||[]).forEach(x=>{ if(filled(x)) n++; }));
+  return n;
+}
+function sessReps(s){
+  let n=0;
+  Object.keys((s||{}).ex||{}).forEach(k=>((s.ex[k])||[]).forEach(x=>{
+    if(filled(x)){ const r=+x[1]; if(isFinite(r)) n+=r; } }));
+  return n;
+}
+/* minutes between the first number typed and the last — nothing to start or stop */
+function sessMins(s){
+  if(!s||!s.t0||!s.t1||s.t1<=s.t0) return null;
+  return Math.max(1,Math.round((s.t1-s.t0)/60000));
+}
+
+/* exercises whose best set today beats everything logged before today */
+function sessPRs(s){
+  const out=[], p=plan();
+  (p?p.ex:[]).forEach(e=>{
+    const sets=((s.ex||{})[e.id]||[]).filter(filled);
+    if(!sets.length) return;
+    let best=0,bw=0,br=0;
+    sets.forEach(x=>{
+      const w=+x[0], r=+x[1];
+      if(!isFinite(w)||!isFinite(r)||!w) return;
+      const v=e1rm(w,r);
+      if(v>best){ best=v; bw=w; br=r; }
+    });
+    if(!best) return;
+    const prior=exSeries(day,e.id).filter(x=>x.date!==s.date);
+    if(!prior.length) return;   /* the first time you do something is not a record */
+    const top=prior.reduce((a,b)=>b.e>a.e?b:a,prior[0]).e;
+    if(best>top+0.001) out.push({id:e.id,n:e.n,w:bw,r:br});
+  });
+  return out;
+}
+const isPRex=(s,id)=>sessPRs(s).some(x=>x.id===id);
+
+/* what is still stopping the day from closing.
+   hard: he started the exercise and left a box empty — that is a forgotten number.
+   soft: he never touched it at all — that is a skip, and he says so himself. */
+function dayGaps(){
+  const p=plan(), s=todaySess(), hard=[], soft=[];
+  (p?p.ex:[]).forEach((e,ei)=>{
+    if(isSkipped(s,e)) return;
+    const a=(s.ex||{})[e.id]||[];
+    if(!exTouched(s,e)){ soft.push({ei:ei,id:e.id,n:e.n}); return; }
+    for(let i=0;i<e.s;i++){
+      const x=a[i]||["",""];
+      const w=half(x[0]), r=half(x[1]);
+      if(w&&r) continue;
+      hard.push({ei:ei,si:i,id:e.id,n:e.n,
+        why:w?"weight written, reps empty":r?"reps written, weight empty":"both boxes empty"});
+    }
+  });
+  return {hard:hard,soft:soft};
+}
+
+/* the last seven days, trained or not */
+function streak7(){
+  const out=[], L=["S","M","T","W","T","F","S"], now=new Date();
+  const hit={};
+  Object.keys(store.days||{}).forEach(id=>{
+    (((store.days[id]||{}).sessions)||[]).forEach(s=>{
+      if(s.ex&&Object.keys(s.ex).some(k=>(s.ex[k]||[]).some(filled))) hit[s.date]=1;
+    });
+  });
+  for(let i=6;i>=0;i--){
+    const d=new Date(now.getTime()-i*864e5);
+    out.push({l:L[d.getDay()],on:!!hit[iso(d)],today:i===0});
+  }
+  return out;
+}
+function streakRun(){
+  const a=streak7();
+  let i=a.length-1, n=0;
+  if(i>=0&&!a[i].on) i--;      /* today not logged yet does not break anything */
+  for(;i>=0;i--){ if(a[i].on) n++; else break; }
+  return n;
+}
+
 function backupBanner(){
   if(!hasLogs()) return "";
   const last=store.bk||0;
   const age=last?Math.floor((Date.now()-last)/864e5):null;
   if(last&&age<14) return "";
-  return '<div class="bkwarn"><div class="hl">'+
-    (last?"Last backup was "+age+" days ago":"You have no backup yet")+'</div>'+
-    '<div class="ex2">Your log lives in this browser only. Save a backup file now and keep it in Files or iCloud.</div>'+
-    '<button class="bkbtn" onclick="GYM4.saveBackup(this)">Save backup now</button></div>';
+  return '<div class="bkslim"><span>'+
+    (last?"Last backup "+age+" days ago":"No backup yet — your log lives in this browser only")+
+    '</span><button onclick="GYM4.saveBackup(this)">Back up</button></div>';
+}
+
+/* ---------- the strip that moves while he trains ---------- */
+function liveStrip(p,s){
+  const done=p.ex.filter(e=>exDone(s,e)).length;
+  const vol=sessVol(s), prs=sessPRs(s).length;
+  const tot=p.ex.length||1;
+  const pct=Math.round(done/tot*100);
+  const pv=prevSess();
+  const pvol=pv?sessVol(pv):0;
+  let vs="";
+  if(pvol>0){
+    const d=vol-pvol;
+    vs='<div class="vsline'+(d>=0?' up':'')+'">'+
+      (d>=0?'Ahead of last '+esc(p.day)+' by '+Math.abs(d).toLocaleString()+' kg'
+           :Math.abs(d).toLocaleString()+' kg behind last '+esc(p.day))+
+      ' <i>'+pvol.toLocaleString()+' kg then</i></div>';
+  }
+  return '<div class="live">'+
+      '<div><div class="v on">'+done+'<s>/'+p.ex.length+'</s></div><div class="l">Exercises</div></div>'+
+      '<div><div class="v">'+vol.toLocaleString()+'</div><div class="l">kg lifted</div></div>'+
+      '<div><div class="v'+(prs?' gold':'')+'">'+prs+'</div><div class="l">PR today</div></div>'+
+    '</div>'+
+    '<div class="pbar"><i style="width:'+pct+'%"></i></div>'+vs;
+}
+
+function streakRow(){
+  const a=streak7(), n=streakRun();
+  return '<div class="streak"><span class="lab">Streak</span>'+
+    a.map(d=>'<span class="dot'+(d.on?" on":" miss")+(d.today?" today":"")+'">'+d.l+'</span>').join("")+
+    '<span class="run">'+(n?n+(n===1?" day":" days"):"—")+'</span></div>';
+}
+
+/* ---------- an exercise that is finished, or not reached yet ---------- */
+function miniView(e,ei,s){
+  const open='onclick="GYM4.openOne(\''+e.id+'\')"';
+  if(isSkipped(s,e))
+    return '<section class="ex sk" style="--mc:'+mcol(e)+'" '+open+'>'+
+      '<div class="up"><span class="idx">—</span><span class="nm">'+esc(e.n)+'</span>'+
+      '<span class="t">skipped</span></div></section>';
+  if(exDone(s,e)){
+    const a=(s.ex[e.id]||[]).filter(filled);
+    const w=a.length?a[0][0]:"";
+    const same=a.every(x=>x[0]===w);
+    const res=same?'<b>'+esc(w)+'</b>kg × '+a.map(x=>esc(x[1])).join(",")
+                  :a.map(x=>'<b>'+esc(x[0])+'</b>×'+esc(x[1])).join(" · ");
+    return '<section class="ex" style="--mc:'+mcol(e)+'" '+open+'>'+
+      '<div class="done"><span class="tick">✓</span><span class="nm">'+esc(e.n)+'</span>'+
+      (isPRex(s,e.id)?'<span class="prb">PR</span>':'')+
+      '<span class="res">'+res+'</span></div></section>';
+  }
+  return '<section class="ex pend" style="--mc:'+mcol(e)+'" '+open+'>'+
+    '<div class="up"><span class="idx">'+(ei+1)+'</span><span class="nm">'+esc(e.n)+'</span>'+
+    '<span class="t">'+e.s+' × '+esc(e.r)+'</span></div></section>';
+}
+
+/* ---------- the bar that ends the day ---------- */
+function closeBar(p,s){
+  if(!p.ex.length) return "";
+  const any=Object.keys(s.ex||{}).some(k=>(s.ex[k]||[]).some(filled));
+  if(!any) return "";
+  const g=dayGaps(), n=g.hard.length+g.soft.length;
+  return '<div class="closebar">'+
+    '<button class="closebtn'+(n?'':' ready')+'" onclick="GYM4.closeDay()">'+
+      'Close the day'+(n?' · '+n+' left':'')+'</button>'+
+    '<div class="closenote">'+(n?'Something is still empty — tap to see what'
+      :'Locks today so nothing can change by accident')+'</div></div>';
+}
+
+/* ---------- a day that has been closed ---------- */
+function closedView(p,s){
+  const vol=sessVol(s), prs=sessPRs(s), mins=sessMins(s);
+  const when=s.closed?new Date(s.closed):null;
+  const hh=when?String(when.getHours()).padStart(2,"0")+":"+String(when.getMinutes()).padStart(2,"0"):"";
+  const rows=p.ex.map(e=>{
+    if(isSkipped(s,e)||!exTouched(s,e))
+      return '<div class="rowq sk"><span class="nm">'+esc(e.n)+'</span><span class="rs">skipped</span></div>';
+    const a=(s.ex[e.id]||[]).filter(filled);
+    if(!a.length) return "";
+    const w=a[0][0], same=a.every(x=>x[0]===w);
+    const res=same?'<b>'+esc(w)+'</b>kg × '+a.map(x=>esc(x[1])).join(",")
+                  :a.map(x=>'<b>'+esc(x[0])+'</b>×'+esc(x[1])).join(" · ");
+    return '<div class="rowq">'+(isPRex(s,e.id)?'<span class="prb">PR</span>':'')+
+      '<span class="nm">'+esc(e.n)+'</span><span class="rs">'+res+'</span></div>';
+  }).join("");
+  return '<div class="locked"><div class="t"><span>✓</span>'+esc(p.day)+' · '+esc(p.label)+' is closed</div>'+
+    '<div class="s">Logged '+fmt(s.date)+(hh?" at "+hh:"")+(mins?" · "+mins+" minutes":"")+
+      '. Nothing here can change by accident any more.</div>'+
+    '<div class="st">'+
+      '<div><div class="v">'+vol.toLocaleString()+'</div><div class="l">kg lifted</div></div>'+
+      '<div><div class="v">'+sessSets(s)+'</div><div class="l">sets</div></div>'+
+      '<div><div class="v">'+prs.length+'</div><div class="l">PRs</div></div>'+
+    '</div>'+
+    '<button class="reopen" onclick="GYM4.reopenDay()">Reopen the day</button></div>'+
+    '<h3 class="qh">What you logged</h3>'+rows+
+    '<div class="hint">This day opens as normal next week — closing locks this date only.</div>';
 }
 
 function render(){
@@ -1288,15 +1655,34 @@ function render(){
   if(editing){
     $("g4h2").textContent="Editing, "+p.ex.length+" exercises";
     m.innerHTML=warn+
-      '<div class="hint">Rename, reorder, delete, or change sets / reps / rest. Muscle and head feed the volume and balance stats, so set them on any exercise you add. History follows the exercise, not its name.</div>'+
+      '<div class="hint">Rename, reorder, delete, or change sets and reps. Muscle and head feed the volume and balance stats, so set them on any exercise you add. History follows the exercise, not its name.</div>'+
       p.ex.map((e,i)=>editView(e,i,p.ex.length)).join("")+
       '<button class="addex" onclick="GYM4.add()">+ Add exercise</button>';
   }else{
     const s=todaySess(), pv=prevSess();
-    const done=p.ex.filter(e=>(s.ex[e.id]||[]).some(filled)).length;
-    $("g4h2").textContent=fmt(iso())+" · "+done+" of "+p.ex.length+" exercises";
-    m.innerHTML=warn+backupBanner()+(p.ex.length?p.ex.map((e,i)=>logView(e,i,pv,s)).join("")
-      :'<div class="hint">No exercises for this day. Tap Edit to add some.</div>');
+    if(s.closed){
+      $("g4h2").textContent=fmt(iso())+" · closed";
+      m.innerHTML=warn+closedView(p,s);
+      return;
+    }
+    const done=p.ex.filter(e=>exDone(s,e)).length;
+    const mins=sessMins(s);
+    $("g4h2").textContent=fmt(iso())+" · "+done+" of "+p.ex.length+" exercises"+
+      (mins?" · "+mins+" min":"");
+    if(!p.ex.length){
+      m.innerHTML=warn+'<div class="hint">No exercises for this day. Tap Edit to add some.</div>';
+      return;
+    }
+    /* One exercise is open at a time: the one he tapped, or else the first that
+       is neither finished nor skipped. Everything else collapses to a line. */
+    let liveId=(openId&&p.ex.some(e=>e.id===openId))?openId:null;
+    if(!liveId){
+      const nx=p.ex.find(e=>!exDone(s,e)&&!isSkipped(s,e));
+      liveId=nx?nx.id:null;
+    }
+    m.innerHTML=warn+liveStrip(p,s)+streakRow()+backupBanner()+
+      p.ex.map((e,i)=>e.id===liveId?logView(e,i,pv,s):miniView(e,i,s)).join("")+
+      closeBar(p,s);
   }
 }
 
@@ -1319,6 +1705,8 @@ function logView(e,ei,pv,s){
       L.items.map(function(x){ return '<span class="chip">'+x.w+'kg × '+x.r+'</span>'; }).join("")+
       (L.mode==="rebuilt"?'<span class="nb">rebuilt so every set lands inside '+esc(e.r)+'</span>'
         :L.mode==="stepped"?'<span class="nb">new weights — match last time\'s reps, then build from there</span>':'')+
+      /* only while the exercise is untouched, so it can never overwrite him */
+      ((cur||[]).some(filled)?'':'<button class="fillnext" onclick="GYM4.fillNext('+ei+')">Fill these in</button>')+
       '</div>';
   }
   if(stalled(past)) cue+='<div class="cue hold"><div class="hl">Stalled — 3 sessions</div>'+
@@ -1327,7 +1715,7 @@ function logView(e,ei,pv,s){
   if(flags.length) cue+='<div class="cue hold"><div class="hl">Stopping short?</div>'+
     '<div class="ex2">'+flags.slice(0,2).map(esc).join('<br>')+'</div></div>';
 
-  let rows='<div class="shead"><span>#</span><span>Weight</span><span>Reps</span><span>RPE</span><span></span></div>';
+  let rows='<div class="shead"><span>#</span><span>Weight</span><span>Reps</span><span></span></div>';
   for(let i=0;i<e.s;i++){
     const c=cur[i]||["","",""], p=ps&&ps[i]?ps[i]:null;
     rows+='<div class="set" id="g4r-'+ei+'-'+i+'"><span class="n">'+(i+1)+'</span>'+
@@ -1337,18 +1725,18 @@ function logView(e,ei,pv,s){
       '<div class="field"><input type="number" inputmode="numeric" step="1" value="'+esc(c[1]||"")+'"'+
         ' placeholder="'+(p?esc(p[1]):"")+'" oninput="GYM4.log('+ei+','+i+',1,this.value)"'+
         ' onfocus="GYM4.awake()" aria-label="Set '+(i+1)+' reps"><span class="unit">rep</span></div>'+
-      '<div class="field rpe"><input type="number" inputmode="numeric" min="5" max="10" step="0.5"'+
-        ' value="'+esc(c[2]||"")+'" placeholder="'+(p&&p[2]?esc(p[2]):"–")+'"'+
-        ' oninput="GYM4.log('+ei+','+i+',2,this.value)" aria-label="Set '+(i+1)+' RPE"></div>'+
       '<span class="mark" data-state="'+mark(c,p)+'">▲</span></div>';
   }
-  return '<section class="ex"><div class="ex-head">'+
+  return '<section class="ex cur" style="--mc:'+mcol(e)+'">'+
+    '<span class="tagm">'+esc(MUSCLES[e.m]||"Other")+'</span>'+
+    (isPRex(s,e.id)?'<span class="prb hd">PR</span>':'')+
+    '<div class="ex-head">'+
     '<button class="ex-name" onclick="GYM4.history('+ei+')">'+esc(e.n)+'<span class="chev">▾</span></button>'+
     '<span class="target">'+e.s+' × '+esc(e.r)+'</span></div>'+
     (e.why?'<p class="why">'+esc(e.why)+'</p>':'')+
     '<div class="last">'+chips+'</div>'+cue+
     '<div class="sets">'+rows+'</div>'+
-    '<button class="rest" onclick="GYM4.rest('+e.rest+',this)">Rest '+e.rest+'s</button></section>';
+    '</section>';
 }
 
 function editView(e,i,total){
@@ -1366,10 +1754,9 @@ function editView(e,i,total){
       '<button class="ebtn" onclick="GYM4.move('+i+',-1)" '+(i===0?"disabled":"")+' aria-label="Move up">▲</button>'+
       '<button class="ebtn" onclick="GYM4.move('+i+',1)" '+(i===total-1?"disabled":"")+' aria-label="Move down">▼</button>'+
     '</div>'+
-    '<div class="egrid three">'+
+    '<div class="egrid two">'+
       '<div><label>Sets</label><input type="number" inputmode="numeric" min="1" max="10" value="'+e.s+'" onchange="GYM4.set('+i+',\'s\',this.value)"></div>'+
       '<div><label>Reps</label><input type="text" value="'+esc(e.r)+'" onchange="GYM4.set('+i+',\'r\',this.value)"></div>'+
-      '<div><label>Rest (s)</label><input type="number" inputmode="numeric" min="0" step="15" value="'+e.rest+'" onchange="GYM4.set('+i+',\'rest\',this.value)"></div>'+
     '</div>'+
     '<div class="egrid two">'+
       '<div><label>Muscle</label><select onchange="GYM4.set('+i+',\'m\',this.value)">'+opts+'</select></div>'+
@@ -1547,15 +1934,16 @@ function foodEditView(){
   let h='<div class="hint">Your daily targets, and the food list behind the Add button. '+
     'Changing or deleting an item here never touches a day you have already logged.</div>';
   h+='<h3>Daily targets</h3><div class="hint">This is the average day. '+
-     'Carb cycling below moves carbs between training and rest days without changing the week.</div>'+
+     'Carb cycling below moves carbs between your heavier and lighter days, '+
+     'leaving the week the same.</div>'+
      '<div class="egrid two">'+
      tgt("k","Calories",Math.round(g.k))+tgt("p","Protein (g)",r1(g.p))+
      tgt("f","Fat (g)",r1(g.f))+tgt("b","Carbs (g)",r1(g.b))+'</div>';
   const C=loadCount(), T=C.hi, R=C.lo, sh=Math.max(0,+g.shift||0);
   const WK=dayLoad();
   h+='<h3>Carb cycling</h3>'+
-    '<div class="hint">Set to your week: school, the academy and the gym together, '+
-    'not the gym on its own. Tap a day to move it.</div>';
+    '<div class="hint">Your heavy days take the extra carbs and the lighter ones give '+
+    'the same amount back, so the week stays where it is. Tap any day to move it.</div>';
   h+='<div class="rate">'+[0,30,50,70].map(v=>
       '<button aria-pressed="'+(sh===v)+'" onclick="GYM4.fdShift('+v+')">'+
       (v?"+"+v+"g":"Off")+'</button>').join("")+'</div>';
@@ -1957,6 +2345,105 @@ function bodyView(){
 }
 
 /* ================= sheets ================= */
+/* ---------- what you see the moment the day closes ---------- */
+function finishBody(){
+  const p=plan(), s=todaySess();
+  const vol=sessVol(s), prs=sessPRs(s), mins=sessMins(s);
+  const pv=prevSess(), pvol=pv?sessVol(pv):0;
+  const sets=sessSets(s), reps=sessReps(s);
+  const pct=pvol>0?Math.round((vol-pvol)/pvol*100):null;
+  const r=58, C=2*Math.PI*r;
+  const fillPct=pvol>0?Math.max(.08,Math.min(1,vol/Math.max(vol,pvol))):1;
+  const ring='<div class="ring"><svg width="136" height="136" viewBox="0 0 136 136" aria-hidden="true">'+
+    '<circle cx="68" cy="68" r="'+r+'" fill="none" stroke="#17384A" stroke-width="11"/>'+
+    '<circle cx="68" cy="68" r="'+r+'" fill="none" stroke="#35C4C0" stroke-width="11" stroke-linecap="round"'+
+      ' stroke-dasharray="'+C.toFixed(1)+'" stroke-dashoffset="'+(C*(1-fillPct)).toFixed(1)+'"'+
+      ' transform="rotate(-90 68 68)"/></svg>'+
+    '<div class="rl"><div><b>'+vol.toLocaleString()+'</b><i>kg lifted</i></div></div></div>';
+
+  let vs="";
+  if(pvol>0){
+    const d=vol-pvol;
+    const near=Math.abs(pct)<1;
+    const big=near?(d>=0?"+":"−")+Math.abs(d).toLocaleString()+"<s>kg</s>"
+                 :(pct>=0?"+":"")+pct+"%";
+    vs='<div class="vs"><div class="big'+(near?' sm':'')+'">'+big+'</div>'+
+      '<div class="tx">'+(near?"Level with last ":d>0?"Heavier than last ":"Lighter than last ")+esc(p.day)+
+      ' — <b>'+vol.toLocaleString()+' kg</b> against '+pvol.toLocaleString()+' kg.</div></div>';
+  }
+
+  const cell=(v,l,d)=>'<div class="cell"><div class="v">'+v+'</div><div class="l">'+l+'</div>'+
+    (d?'<div class="d">'+d+'</div>':'')+'</div>';
+  const grid='<div class="grid">'+
+    cell(mins?mins+'<s> min</s>':'—',"Session","")+
+    cell(sets,"Sets",pv?sessSets(pv)+" last time":"")+
+    cell(reps,"Reps",pv?sessReps(pv)+" last time":"")+
+    cell(sets?(reps/sets).toFixed(1):"0","Reps / set",
+      pv&&sessSets(pv)?"was "+(sessReps(pv)/sessSets(pv)).toFixed(1):"")+
+    '</div>';
+
+  let pr="";
+  if(prs.length) pr='<h3 class="qh">New records</h3>'+prs.map(x=>
+    '<div class="prc"><span class="m">★</span><span class="n">'+esc(x.n)+'</span>'+
+    '<span class="r">'+esc(x.w)+' kg × '+esc(x.r)+'</span></div>').join("");
+
+  const rows=p.ex.map(e=>{
+    if(isSkipped(s,e)||!exTouched(s,e))
+      return '<div class="rowq sk"><span class="nm">'+esc(e.n)+'</span><span class="rs">skipped</span></div>';
+    const a=(s.ex[e.id]||[]).filter(filled);
+    if(!a.length) return "";
+    const w=a[0][0], same=a.every(x=>x[0]===w);
+    const res=same?'<b>'+esc(w)+'</b>kg × '+a.map(x=>esc(x[1])).join(",")
+                  :a.map(x=>'<b>'+esc(x[0])+'</b>×'+esc(x[1])).join(" · ");
+    return '<div class="rowq"><span class="nm">'+esc(e.n)+'</span><span class="rs">'+res+'</span></div>';
+  }).join("");
+
+  return '<div class="fin">'+ring+vs+grid+pr+
+    '<h3 class="qh">Everything you logged</h3>'+rows+
+    '<button class="finbtn" onclick="GYM4.closeSheet(this)">Back to the day</button></div>';
+}
+
+/* ---------- the panel that says what is still missing ---------- */
+function gapBody(){
+  const g=dayGaps(), s=todaySess();
+  let h="";
+  if(g.hard.length){
+    h+='<div class="sheetc"><div class="sh"><div class="t">'+
+      (g.hard.length===1?"One set is still empty":g.hard.length+" sets are still empty")+'</div>'+
+      '<div class="s">The day cannot close while a number is missing. Tap a line to go straight to it.</div></div>'+
+      g.hard.map(x=>'<div class="miss"><span class="ic">!</span><div class="tx"><b>'+esc(x.n)+'</b>'+
+        '<i>Set '+(x.si+1)+' — '+esc(x.why)+'</i></div>'+
+        '<button class="go" onclick="GYM4.gapGo('+x.ei+','+x.si+')">Go</button></div>').join("")+
+      '</div>';
+  }
+  if(g.soft.length){
+    h+='<div class="sheetc skip"><div class="sh"><div class="t">'+
+      (g.soft.length===1?"One exercise you never started":g.soft.length+" exercises you never started")+'</div>'+
+      '<div class="s">If you did not do them today, mark them skipped and the day can close.</div></div>'+
+      g.soft.map(x=>'<div class="miss"><span class="ic">'+(x.ei+1)+'</span>'+
+        '<div class="tx"><b>'+esc(x.n)+'</b><i>Nothing logged</i></div>'+
+        '<button class="sw" role="switch" aria-checked="false" aria-label="Skip '+esc(x.n)+'"'+
+        ' onclick="GYM4.skipEx(\''+x.id+'\')"></button></div>').join("")+
+      '</div>';
+  }
+  const skipped=(plan().ex||[]).filter(e=>isSkipped(s,e));
+  if(skipped.length){
+    h+='<div class="sheetc skip"><div class="sh"><div class="t">Marked skipped</div>'+
+      '<div class="s">Tap to put one back.</div></div>'+
+      skipped.map(e=>'<div class="miss"><span class="ic">—</span>'+
+        '<div class="tx"><b>'+esc(e.n)+'</b><i>Will be logged as skipped</i></div>'+
+        '<button class="sw on" role="switch" aria-checked="true" aria-label="Unskip '+esc(e.n)+'"'+
+        ' onclick="GYM4.skipEx(\''+e.id+'\')"></button></div>').join("")+
+      '</div>';
+  }
+  const n=g.hard.length+g.soft.length;
+  h+='<div class="closebar"><button class="closebtn'+(n?'':' ready')+'" onclick="GYM4.closeDay()">'+
+    'Close the day'+(n?' · '+n+' left':'')+'</button>'+
+    '<div class="closenote">'+(n?'Fill what is above, or mark it skipped':'All clear — tap to close')+
+    '</div></div>';
+  return h;
+}
+
 function sheet(html){
   const w=document.createElement("div");
   w.className="sheet";
@@ -1977,31 +2464,6 @@ function fsheet(title,sub,top,body){
     '<div class="fsbody">'+(body||'')+'</div>';
   ROOT().appendChild(w);
   return w;
-}
-
-/* ================= timer ================= */
-function unlock(){
-  if(audio)return;
-  try{
-    const C=window.AudioContext||window.webkitAudioContext;
-    audio=new C();
-    const b=audio.createBuffer(1,1,22050), s=audio.createBufferSource();
-    s.buffer=b; s.connect(audio.destination); s.start(0);
-  }catch(e){}
-}
-function beep(){
-  if(!audio)return;
-  try{
-    [0,.18,.36].forEach(t=>{
-      const o=audio.createOscillator(), g=audio.createGain();
-      o.frequency.value=880; o.type="sine";
-      g.gain.setValueAtTime(.0001,audio.currentTime+t);
-      g.gain.exponentialRampToValueAtTime(.25,audio.currentTime+t+.02);
-      g.gain.exponentialRampToValueAtTime(.0001,audio.currentTime+t+.14);
-      o.connect(g); g.connect(audio.destination);
-      o.start(audio.currentTime+t); o.stop(audio.currentTime+t+.16);
-    });
-  }catch(e){}
 }
 
 function normalize(){
@@ -2264,6 +2726,72 @@ const API={
   jump(dayId,ei){ day=dayId; editing=false; confirmId=null; render(); API.history(ei); },
   toggleEdit(){ editing=!editing; confirmId=null; render(); ROOT().scrollIntoView({block:"start"}); },
 
+  /* Open one exercise by hand. Tapping the open one again lets the day go back
+     to following whichever exercise is next. */
+  openOne(id){
+    openId=(openId===id)?null:id;
+    render();
+    if(openId){
+      const el=document.querySelector('#g4 section.ex.cur');
+      if(el) el.scrollIntoView({block:"center",behavior:"smooth"});
+    }
+  },
+  closeDay(){
+    const g=dayGaps();
+    if(g.hard.length||g.soft.length){
+      closeAll();
+      fsheet("Close the day","Everything has to carry a number first.","",gapBody());
+      return;
+    }
+    const s=todaySess();
+    s.closed=Date.now();
+    if(!s.t1) s.t1=s.closed;
+    openId=null;
+    save(); render();
+    closeAll();
+    fsheet("Session complete",esc(plan().day)+" · "+esc(plan().label)+" · "+fmt(s.date),"",finishBody());
+  },
+  reopenDay(){ const s=todaySess(); delete s.closed; save(); render(); },
+  gapGo(ei,si){
+    const e=plan().ex[ei]; if(!e) return;
+    closeAll();
+    openId=e.id; render();
+    const row=$("g4r-"+ei+"-"+si);
+    if(row){
+      row.scrollIntoView({block:"center"});
+      const ins=row.querySelectorAll("input");
+      const t=[].slice.call(ins).find(x=>!x.value)||ins[0];
+      if(t) t.focus();
+    }
+  },
+  skipEx(id){
+    const s=todaySess();
+    s.skip=Array.isArray(s.skip)?s.skip:[];
+    const i=s.skip.indexOf(id);
+    if(i>=0) s.skip.splice(i,1); else s.skip.push(id);
+    if(!s.skip.length) delete s.skip;
+    save(); render();
+    const w=document.querySelector("#g4 .fsheet .fsbody");
+    if(w) w.innerHTML=gapBody();
+  },
+  /* Writes the ladder the app already worked out into the empty rows. */
+  fillNext(ei){
+    const p=plan(), e=p.ex[ei];
+    const pr=prevFor(e.id); if(!pr) return;
+    const L=nextLadder(pr.sets,e.r,e.s);
+    if(!L||!L.items||!L.items.length) return;
+    const s=todaySess();
+    const arr=s.ex[e.id]=s.ex[e.id]||[];
+    for(let k=0;k<e.s;k++) arr[k]=arr[k]||["","",""];
+    if(arr.some(filled)) return;
+    L.items.forEach((x,i)=>{
+      if(i>=e.s) return;
+      while(arr[i].length<3) arr[i].push("");
+      arr[i][0]=String(x.w); arr[i][1]=String(x.r);
+    });
+    stamp(s);
+    GYM4.awake(); save(); render();
+  },
   log(ei,si,f,val){
     const p=plan(), e=p.ex[ei], s=todaySess();
     const arr=s.ex[e.id]=s.ex[e.id]||[];
@@ -2271,6 +2799,7 @@ const API={
     while(arr[si].length<3) arr[si].push("");
     arr[si][f]=val;
     if(!arr.some(x=>x[0]!==""||x[1]!=="")) delete s.ex[e.id];
+    stamp(s);
     save();
     const pv=prevSess();
     const ps=pv&&pv.ex&&pv.ex[e.id]?pv.ex[e.id]:null;
@@ -2278,7 +2807,7 @@ const API={
     if(row){
       const ins=row.querySelectorAll("input");
       row.querySelector(".mark").setAttribute("data-state",
-        mark([ins[0].value,ins[1].value,ins[2].value], ps&&ps[si]?ps[si]:null));
+        mark([ins[0].value,ins[1].value,arr[si][2]||""], ps&&ps[si]?ps[si]:null));
     }
     const done=p.ex.filter(x=>(s.ex[x.id]||[]).some(filled)).length;
     $("g4h2").textContent=fmt(iso())+" · "+done+" of "+p.ex.length+" exercises";
@@ -2287,7 +2816,6 @@ const API={
   set(i,key,val){
     const e=plan().ex[i];
     if(key==="s") e.s=Math.max(1,Math.min(10,parseInt(val,10)||1));
-    else if(key==="rest") e.rest=Math.max(0,parseInt(val,10)||0);
     else if(key==="n") e.n=String(val).trim()||"Untitled";
     else if(key==="m") e.m=String(val);
     else if(key==="h") e.h=String(val).trim()||"general";
@@ -2817,22 +3345,6 @@ const API={
     save(); render();
   },
 
-  rest(secs,btn){
-    unlock(); API.stopTimer(); API.awake();
-    const end=Date.now()+secs*1000;
-    const sec=btn&&btn.closest(".ex");
-    $("g4twho").textContent=sec?sec.querySelector(".ex-name").textContent.replace("▾","").trim():"";
-    $("g4tval").textContent=secs;
-    $("g4tbar").setAttribute("data-on","1");
-    const t=()=>{
-      const left=Math.round((end-Date.now())/1000);
-      if(left<=0){ beep(); $("g4tval").textContent="0"; $("g4twho").textContent="Rest over";
-        clearInterval(timer); timer=null; setTimeout(()=>$("g4tbar").removeAttribute("data-on"),2500); return; }
-      $("g4tval").textContent=left;
-    };
-    timer=setInterval(t,250); t();
-  },
-  stopTimer(){ if(timer){ clearInterval(timer); timer=null; } $("g4tbar").removeAttribute("data-on"); },
   async awake(){ try{ if("wakeLock" in navigator && !wake) wake=await navigator.wakeLock.request("screen"); }catch(e){} },
 
   history(ei){
@@ -2878,7 +3390,7 @@ const API={
     const done=()=>{
       store.bk=Date.now(); save();
       if(btn) btn.textContent="Saved \u2713";
-      const w=document.querySelector("#g4 .bkwarn");
+      const w=document.querySelector("#g4 .bkslim")||document.querySelector("#g4 .bkwarn");
       if(w) w.outerHTML='<div class="hint">Backup saved. Keep it in Files or iCloud.</div>';
     };
     // 1. share sheet with a real file (Save to Files, AirDrop, WhatsApp...)
