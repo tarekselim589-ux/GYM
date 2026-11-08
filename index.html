@@ -898,10 +898,24 @@ async function stopScanner(){
   try{ await q.stop(); }catch(e){}
   try{ q.clear(); }catch(e){}
 }
+/* How big one pack is, in g or ml, from whichever field the entry filled in.
+   "1,5 l" and "500g" both appear, so the text is parsed as a fallback. */
+function packSize(pr){
+  const q=parseFloat(pr.product_quantity);
+  if(isFinite(q)&&q>0&&q<100000) return Math.round(q);
+  const t=String(pr.quantity||"").replace(",",".");
+  const m=t.match(/([\d.]+)\s*(kg|g|gr|l|ml|cl)?/i);
+  if(!m) return 0;
+  let v=parseFloat(m[1]); if(!isFinite(v)||v<=0) return 0;
+  const u=(m[2]||"").toLowerCase();
+  if(u==="kg"||u==="l") v*=1000;
+  else if(u==="cl") v*=10;
+  return (v>0&&v<100000)?Math.round(v):0;
+}
 /* Open Food Facts: free, no key, CORS open. Values come back per 100 g. */
 async function offLookup(code){
   const url="https://world.openfoodfacts.org/api/v2/product/"+encodeURIComponent(code)+
-    ".json?fields=product_name,product_name_ar,brands,nutriments";
+    ".json?fields=product_name,product_name_ar,brands,nutriments,quantity,product_quantity,product_quantity_unit";
   let r;
   try{ r=await fetch(url,{headers:{Accept:"application/json"}}); }
   catch(e){ return {err:"net"}; }
@@ -916,8 +930,10 @@ async function offLookup(code){
   if(!k) k=num(nu["energy_100g"])/4.184;            /* some entries store kJ only */
   const nm=String(pr.product_name_ar||pr.product_name||"").trim();
   const br=String(pr.brands||"").split(",")[0].trim();
+  const liquid=/^(ml|l|cl)$/i.test(String(pr.product_quantity_unit||""))||
+    /\d\s*(ml|cl|l)\b/i.test(String(pr.quantity||""));
   const out={n:(nm||br||""),k:Math.round(k),p:num(nu.proteins_100g),
-    f:num(nu.fat_100g),b:num(nu.carbohydrates_100g)};
+    f:num(nu.fat_100g),b:num(nu.carbohydrates_100g),sz:packSize(pr),u:liquid?"ml":"g"};
   if(!out.k&&!out.p&&!out.f&&!out.b) return {err:"empty",n:out.n};
   return out;
 }
@@ -2696,8 +2712,9 @@ const API={
       API.fdNew({n:(r&&r.n)||"",note:"<b>"+esc(c)+"</b> is not in the database. Copy the numbers off the pack."});
       return;
     }
-    API.fdNew({n:r.n,k:r.k,p:r.p,f:r.f,b:r.b,
-      note:"From Open Food Facts for <b>"+esc(c)+"</b>, per 100 g. Check it against the pack."});
+    API.fdNew({n:r.n,k:r.k,p:r.p,f:r.f,b:r.b,sz:r.sz,u:r.u,
+      note:"From Open Food Facts for <b>"+esc(c)+"</b>, per 100 "+(r.u==="ml"?"ml":"g")+
+        ". Check it against the pack."});
   },
   fdNew(pre){
     stopScanner();
@@ -2708,30 +2725,68 @@ const API={
       "Copy the numbers straight off the label",'',
       (P.note?'<p class="scanmsg" style="text-align:left;margin:14px 0 0">'+P.note+'</p>':'')+
       '<p class="clab">Name</p><input class="ftext" type="text" id="g4nn" value="'+esc(V(P.n))+'">'+
-      '<p class="clab">Measured</p><select class="fsel" id="g4nu">'+
-        '<option value="g">per 100 g</option><option value="ml">per 100 ml</option>'+
-        '<option value="pc">per piece</option></select>'+
+      '<p class="clab">Measured</p><select class="fsel" id="g4nu" onchange="GYM4.fdNewPrev()">'+
+        ['g','ml','pc'].map(x=>'<option value="'+x+'"'+((P.u||"g")===x?' selected':'')+'>'+
+          (x==="g"?"per 100 g":x==="ml"?"per 100 ml":"per piece")+'</option>').join("")+
+        '</select>'+
+      '<div id="g4szwrap"><p class="clab">One pack \u2014 optional</p>'+
+        '<div class="qgrid"><input type="number" inputmode="decimal" min="0" id="g4nsz" '+
+          'value="'+esc(+P.sz>0?String(+P.sz):"")+'" oninput="GYM4.fdNewPrev()">'+
+          '<span class="qu" id="g4szu">g</span></div></div>'+
       '<p class="clab">Protein \u00b7 Fat \u00b7 Carbs</p>'+
       '<div class="n3"><input type="number" inputmode="decimal" min="0" id="g4np" placeholder="P" value="'+esc(V(P.p))+'">'+
         '<input type="number" inputmode="decimal" min="0" id="g4nf" placeholder="F" value="'+esc(V(P.f))+'">'+
         '<input type="number" inputmode="decimal" min="0" id="g4nb" placeholder="C" value="'+esc(V(P.b))+'"></div>'+
       '<p class="clab">Calories \u2014 leave it empty and it works it out</p>'+
-      '<input class="ftext" type="number" inputmode="decimal" min="0" id="g4nk" value="'+esc(V(P.k))+'">'+
+      '<input class="ftext" type="number" inputmode="decimal" min="0" id="g4nk" value="'+esc(V(P.k))+'" '+
+        'oninput="GYM4.fdNewPrev()">'+
+      '<p class="scanmsg" id="g4nprev" style="text-align:left"></p>'+
       '<button class="fgo" onclick="GYM4.fdSaveNew()">Save to the list</button>');
-    const f=$("g4nn"); if(f) f.focus();
+    const f=$("g4nn");
+    if(f){ f.addEventListener("input",()=>API.fdNewPrev()); if(!P.n) f.focus(); }
+    ["g4np","g4nf","g4nb"].forEach(id=>{ const e=$(id); if(e) e.addEventListener("input",()=>API.fdNewPrev()); });
+    API.fdNewPrev();
   },
-  fdSaveNew(){
+  /* Reads the form once, so the preview and the save can never disagree. */
+  fdNewRead(){
     const V=id=>{ const e=$(id); return e?e.value:""; };
-    const n=String(V("g4nn")).trim();
-    if(!n){ const f=$("g4nn"); if(f) f.focus(); return; }
     const num=id=>Math.max(0,parseFloat(V(id))||0);
+    let u=V("g4nu")||"g";
+    if(u!=="ml"&&u!=="pc") u="g";
     const pr=num("g4np"), ft=num("g4nf"), cb=num("g4nb");
     let k=parseFloat(V("g4nk"));
     if(!isFinite(k)||k<0) k=Math.round(pr*4+ft*9+cb*4);
-    const u=V("g4nu")||"g";
+    let n=String(V("g4nn")).trim();
+    /* a pack size turns the per-100 numbers into one piece */
+    const sz=(u==="pc")?0:num("g4nsz");
+    let out={n:n,u:u,k:k,p:pr,f:ft,b:cb,sz:sz};
+    if(sz>0){
+      const m=sz/100;
+      out={n:n,u:"pc",k:Math.round(k*m),p:r1(pr*m),f:r1(ft*m),b:r1(cb*m),sz:sz};
+      const tag=sz+(u==="ml"?"ml":"g");
+      if(n&&n.indexOf(String(sz))<0) out.n=n+" \u2014 "+tag;
+    }
+    return out;
+  },
+  fdNewPrev(){
+    const box=$("g4nprev"); if(!box) return;
+    const e=$("g4nu"), u=e?e.value:"g";
+    const wrap=$("g4szwrap"); if(wrap) wrap.style.display=(u==="pc")?"none":"";
+    const lab=$("g4szu"); if(lab) lab.textContent=(u==="ml")?"ml":"g";
+    const o=API.fdNewRead();
+    if(o.sz>0)
+      box.innerHTML="Saved as one pack: <b>"+esc(o.n||"\u2014")+"</b>, "+
+        o.k+" kcal \u00b7 "+r1(o.p)+"P \u00b7 "+r1(o.f)+"F \u00b7 "+r1(o.b)+"C per piece.";
+    else
+      box.innerHTML="Saved per "+(o.u==="pc"?"piece":("100 "+o.u))+": <b>"+esc(o.n||"\u2014")+"</b>, "+
+        o.k+" kcal \u00b7 "+r1(o.p)+"P \u00b7 "+r1(o.f)+"F \u00b7 "+r1(o.b)+"C."+
+        (o.u==="pc"?"":" Fill in the pack size above to save it as one pack instead.");
+  },
+  fdSaveNew(){
+    const o=API.fdNewRead();
+    if(!o.n){ const f=$("g4nn"); if(f) f.focus(); return; }
     store.lib=store.lib||[];
-    store.lib.push({id:uid(),c:"Other",n:n,
-      u:(u==="ml"||u==="pc")?u:"g",k:k,p:pr,f:ft,b:cb});
+    store.lib.push({id:uid(),c:"Other",n:o.n,u:o.u,k:o.k,p:o.p,f:o.f,b:o.b});
     closeAll(); save(); render();
   },
   fdLibSet(i,key,val){
