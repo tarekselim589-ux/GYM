@@ -778,7 +778,7 @@ function seedLib(){
   }));
   return out;
 }
-function seedDiet(){ return {k:2450,p:190,f:70,b:265,shift:0,days:DAYLOAD.slice()}; }
+function seedDiet(){ return {k:2450,p:190,f:70,b:265,shift:50,days:DAYLOAD.slice()}; }
 
 let store={}, day="sun", editing=false, confirmId=null, timer=null, audio=null, wake=null;
 
@@ -2057,6 +2057,13 @@ function normalize(){
       store.lib.push({id:uid(),c:"Protein",n:a[0],u:"pc",k:a[1],p:a[2],f:a[3],b:a[4]});
     });
     store.mig.food5=1;
+  }
+  /* one-off: switch carb cycling on at 50 g. It runs once, so turning it off
+     later in Edit stays off. */
+  if(!store.mig.food6){
+    store.diet=Object.assign(seedDiet(),store.diet||{});
+    if(!(+store.diet.shift>0)) store.diet.shift=50;
+    store.mig.food6=1;
   }
   if(!Array.isArray(store.eatLog)) store.eatLog=[];
   if(!Array.isArray(store.combo)) store.combo=[];
