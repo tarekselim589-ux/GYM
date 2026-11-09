@@ -163,15 +163,24 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     font-family:inherit;font-size:13.5px;font-weight:650;cursor:pointer}
   #g4 .fillnext:active{background:var(--aqua);color:#062028}
   #g4 .field{position:relative}
-  #g4 .field input{width:100%;background:var(--surface);border:1px solid var(--line);color:var(--chalk);
-    border-radius:10px;padding:13px 34px 13px 10px;font-family:inherit;font-size:17px;font-weight:600;
-    font-variant-numeric:tabular-nums;text-align:left;appearance:none;-moz-appearance:textfield}
+  #g4 .field input{width:100%;background:linear-gradient(180deg,#19384A,#143040);
+    border:1px solid #244C62;color:#7F9DAE;border-radius:12px;padding:15px 42px 15px 13px;
+    font-family:inherit;font-size:22px;font-weight:800;letter-spacing:-.5px;
+    font-variant-numeric:tabular-nums;text-align:left;appearance:none;-moz-appearance:textfield;
+    box-shadow:0 2px 0 rgba(0,0,0,.3);transition:background .15s,border-color .15s,color .15s}
+  /* a set that carries a number sits in a dull teal, well away from the buttons */
+  #g4 .field.has input{background:linear-gradient(180deg,#1C4C54,#163C46);
+    border-color:rgba(53,196,192,.42);color:#fff}
   #g4 .field input::-webkit-outer-spin-button,
   #g4 .field input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
-  #g4 .field input:focus{outline:none;border-color:var(--aqua);background:var(--surface-2)}
-  #g4 .field input::placeholder{color:#4E7387;font-weight:500}
+  #g4 .field input:focus{outline:none;border-color:var(--aqua);
+    box-shadow:0 2px 0 rgba(0,0,0,.3),0 0 0 3px rgba(53,196,192,.14)}
+  #g4 .field input::placeholder{color:#476A80;font-weight:700}
   #g4 .field .unit{position:absolute;right:9px;top:50%;transform:translateY(-50%);
-    color:var(--muted);font-size:11px;pointer-events:none}
+    color:#6E8EA0;font-size:9px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;
+    background:rgba(0,0,0,.24);border-radius:5px;padding:3px 6px;pointer-events:none;
+    transition:color .15s}
+  #g4 .field.has .unit{color:#8FBFC4;background:rgba(0,0,0,.26)}
 
   #g4 .mark{width:22px;height:22px;border-radius:50%;border:1px solid var(--line);
     justify-self:center;display:grid;place-items:center;font-size:10px;color:transparent;transition:all .18s}
@@ -1746,7 +1755,8 @@ function homeView(){
 }
 
 /* ---------- the strip that moves while he trains ---------- */
-function liveStrip(p,s){
+function liveStrip(p,s){ return '<div id="g4live">'+liveBits(p,s)+'</div>'; }
+function liveBits(p,s){
   const done=p.ex.filter(e=>exDone(s,e)).length;
   const vol=sessVol(s), prs=sessPRs(s).length;
   const tot=p.ex.length||1;
@@ -1956,10 +1966,12 @@ function logView(e,ei,pv,s){
   for(let i=0;i<e.s;i++){
     const c=cur[i]||["","",""], p=ps&&ps[i]?ps[i]:null;
     rows+='<div class="set" id="g4r-'+ei+'-'+i+'"><span class="n">'+(i+1)+'</span>'+
-      '<div class="field"><input type="number" inputmode="decimal" step="0.5" value="'+esc(c[0]||"")+'"'+
+      '<div class="field'+(c[0]!==""&&c[0]!==undefined?" has":"")+'">'+
+      '<input type="number" inputmode="decimal" step="0.5" value="'+esc(c[0]||"")+'"'+
         ' placeholder="'+(p?esc(p[0]):"")+'" oninput="GYM4.log('+ei+','+i+',0,this.value)"'+
         ' onfocus="GYM4.awake()" aria-label="Set '+(i+1)+' weight"><span class="unit">kg</span></div>'+
-      '<div class="field"><input type="number" inputmode="numeric" step="1" value="'+esc(c[1]||"")+'"'+
+      '<div class="field'+(c[1]!==""&&c[1]!==undefined?" has":"")+'">'+
+      '<input type="number" inputmode="numeric" step="1" value="'+esc(c[1]||"")+'"'+
         ' placeholder="'+(p?esc(p[1]):"")+'" oninput="GYM4.log('+ei+','+i+',1,this.value)"'+
         ' onfocus="GYM4.awake()" aria-label="Set '+(i+1)+' reps"><span class="unit">rep</span></div>'+
       '<span class="mark" data-state="'+mark(c,p)+'">▲</span></div>';
@@ -3071,7 +3083,15 @@ const API={
       const ins=row.querySelectorAll("input");
       row.querySelector(".mark").setAttribute("data-state",
         mark([ins[0].value,ins[1].value,arr[si][2]||""], ps&&ps[si]?ps[si]:null));
+      for(let k=0;k<ins.length;k++){
+        const fld=ins[k].parentElement;
+        if(fld) fld.classList.toggle("has",ins[k].value!=="");
+      }
     }
+    /* the three numbers up top are meant to move as he logs, not only when
+       the page redraws */
+    const lv=$("g4live");
+    if(lv&&p) lv.innerHTML=liveBits(p,s);
     const done=p.ex.filter(x=>(s.ex[x.id]||[]).some(filled)).length;
     $("g4h2").textContent=fmt(iso())+" · "+done+" of "+p.ex.length+" exercises";
   },
