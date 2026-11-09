@@ -83,14 +83,13 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
 </div>
 <div id="g4">
   <header class="hdr">
-    <div class="mkid" aria-hidden="true">TS</div>
+    <button class="nav" id="g4nav" onclick="GYM4.home()" aria-label="Home">ta</button>
     <div class="id"><div class="d1" id="g4h1"></div><div class="d2" id="g4h2"></div></div>
     <span class="saved" id="g4saved">Saved</span>
     <button class="gear" id="g4edit" onclick="GYM4.toggleEdit()">Edit</button>
     <button class="gear" onclick="GYM4.settings()" aria-label="Settings">⚙</button>
   </header>
   <main id="g4main"><p class="boot">Loading…</p></main>
-  <nav class="tabs" id="g4tabs"></nav>
 </div>
 
 <style>
@@ -118,7 +117,7 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     height:34px;padding:0 11px;font-size:13px;cursor:pointer;flex:0 0 auto;font-family:inherit}
   #g4 .hdr .gear[data-on="1"]{background:var(--aqua);border-color:var(--aqua);color:#062028;font-weight:650}
 
-  #g4 main{padding:6px 14px calc(var(--nav-h) + 90px)}
+  #g4 main{padding:8px 16px 40px}
   #g4 .warn{background:rgba(233,166,60,.12);border:1px solid rgba(233,166,60,.4);
     color:var(--amber);border-radius:10px;padding:11px 13px;font-size:13px;margin:12px 0}
   #g4 .hint{background:rgba(53,196,192,.1);border:1px solid rgba(53,196,192,.35);
@@ -208,10 +207,88 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     padding:13px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--chalk)}
   #g4 .confirm button.yes{background:var(--rose);border-color:var(--rose);color:#1E0B08}
 
+  /* ---- home ---- */
+  #g4 .hw{padding-top:2px}
+  #g4 .hero{position:relative;border-radius:20px;padding:18px;overflow:hidden;
+    background:radial-gradient(90px 90px at 100% 0%,rgba(53,196,192,.3),rgba(53,196,192,0) 70%),
+      linear-gradient(150deg,#13475A 0%,#102E40 55%,#0D2635 100%);
+    border:1px solid rgba(53,196,192,.26)}
+  #g4 .hero.rest{background:radial-gradient(90px 90px at 100% 0%,rgba(53,196,192,.14),rgba(53,196,192,0) 70%),
+      linear-gradient(150deg,#16384A 0%,#102A3A 60%,#0E2534 100%);
+    border-color:var(--line)}
+  #g4 .hero .hro{display:flex;align-items:center;gap:16px;position:relative}
+  #g4 .hero .wkr{width:84px;height:84px;position:relative;flex:0 0 auto}
+  #g4 .hero .wkr .c{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+  #g4 .hero .wkr .c b{display:block;font-size:25px;font-weight:800;letter-spacing:-1px;line-height:1;
+    font-variant-numeric:tabular-nums}
+  #g4 .hero .wkr .c b s{text-decoration:none;font-size:14px;opacity:.55}
+  #g4 .hero .wkr .c i{display:block;font-style:normal;color:#9FBECB;font-size:8px;
+    text-transform:uppercase;letter-spacing:.8px;margin-top:3px}
+  #g4 .hero .tx{flex:1;min-width:0}
+  #g4 .hero .k{color:#6FE3DE;font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;font-weight:800}
+  #g4 .hero h2{margin:5px 0 0;font-size:25px;font-weight:800;letter-spacing:-.8px;line-height:1.1}
+  #g4 .hero .s{color:#B6CEDA;font-size:12.5px;margin-top:6px;line-height:1.45}
+  #g4 .hero .s b{color:var(--chalk)}
+  #g4 .hero .go{display:block;width:100%;margin-top:14px;background:var(--aqua);color:#042028;
+    border:none;border-radius:12px;padding:14px;font-family:inherit;font-size:14.5px;font-weight:800;
+    position:relative;cursor:pointer}
+  #g4 .hero.rest .go{background:none;border:1px solid rgba(53,196,192,.5);color:var(--aqua)}
+  #g4 h3.hh{margin:22px 0 10px;font-size:9.5px;text-transform:uppercase;letter-spacing:1.4px;
+    color:#6E8EA0;font-weight:800}
+  #g4 .hgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  #g4 .tile{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:16px;
+    background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,0) 60%),var(--surface);
+    padding:14px;text-align:left;min-height:104px;display:flex;flex-direction:column;
+    font-family:inherit;color:inherit;cursor:pointer}
+  #g4 .tile:after{content:"";position:absolute;left:-26px;top:-26px;width:76px;height:76px;
+    border-radius:50%;background:radial-gradient(circle,var(--mc) 0%,transparent 70%);opacity:.3}
+  #g4 .tile:active{border-color:rgba(53,196,192,.5)}
+  #g4 .tile .dn{font-size:17px;font-weight:780;letter-spacing:-.3px;position:relative}
+  #g4 .tile .sp{color:var(--mc);font-size:9.5px;text-transform:uppercase;letter-spacing:1.1px;
+    font-weight:800;margin-top:3px;position:relative}
+  #g4 .tile .ft{margin-top:auto;padding-top:11px;font-size:11.5px;color:#7F9DAE;
+    font-variant-numeric:tabular-nums;position:relative}
+  #g4 .tile .ft b{color:var(--chalk);font-weight:700;font-size:13px}
+  #g4 .tile .badge{position:absolute;right:11px;top:11px;font-size:8.5px;font-weight:800;
+    letter-spacing:.5px;padding:3.5px 7px;border-radius:6px;z-index:2}
+  #g4 .tile .badge.ok{background:rgba(53,196,192,.16);color:var(--aqua);
+    border:1px solid rgba(53,196,192,.45)}
+  #g4 .tile .badge.due{background:rgba(233,166,60,.14);color:var(--amber);
+    border:1px solid rgba(233,166,60,.45)}
+  #g4 .tile .badge.late{background:rgba(217,112,95,.18);color:#F0907E;
+    border:1px solid rgba(217,112,95,.55)}
+  #g4 .tile.flag{border-color:rgba(217,112,95,.45);box-shadow:0 0 0 1px rgba(217,112,95,.12)}
+  #g4 .tile.food{grid-column:1/-1;flex-direction:row;align-items:center;gap:15px;min-height:0}
+  #g4 .tile.food .ring{width:66px;height:66px;position:relative;flex:0 0 auto}
+  #g4 .tile.food .ring .n{position:absolute;inset:0;display:grid;place-items:center;font-size:15px;
+    font-weight:800;font-variant-numeric:tabular-nums}
+  #g4 .tile.food .b{flex:1;min-width:0}
+  #g4 .tile .dn.lbl{font-size:12px;font-weight:800;letter-spacing:1.1px;text-transform:uppercase;
+    color:#7F9DAE;margin-bottom:3px}
+  #g4 .tile.food .big{font-size:21px;font-weight:800;letter-spacing:-.5px;
+    font-variant-numeric:tabular-nums}
+  #g4 .tile.food .big s{text-decoration:none;font-size:12px;color:#7F9DAE;font-weight:600;margin-left:3px}
+  #g4 .tile.food .pill{display:inline-block;margin-top:5px;font-size:9.5px;font-weight:800;
+    letter-spacing:.7px;text-transform:uppercase;color:var(--amber);background:rgba(233,166,60,.13);
+    border:1px solid rgba(233,166,60,.35);border-radius:6px;padding:2.5px 7px}
+  #g4 .tile.food .m{display:flex;gap:9px;margin-top:8px}
+  #g4 .tile.food .m span{font-size:10.5px;color:#7F9DAE;font-variant-numeric:tabular-nums}
+  #g4 .tile.food .m i{font-style:normal;color:var(--chalk);font-weight:700}
+  #g4 .wkline{margin-top:12px;display:flex;align-items:center;gap:9px;border:1px solid var(--line);
+    border-radius:12px;background:var(--surface);padding:12px 14px}
+  #g4 .wkline .v{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
+  #g4 .wkline .t{flex:1;color:#7F9DAE;font-size:11.5px;line-height:1.4}
+  #g4 .wkline .d{color:var(--aqua);font-size:12.5px;font-weight:750}
+  #g4 .wkline .d.dn2{color:var(--amber)}
+  /* back out of a screen */
+  #g4 .hdr .nav{width:38px;height:38px;border-radius:11px;flex:0 0 auto;background:#15364A;
+    border:1px solid var(--line);color:var(--aqua);display:grid;place-items:center;
+    font-size:20px;line-height:1;font-family:inherit;cursor:pointer;padding:0}
+  #g4 .hdr .nav.logo{background:linear-gradient(140deg,#3FD8D2,#17627E);border:none;color:#05202A;
+    font-size:13px;font-weight:800;letter-spacing:-.3px;text-transform:lowercase;
+    box-shadow:0 5px 18px rgba(53,196,192,.26)}
+
   /* ---- the strip that moves while he trains ---- */
-  #g4 .hdr .mkid{width:33px;height:33px;border-radius:9px;flex:0 0 auto;
-    background:linear-gradient(135deg,#35C4C0,#1B6E8C);display:grid;place-items:center;
-    font-weight:800;font-size:12.5px;color:#06202A;letter-spacing:-.5px}
   #g4 .bkslim{display:flex;align-items:center;gap:10px;border:1px solid rgba(233,166,60,.3);
     background:rgba(233,166,60,.07);border-radius:9px;padding:9px 11px;color:var(--amber);
     font-size:11.5px;margin:10px 0}
@@ -368,15 +445,6 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .prc .r{font-size:13px;font-variant-numeric:tabular-nums;color:#F0C04A;font-weight:700;flex:0 0 auto}
   #g4 .finbtn{width:100%;margin-top:16px;background:var(--aqua);border:none;color:#062028;
     border-radius:11px;padding:15px;font-family:inherit;font-size:15px;font-weight:750;cursor:pointer}
-
-  #g4 .tabs{position:fixed;bottom:0;left:0;right:0;z-index:30;background:rgba(12,33,48,.96);
-    backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
-    border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(7,1fr)}
-  #g4 .tabs button{background:none;border:none;color:var(--muted);font-family:inherit;cursor:pointer;
-    height:var(--nav-h);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:0}
-  #g4 .tabs .t1{font-size:11.5px;font-weight:650}
-  #g4 .tabs .t2{font-size:9px;opacity:.7;letter-spacing:.2px;text-transform:uppercase}
-  #g4 .tabs button[aria-current="true"]{color:var(--aqua)}
 
   /* stats + body */
   #g4 h3{margin:22px 0 4px;font-size:12px;font-weight:650;color:var(--muted);
@@ -924,7 +992,7 @@ function seedLib(){
 }
 function seedDiet(){ return {k:2450,p:190,f:70,b:265,shift:50,days:DAYLOAD.slice()}; }
 
-let store={}, day="sun", editing=false, confirmId=null, wake=null, openId=null;
+let store={}, day="sun", editing=false, confirmId=null, wake=null, openId=null, home=true;
 
 const iso=d=>{const x=d||new Date();
   return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0");};
@@ -1396,17 +1464,6 @@ function chartSVG(pts,noPr){
 }
 
 /* ================= views ================= */
-function tabs(){
-  $("g4tabs").innerHTML=store.program.map(p=>
-    '<button onclick="GYM4.go(\''+p.id+'\')" aria-current="'+(p.id===day)+'">'+
-    '<span class="t1">'+esc(p.short)+'</span><span class="t2">'+esc(p.label)+'</span></button>').join("")+
-    '<button onclick="GYM4.go(\'fd\')" aria-current="'+(day==="fd")+'">'+
-      '<span class="t1">Food</span><span class="t2">kcal</span></button>'+
-    '<button onclick="GYM4.go(\'st\')" aria-current="'+(day==="st")+'">'+
-      '<span class="t1">Stats</span><span class="t2">PR</span></button>'+
-    '<button onclick="GYM4.go(\'bd\')" aria-current="'+(day==="bd")+'">'+
-      '<span class="t1">Body</span><span class="t2">kg/cm</span></button>';
-}
 
 function hasLogs(){
   return Object.keys(store.days||{}).some(k=>
@@ -1473,8 +1530,9 @@ function sessMins(s){
 }
 
 /* exercises whose best set today beats everything logged before today */
-function sessPRs(s){
-  const out=[], p=plan();
+function sessPRs(s,dayId){
+  const out=[], p=dayId?planOf(dayId):plan();
+  const dk=dayId||day;
   (p?p.ex:[]).forEach(e=>{
     const sets=((s.ex||{})[e.id]||[]).filter(filled);
     if(!sets.length) return;
@@ -1486,7 +1544,7 @@ function sessPRs(s){
       if(v>best){ best=v; bw=w; br=r; }
     });
     if(!best) return;
-    const prior=exSeries(day,e.id).filter(x=>x.date!==s.date);
+    const prior=exSeries(dk,e.id).filter(x=>x.date!==s.date);
     if(!prior.length) return;   /* the first time you do something is not a record */
     const top=prior.reduce((a,b)=>b.e>a.e?b:a,prior[0]).e;
     if(best>top+0.001) out.push({id:e.id,n:e.n,w:bw,r:br});
@@ -1524,6 +1582,167 @@ function backupBanner(){
   return '<div class="bkslim"><span>'+
     (last?"Last backup "+age+" days ago":"No backup yet — your log lives in this browser only")+
     '</span><button onclick="GYM4.saveBackup(this)">Back up</button></div>';
+}
+
+/* ================= the home screen ================= */
+const planOf=id=>store.program.find(p=>p.id===id);
+
+/* Sunday 00:00 of the week we are in */
+function weekStart(back){
+  const d=new Date(); d.setHours(0,0,0,0);
+  d.setDate(d.getDate()-d.getDay()-7*(back||0));
+  return d;
+}
+const sessHas=s=>!!s&&!!s.ex&&Object.keys(s.ex).some(k=>(s.ex[k]||[]).some(filled));
+
+/* the last session on a given day that actually holds numbers */
+function lastReal(dayId){
+  const ss=((store.days||{})[dayId]||{}).sessions||[];
+  for(let i=ss.length-1;i>=0;i--) if(sessHas(ss[i])) return ss[i];
+  return null;
+}
+const daysAgo=d=>Math.floor((Date.now()-t0(d))/864e5);
+
+/* every session this week, across every day */
+function weekSessions(back){
+  const from=iso(weekStart(back)), to=iso(weekStart((back||0)-1));
+  const out=[];
+  Object.keys(store.days||{}).forEach(id=>{
+    (((store.days[id]||{}).sessions)||[]).forEach(s=>{
+      if(sessHas(s)&&s.date>=from&&s.date<to) out.push(s);
+    });
+  });
+  return out;
+}
+const weekVol=back=>weekSessions(back).reduce((a,s)=>a+sessVol(s),0);
+
+/* records broken this week, counted across all four days */
+function weekPRs(){
+  const from=iso(weekStart());
+  let n=0;
+  (store.program||[]).forEach(p=>{
+    (((store.days||{})[p.id]||{}).sessions||[]).forEach(s=>{
+      if(!sessHas(s)||s.date<from) return;
+      n+=sessPRs(s,p.id).length;
+    });
+  });
+  return n;
+}
+
+/* where each training day stands */
+function dayCard(p){
+  const last=lastReal(p.id), from=iso(weekStart());
+  const done=last&&last.date>=from;
+  const ago=last?daysAgo(last.date):null;
+  let badge="", flag="";
+  if(done) badge='<span class="badge ok">DONE</span>';
+  else if(ago===null) badge='<span class="badge due">NEW</span>';
+  else if(ago>10){ badge='<span class="badge late">'+ago+' DAYS</span>'; flag=" flag"; }
+  else badge='<span class="badge due">DUE</span>';
+  const mc=p.ex&&p.ex.length?mcol(p.ex[0]):"#8CA9B8";
+  const foot=last
+    ? '<b>'+sessVol(last).toLocaleString()+'</b> kg · '+fmt(last.date)
+    : 'not logged yet';
+  return '<button class="tile'+flag+'" style="--mc:'+mc+'" onclick="GYM4.go(\''+p.id+'\')">'+
+    badge+'<div class="dn">'+esc(p.day)+'</div><div class="sp">'+esc(p.label)+'</div>'+
+    '<div class="ft">'+foot+'</div></button>';
+}
+
+function homeView(){
+  const from=iso(weekStart());
+  const prog=store.program||[];
+  const doneWk=prog.filter(p=>{ const l=lastReal(p.id); return l&&l.date>=from; }).length;
+  const todayId={0:"sun",2:"tue",3:"wed",5:"fri"}[new Date().getDay()];
+  const todayPlan=todayId?planOf(todayId):null;
+
+  /* the hero: what today is, and the one thing to do about it */
+  let k,h2,sub,cta,ctaId,rest="";
+  if(todayPlan){
+    const s=(((store.days||{})[todayId]||{}).sessions||[]).find(x=>x.date===iso());
+    const did=s?prog.find(p=>p.id===todayId).ex.filter(e=>exDone(s,e)).length:0;
+    const tot=todayPlan.ex.length;
+    k="Today · "+esc(todayPlan.day);
+    h2=esc(todayPlan.label);
+    sub=s&&s.closed ? "Closed for today. "+sessVol(s).toLocaleString()+" kg moved."
+      : did ? "<b>"+did+" of "+tot+"</b> exercises done."
+      : tot+" exercises waiting.";
+    cta=(s&&s.closed?"Open ":did?"Carry on with ":"Start ")+esc(todayPlan.day);
+    ctaId=todayId;
+  }else{
+    /* a rest day points at whichever day has waited longest */
+    let worst=null, wa=-1;
+    prog.forEach(p=>{ const l=lastReal(p.id); const a=l?daysAgo(l.date):999;
+      if(a>wa){ wa=a; worst=p; } });
+    k="Today · "+["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][new Date().getDay()];
+    h2="Rest day"; rest=" rest";
+    sub=worst?("Next up is <b>"+esc(worst.day)+" · "+esc(worst.label)+"</b>"+
+        (wa<900?" — "+wa+" days since the last one.":".")):"Nothing scheduled.";
+    cta=worst?("Open "+esc(worst.day)+" · "+esc(worst.label)):"";
+    ctaId=worst?worst.id:null;
+  }
+  const C=2*Math.PI*35, pc=prog.length?doneWk/prog.length:0;
+  const hero='<div class="hero'+rest+'"><div class="hro">'+
+    '<div class="wkr"><svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true">'+
+      '<circle cx="42" cy="42" r="35" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="7"/>'+
+      (pc>0?'<circle cx="42" cy="42" r="35" fill="none" stroke="#6FE3DE" stroke-width="7"'+
+        ' stroke-linecap="round" stroke-dasharray="'+C.toFixed(1)+'"'+
+        ' stroke-dashoffset="'+(C*(1-pc)).toFixed(1)+'" transform="rotate(-90 42 42)"/>':'')+
+      '</svg>'+
+      '<div class="c"><div><b>'+doneWk+'<s>/'+prog.length+'</s></b><i>this week</i></div></div></div>'+
+    '<div class="tx"><div class="k">'+k+'</div><h2>'+h2+'</h2><div class="s">'+sub+'</div></div>'+
+    '</div>'+
+    (ctaId?'<button class="go" onclick="GYM4.go(\''+ctaId+'\')">'+cta+'</button>':'')+
+    '</div>';
+
+  /* food */
+  const t=eatTotal(), g=dietOf(new Date());
+  const left=Math.round(g.k-t.k), pct=g.k?Math.round(t.k/g.k*100):0;
+  const FC=2*Math.PI*28, fp=Math.max(0,Math.min(1,g.k?t.k/g.k:0));
+  const food='<button class="tile food" style="--mc:#E9A63C" onclick="GYM4.go(\'fd\')">'+
+    '<div class="ring"><svg width="66" height="66" viewBox="0 0 66 66" aria-hidden="true">'+
+      '<circle cx="33" cy="33" r="28" fill="none" stroke="#17384A" stroke-width="7"/>'+
+      '<circle cx="33" cy="33" r="28" fill="none" stroke="#E9A63C" stroke-width="7" stroke-linecap="round"'+
+        ' stroke-dasharray="'+FC.toFixed(1)+'" stroke-dashoffset="'+(FC*(1-fp)).toFixed(1)+'"'+
+        ' transform="rotate(-90 33 33)"/></svg>'+
+      '<span class="n">'+pct+'%</span></div>'+
+    '<div class="b"><div class="dn lbl">Food</div><div class="big">'+Math.abs(left).toLocaleString()+
+      '<s>kcal '+(left<0?"over":"left")+'</s></div>'+
+      '<span class="pill">'+(g.heavy?"High":"Light")+' carb day</span>'+
+      '<div class="m"><span>P <i>'+Math.round(t.p)+'/'+g.p+'</i></span>'+
+        '<span>F <i>'+Math.round(t.f)+'/'+g.f+'</i></span>'+
+        '<span>C <i>'+Math.round(t.b)+'/'+g.b+'</i></span></div></div></button>';
+
+  /* stats */
+  const np=weekPRs();
+  const stats='<button class="tile" style="--mc:#35C4C0" onclick="GYM4.go(\'st\')">'+
+    '<div class="dn">Stats</div><div class="sp">Records</div>'+
+    '<div class="ft"><b>'+np+'</b> PR'+(np===1?"":"s")+' this week</div></button>';
+
+  /* body */
+  const ws=(store.weights||[]).filter(x=>x&&isFinite(+x.v)).slice().sort((a,b)=>a.d<b.d?-1:1);
+  const lw=ws.length?ws[ws.length-1]:null;
+  const wAgo=lw?daysAgo(lw.d):null;
+  const wb=lw===null||wAgo===null?'<span class="badge due">NEW</span>'
+    :wAgo>=7?'<span class="badge late">'+wAgo+' D</span>'
+    :wAgo>=3?'<span class="badge due">'+wAgo+' D</span>':'';
+  const body='<button class="tile" style="--mc:#9FB3C8" onclick="GYM4.go(\'bd\')">'+wb+
+    '<div class="dn">Body</div><div class="sp">Weight</div>'+
+    '<div class="ft">'+(lw?'<b>'+r1(lw.v)+'</b> kg · '+fmt(lw.d):'no weigh-in yet')+'</div></button>';
+
+  /* the week in one line */
+  const v1=weekVol(0), v0=weekVol(1);
+  let wl="";
+  if(v1>0){
+    const d=v0>0?Math.round((v1-v0)/v0*100):null;
+    wl='<div class="wkline"><span class="v">'+v1.toLocaleString()+'</span>'+
+      '<span class="t">kg moved this week</span>'+
+      (d===null?'':'<span class="d'+(d<0?' dn2':'')+'">'+(d>=0?"+":"")+d+'%</span>')+'</div>';
+  }
+
+  return '<div class="hw">'+hero+
+    '<h3 class="hh">Training</h3><div class="hgrid">'+prog.map(dayCard).join("")+'</div>'+
+    '<h3 class="hh">Today</h3><div class="hgrid">'+food+stats+body+'</div>'+
+    wl+'</div>';
 }
 
 /* ---------- the strip that moves while he trains ---------- */
@@ -1622,9 +1841,23 @@ function closedView(p,s){
 }
 
 function render(){
-  tabs();
   const m=$("g4main");
   const warn=Store.ok?"":'<div class="warn">Saving is not available here. Open this in Safari so your logs persist.</div>';
+  const nav=$("g4nav");
+  if(nav){
+    nav.textContent=home?"ta":"\u2039";
+    nav.className="nav"+(home?" logo":"");
+    nav.setAttribute("aria-label",home?"Home":"Back to home");
+  }
+  if(home){
+    const hh=new Date().getHours();
+    $("g4h1").textContent="TAREK";
+    $("g4h2").textContent=(hh<12?"Good morning":hh<18?"Good afternoon":"Good evening")+
+      " \u00b7 "+fmt(iso());
+    $("g4edit").style.display="none";
+    m.innerHTML=warn+backupBanner()+homeView();
+    return;
+  }
   const eb=$("g4edit");
   eb.style.display=(day==="st"||day==="bd")?"none":"";
   eb.setAttribute("data-on",editing?"1":"0");
@@ -2740,11 +2973,15 @@ const API={
     const map={0:"sun",2:"tue",3:"wed",5:"fri"};
     day=map[new Date().getDay()]||"sun";
     if(!plan()) day=store.program[0].id;
+    home=true;
     render();
     if(migWrote){ migWrote=false; save(); }
   },
-  go(id){ day=id; confirmId=null; editing=false; render(); ROOT().scrollIntoView({block:"start"}); },
-  jump(dayId,ei){ day=dayId; editing=false; confirmId=null; render(); API.history(ei); },
+  go(id){ home=false; day=id; confirmId=null; editing=false; openId=null; render();
+    ROOT().scrollIntoView({block:"start"}); },
+  home(){ home=true; editing=false; confirmId=null; openId=null; render();
+    ROOT().scrollIntoView({block:"start"}); },
+  jump(dayId,ei){ home=false; day=dayId; editing=false; confirmId=null; render(); API.history(ei); },
   toggleEdit(){ editing=!editing; confirmId=null; render(); ROOT().scrollIntoView({block:"start"}); },
 
   /* Open one exercise by hand. Tapping the open one again lets the day go back
