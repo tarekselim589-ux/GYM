@@ -126,7 +126,6 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
 
   #g4 .ex{border:1px solid var(--line);border-radius:13px;background:var(--surface);
     padding:14px 13px 14px 16px;margin:10px 0}
-  #g4 .ex:first-of-type{border-top:none}
   #g4 .ex-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
   #g4 .ex-name{text-align:left;flex:1;font-size:16px;font-weight:650;line-height:1.28;letter-spacing:-.1px;
     background:none;border:none;color:var(--chalk);font-family:inherit;padding:0;cursor:pointer}
@@ -230,37 +229,26 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .live .v.gold{color:#F0C04A}
   #g4 .live .l{color:var(--muted);font-size:9.5px;text-transform:uppercase;
     letter-spacing:.6px;margin-top:2px}
-  #g4 .pbar{height:3px;background:#143040;border-radius:2px;overflow:hidden}
-  #g4 .pbar i{display:block;height:100%;background:linear-gradient(90deg,#35C4C0,#6FE3C4);
+  #g4 .sprog{height:3px;background:#143040;border-radius:2px;overflow:hidden}
+  #g4 .sprog i{display:block;height:100%;background:linear-gradient(90deg,#35C4C0,#6FE3C4);
     border-radius:2px;transition:width .35s ease}
   #g4 .vsline{margin-top:8px;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
   #g4 .vsline.up{color:var(--aqua)}
   #g4 .vsline i{font-style:normal;color:#55748A}
 
-  /* ---- the week ---- */
-  #g4 .streak{display:flex;align-items:center;gap:6px;margin:11px 0 2px;flex-wrap:wrap}
-  #g4 .streak .lab{color:var(--muted);font-size:10px;text-transform:uppercase;
-    letter-spacing:.7px;margin-right:2px}
-  #g4 .streak .dot{width:23px;height:23px;border-radius:7px;display:grid;place-items:center;
-    font-size:9.5px;font-weight:700;color:var(--muted);border:1px solid var(--line);background:#102A3A}
-  #g4 .streak .dot.on{background:rgba(53,196,192,.18);border-color:var(--aqua);color:var(--aqua)}
-  #g4 .streak .dot.today{box-shadow:0 0 0 2px rgba(53,196,192,.28)}
-  #g4 .streak .dot.miss{border-color:#2A3F4E;color:#4E6878}
-  #g4 .streak .run{color:var(--aqua);font-size:11.5px;font-weight:700;margin-left:3px}
-
   /* ---- a colour per muscle, and the two collapsed states ---- */
   #g4 section.ex{position:relative;overflow:hidden}
   #g4 section.ex:before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;
     background:var(--mc,#35C4C0)}
-  #g4 section.ex.pend,#g4 section.ex.sk,#g4 section.ex:has(.done){padding-top:12px;padding-bottom:12px}
+  #g4 section.ex.pend,#g4 section.ex.sk,#g4 section.ex.cmp{padding-top:12px;padding-bottom:12px}
   #g4 section.ex.cur{border-color:rgba(53,196,192,.45);box-shadow:0 0 0 1px rgba(53,196,192,.1)}
   #g4 section.ex.pend,#g4 section.ex.sk{cursor:pointer}
   #g4 section.ex.pend{opacity:.72}
   #g4 section.ex.sk{opacity:.5}
   #g4 .done{display:flex;align-items:center;gap:9px;cursor:pointer}
-  #g4 .done .tick{width:21px;height:21px;border-radius:50%;background:rgba(53,196,192,.16);
+  #g4 .done .dn{width:21px;height:21px;border-radius:50%;background:rgba(53,196,192,.16);
     border:1px solid var(--aqua);color:var(--aqua);display:grid;place-items:center;
-    font-size:11px;flex:0 0 auto}
+    font-size:11px;line-height:1;flex:0 0 auto;padding:0;margin:0}
   #g4 .done .nm{flex:1;min-width:0;font-size:14px;font-weight:600;color:#C9DAE2;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #g4 .done .res{font-size:12.5px;font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
@@ -271,7 +259,8 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     font-variant-numeric:tabular-nums;flex:0 0 auto}
   #g4 .up .nm{flex:1;min-width:0;font-size:14.5px;font-weight:600;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  #g4 .up .t{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
+  #g4 .up .tg{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;
+    white-space:nowrap;flex:0 0 auto}
   #g4 .prb{background:linear-gradient(135deg,#F0C04A,#E09A2B);color:#2A1C00;font-size:9.5px;
     font-weight:800;padding:2.5px 6px;border-radius:5px;letter-spacing:.4px;flex:0 0 auto}
   #g4 .rowq .prb{flex:0 0 auto}
@@ -289,35 +278,39 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .sheetc{border:1px solid rgba(233,166,60,.4);border-radius:14px;margin-bottom:12px;
     background:rgba(233,166,60,.06);overflow:hidden}
   #g4 .sheetc .sh{padding:14px 14px 11px}
-  #g4 .sheetc .sh .t{font-size:16px;font-weight:750;color:var(--amber);letter-spacing:-.2px}
+  #g4 .sheetc .sh .ttl{font-size:16px;font-weight:750;color:var(--amber);letter-spacing:-.2px;
+    line-height:1.3}
   #g4 .sheetc .sh .s{color:#C9B48A;font-size:12.5px;margin-top:4px;line-height:1.45}
   #g4 .sheetc.skip{border-color:var(--line);background:var(--surface)}
-  #g4 .sheetc.skip .sh .t{color:var(--chalk)}
+  #g4 .sheetc.skip .sh .ttl{color:var(--chalk)}
   #g4 .sheetc.skip .sh .s{color:var(--muted)}
-  #g4 .miss{display:flex;align-items:center;gap:10px;padding:12px 14px;
+  #g4 .gapr{display:flex;align-items:center;gap:10px;padding:12px 14px;
     border-top:1px solid rgba(233,166,60,.2)}
-  #g4 .sheetc.skip .miss{border-top-color:var(--line)}
-  #g4 .miss .ic{width:24px;height:24px;border-radius:7px;background:rgba(233,166,60,.16);
+  #g4 .sheetc.skip .gapr{border-top-color:var(--line)}
+  #g4 .gapr .ic{width:24px;height:24px;border-radius:7px;background:rgba(233,166,60,.16);
     border:1px solid rgba(233,166,60,.45);color:var(--amber);display:grid;place-items:center;
     font-size:11px;font-weight:800;flex:0 0 auto}
-  #g4 .sheetc.skip .miss .ic{background:#102A3A;border-color:var(--line);color:#4E6878}
-  #g4 .miss .tx{flex:1;min-width:0}
-  #g4 .miss .tx b{display:block;font-size:13.5px;font-weight:650}
-  #g4 .miss .tx i{display:block;font-style:normal;color:var(--muted);font-size:11.5px;margin-top:2px}
-  #g4 .miss .go{border:1px solid var(--line);background:#102A3A;color:var(--aqua);border-radius:8px;
+  #g4 .sheetc.skip .gapr .ic{background:#102A3A;border-color:var(--line);color:#4E6878}
+  #g4 .gapr .tx{flex:1;min-width:0}
+  #g4 .gapr .tx b{display:block;font-size:13.5px;font-weight:650}
+  #g4 .gapr .tx i{display:block;font-style:normal;color:var(--muted);font-size:11.5px;margin-top:2px}
+  #g4 .gapr .go{border:1px solid var(--line);background:#102A3A;color:var(--aqua);border-radius:8px;
     padding:7px 11px;font-size:12px;font-weight:650;font-family:inherit;flex:0 0 auto;cursor:pointer}
-  #g4 .miss .sw{width:44px;height:25px;border-radius:13px;background:#102A3A;
+  #g4 .gapr .sw{width:44px;height:25px;border-radius:13px;background:#102A3A;
     border:1px solid var(--line);position:relative;flex:0 0 auto;cursor:pointer;padding:0}
-  #g4 .miss .sw:after{content:"";position:absolute;top:2px;left:2px;width:19px;height:19px;
+  #g4 .gapr .sw:after{content:"";position:absolute;top:2px;left:2px;width:19px;height:19px;
     border-radius:50%;background:#4E6878;transition:left .15s}
-  #g4 .miss .sw.on{background:rgba(53,196,192,.22);border-color:var(--aqua)}
-  #g4 .miss .sw.on:after{left:21px;background:var(--aqua)}
+  #g4 .gapr .sw.on{background:rgba(53,196,192,.22);border-color:var(--aqua)}
+  #g4 .gapr .sw.on:after{left:21px;background:var(--aqua)}
 
   /* ---- a closed day ---- */
   #g4 .locked{border:1px solid rgba(53,196,192,.35);border-radius:14px;
     background:rgba(53,196,192,.06);padding:15px;margin:12px 0}
-  #g4 .locked .t{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:750}
-  #g4 .locked .t span{width:24px;height:24px;border-radius:50%;background:rgba(53,196,192,.18);
+  #g4 .locked.none{border-color:var(--line);background:var(--surface)}
+  #g4 .locked.none .hl2 span{background:#102A3A;border-color:var(--line);color:var(--muted)}
+  #g4 .locked .hl2{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:750;
+    line-height:1.3}
+  #g4 .locked .hl2 span{width:24px;height:24px;border-radius:50%;background:rgba(53,196,192,.18);
     border:1px solid var(--aqua);color:var(--aqua);display:grid;place-items:center;
     font-size:12px;flex:0 0 auto}
   #g4 .locked .s{color:var(--muted);font-size:12.5px;margin-top:6px;line-height:1.5}
@@ -353,7 +346,7 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     border-radius:12px;padding:13px 14px;display:flex;align-items:center;gap:12px}
   #g4 .vs .big{font-size:24px;font-weight:800;color:var(--aqua);letter-spacing:-.6px;
     font-variant-numeric:tabular-nums;flex:0 0 auto}
-  #g4 .vs .big.sm{font-size:21px}
+  #g4 .vs .big.lvl{font-size:21px;margin-top:0}
   #g4 .vs .big s{text-decoration:none;font-size:12px;font-weight:600;margin-left:2px}
   #g4 .vs .tx{font-size:13px;line-height:1.45;color:#CBDCE4}
   #g4 .vs .tx b{color:var(--chalk)}
@@ -950,11 +943,32 @@ function stamp(s){
   if(!s.t0) s.t0=n;
   s.t1=n;
 }
+/* Does this session hold anything at all — a number, a skip, or a closing? */
+function sessAny(s){
+  if(!s) return false;
+  if(s.closed) return true;
+  if(Array.isArray(s.skip)&&s.skip.length) return true;
+  const ex=s.ex||{};
+  return Object.keys(ex).some(k=>(ex[k]||[]).some(x=>x&&(half(x[0])||half(x[1]))));
+}
+/* Opening a day used to file a session row there and then, so just looking at
+   Sunday on a Tuesday left an empty row behind. The row is now held back until
+   save() sees something in it. */
+let waiting=null;
 function todaySess(){
   const d=logs(day), t=iso();
-  let s=d.sessions.find(x=>x.date===t);
-  if(!s){ s={date:t,ex:{}}; d.sessions.push(s); d.sessions.sort((a,b)=>a.date<b.date?-1:1); }
-  return s;
+  const found=d.sessions.find(x=>x.date===t);
+  if(found) return found;
+  if(waiting&&waiting.date===t&&waiting.day===day) return waiting.s;
+  waiting={date:t,day:day,list:d.sessions,s:{date:t,ex:{}}};
+  return waiting.s;
+}
+/* called by save(), once the held-back session has earned its place */
+function fileSession(){
+  if(!waiting||!sessAny(waiting.s)) return;
+  waiting.list.push(waiting.s);
+  waiting.list.sort((a,b)=>a.date<b.date?-1:1);
+  waiting=null;
 }
 function prevSess(){
   const t=iso();
@@ -1208,6 +1222,7 @@ const perLab=u=>u==="pc"?"/piece":(u==="ml"?"/100ml":"/100g");
 
 let flash=null;
 function save(){
+  fileSession();
   store.ts=Date.now();
   Store.write(JSON.stringify(store)).then(ok=>{
     if(!ok) return;
@@ -1419,6 +1434,18 @@ function exTouched(s,e){
 const isSkipped=(s,e)=>Array.isArray(s.skip)&&s.skip.indexOf(e.id)>=0;
 
 /* kilos actually moved today: weight × reps over every finished set */
+/* The last session on this day that actually holds numbers. prevSess() accepts a
+   session that only has an exercise key, and his log has several of those — opening
+   the app on a day is enough to make one. They are not sessions to measure against. */
+function prevReal(){
+  const t=iso(), ss=logs(day).sessions;
+  for(let i=ss.length-1;i>=0;i--){
+    const x=ss[i];
+    if(!x||x.date>=t||!x.ex) continue;
+    if(Object.keys(x.ex).some(k=>(x.ex[k]||[]).some(filled))) return x;
+  }
+  return null;
+}
 function sessVol(s){
   let v=0;
   Object.keys((s||{}).ex||{}).forEach(k=>((s.ex[k])||[]).forEach(x=>{
@@ -1488,28 +1515,6 @@ function dayGaps(){
   return {hard:hard,soft:soft};
 }
 
-/* the last seven days, trained or not */
-function streak7(){
-  const out=[], L=["S","M","T","W","T","F","S"], now=new Date();
-  const hit={};
-  Object.keys(store.days||{}).forEach(id=>{
-    (((store.days[id]||{}).sessions)||[]).forEach(s=>{
-      if(s.ex&&Object.keys(s.ex).some(k=>(s.ex[k]||[]).some(filled))) hit[s.date]=1;
-    });
-  });
-  for(let i=6;i>=0;i--){
-    const d=new Date(now.getTime()-i*864e5);
-    out.push({l:L[d.getDay()],on:!!hit[iso(d)],today:i===0});
-  }
-  return out;
-}
-function streakRun(){
-  const a=streak7();
-  let i=a.length-1, n=0;
-  if(i>=0&&!a[i].on) i--;      /* today not logged yet does not break anything */
-  for(;i>=0;i--){ if(a[i].on) n++; else break; }
-  return n;
-}
 
 function backupBanner(){
   if(!hasLogs()) return "";
@@ -1527,14 +1532,17 @@ function liveStrip(p,s){
   const vol=sessVol(s), prs=sessPRs(s).length;
   const tot=p.ex.length||1;
   const pct=Math.round(done/tot*100);
-  const pv=prevSess();
+  const pv=prevReal();
   const pvol=pv?sessVol(pv):0;
   let vs="";
-  if(pvol>0){
+  if(pvol>0&&vol===0){
+    /* nothing logged yet, so there is nothing to be behind on — give him the target */
+    vs='<div class="vsline"><i>Last '+esc(p.day)+' you moved '+pvol.toLocaleString()+' kg</i></div>';
+  }else if(pvol>0){
     const d=vol-pvol;
     vs='<div class="vsline'+(d>=0?' up':'')+'">'+
       (d>=0?'Ahead of last '+esc(p.day)+' by '+Math.abs(d).toLocaleString()+' kg'
-           :Math.abs(d).toLocaleString()+' kg behind last '+esc(p.day))+
+           :Math.abs(d).toLocaleString()+' kg to go to beat last '+esc(p.day))+
       ' <i>'+pvol.toLocaleString()+' kg then</i></div>';
   }
   return '<div class="live">'+
@@ -1542,15 +1550,9 @@ function liveStrip(p,s){
       '<div><div class="v">'+vol.toLocaleString()+'</div><div class="l">kg lifted</div></div>'+
       '<div><div class="v'+(prs?' gold':'')+'">'+prs+'</div><div class="l">PR today</div></div>'+
     '</div>'+
-    '<div class="pbar"><i style="width:'+pct+'%"></i></div>'+vs;
+    '<div class="sprog"><i style="width:'+pct+'%"></i></div>'+vs;
 }
 
-function streakRow(){
-  const a=streak7(), n=streakRun();
-  return '<div class="streak"><span class="lab">Streak</span>'+
-    a.map(d=>'<span class="dot'+(d.on?" on":" miss")+(d.today?" today":"")+'">'+d.l+'</span>').join("")+
-    '<span class="run">'+(n?n+(n===1?" day":" days"):"—")+'</span></div>';
-}
 
 /* ---------- an exercise that is finished, or not reached yet ---------- */
 function miniView(e,ei,s){
@@ -1558,28 +1560,26 @@ function miniView(e,ei,s){
   if(isSkipped(s,e))
     return '<section class="ex sk" style="--mc:'+mcol(e)+'" '+open+'>'+
       '<div class="up"><span class="idx">—</span><span class="nm">'+esc(e.n)+'</span>'+
-      '<span class="t">skipped</span></div></section>';
+      '<span class="tg">skipped</span></div></section>';
   if(exDone(s,e)){
     const a=(s.ex[e.id]||[]).filter(filled);
     const w=a.length?a[0][0]:"";
     const same=a.every(x=>x[0]===w);
     const res=same?'<b>'+esc(w)+'</b>kg × '+a.map(x=>esc(x[1])).join(",")
                   :a.map(x=>'<b>'+esc(x[0])+'</b>×'+esc(x[1])).join(" · ");
-    return '<section class="ex" style="--mc:'+mcol(e)+'" '+open+'>'+
-      '<div class="done"><span class="tick">✓</span><span class="nm">'+esc(e.n)+'</span>'+
+    return '<section class="ex cmp" style="--mc:'+mcol(e)+'" '+open+'>'+
+      '<div class="done"><span class="dn">✓</span><span class="nm">'+esc(e.n)+'</span>'+
       (isPRex(s,e.id)?'<span class="prb">PR</span>':'')+
       '<span class="res">'+res+'</span></div></section>';
   }
   return '<section class="ex pend" style="--mc:'+mcol(e)+'" '+open+'>'+
     '<div class="up"><span class="idx">'+(ei+1)+'</span><span class="nm">'+esc(e.n)+'</span>'+
-    '<span class="t">'+e.s+' × '+esc(e.r)+'</span></div></section>';
+    '<span class="tg">'+e.s+' × '+esc(e.r)+'</span></div></section>';
 }
 
 /* ---------- the bar that ends the day ---------- */
 function closeBar(p,s){
   if(!p.ex.length) return "";
-  const any=Object.keys(s.ex||{}).some(k=>(s.ex[k]||[]).some(filled));
-  if(!any) return "";
   const g=dayGaps(), n=g.hard.length+g.soft.length;
   return '<div class="closebar">'+
     '<button class="closebtn'+(n?'':' ready')+'" onclick="GYM4.closeDay()">'+
@@ -1604,9 +1604,13 @@ function closedView(p,s){
     return '<div class="rowq">'+(isPRex(s,e.id)?'<span class="prb">PR</span>':'')+
       '<span class="nm">'+esc(e.n)+'</span><span class="rs">'+res+'</span></div>';
   }).join("");
-  return '<div class="locked"><div class="t"><span>✓</span>'+esc(p.day)+' · '+esc(p.label)+' is closed</div>'+
-    '<div class="s">Logged '+fmt(s.date)+(hh?" at "+hh:"")+(mins?" · "+mins+" minutes":"")+
-      '. Nothing here can change by accident any more.</div>'+
+  const did=sessSets(s);
+  return '<div class="locked'+(did?'':' none')+'"><div class="hl2"><span>'+(did?'✓':'—')+'</span>'+
+    esc(p.day)+' · '+esc(p.label)+' is closed</div>'+
+    '<div class="s">'+(did
+      ? 'Logged '+fmt(s.date)+(hh?" at "+hh:"")+(mins?" · "+mins+" minutes":"")+
+        '. Nothing here can change by accident any more.'
+      : 'Closed '+fmt(s.date)+' with nothing logged. It counts as a day off, not a session.')+'</div>'+
     '<div class="st">'+
       '<div><div class="v">'+vol.toLocaleString()+'</div><div class="l">kg lifted</div></div>'+
       '<div><div class="v">'+sessSets(s)+'</div><div class="l">sets</div></div>'+
@@ -1680,7 +1684,7 @@ function render(){
       const nx=p.ex.find(e=>!exDone(s,e)&&!isSkipped(s,e));
       liveId=nx?nx.id:null;
     }
-    m.innerHTML=warn+liveStrip(p,s)+streakRow()+backupBanner()+
+    m.innerHTML=warn+liveStrip(p,s)+backupBanner()+
       p.ex.map((e,i)=>e.id===liveId?logView(e,i,pv,s):miniView(e,i,s)).join("")+
       closeBar(p,s);
   }
@@ -2349,7 +2353,7 @@ function bodyView(){
 function finishBody(){
   const p=plan(), s=todaySess();
   const vol=sessVol(s), prs=sessPRs(s), mins=sessMins(s);
-  const pv=prevSess(), pvol=pv?sessVol(pv):0;
+  const pv=prevReal(), pvol=pv?sessVol(pv):0;
   const sets=sessSets(s), reps=sessReps(s);
   const pct=pvol>0?Math.round((vol-pvol)/pvol*100):null;
   const r=58, C=2*Math.PI*r;
@@ -2367,7 +2371,7 @@ function finishBody(){
     const near=Math.abs(pct)<1;
     const big=near?(d>=0?"+":"−")+Math.abs(d).toLocaleString()+"<s>kg</s>"
                  :(pct>=0?"+":"")+pct+"%";
-    vs='<div class="vs"><div class="big'+(near?' sm':'')+'">'+big+'</div>'+
+    vs='<div class="vs"><div class="big'+(near?' lvl':'')+'">'+big+'</div>'+
       '<div class="tx">'+(near?"Level with last ":d>0?"Heavier than last ":"Lighter than last ")+esc(p.day)+
       ' — <b>'+vol.toLocaleString()+' kg</b> against '+pvol.toLocaleString()+' kg.</div></div>';
   }
@@ -2408,19 +2412,19 @@ function gapBody(){
   const g=dayGaps(), s=todaySess();
   let h="";
   if(g.hard.length){
-    h+='<div class="sheetc"><div class="sh"><div class="t">'+
+    h+='<div class="sheetc"><div class="sh"><div class="ttl">'+
       (g.hard.length===1?"One set is still empty":g.hard.length+" sets are still empty")+'</div>'+
       '<div class="s">The day cannot close while a number is missing. Tap a line to go straight to it.</div></div>'+
-      g.hard.map(x=>'<div class="miss"><span class="ic">!</span><div class="tx"><b>'+esc(x.n)+'</b>'+
+      g.hard.map(x=>'<div class="gapr"><span class="ic">!</span><div class="tx"><b>'+esc(x.n)+'</b>'+
         '<i>Set '+(x.si+1)+' — '+esc(x.why)+'</i></div>'+
         '<button class="go" onclick="GYM4.gapGo('+x.ei+','+x.si+')">Go</button></div>').join("")+
       '</div>';
   }
   if(g.soft.length){
-    h+='<div class="sheetc skip"><div class="sh"><div class="t">'+
+    h+='<div class="sheetc skip"><div class="sh"><div class="ttl">'+
       (g.soft.length===1?"One exercise you never started":g.soft.length+" exercises you never started")+'</div>'+
       '<div class="s">If you did not do them today, mark them skipped and the day can close.</div></div>'+
-      g.soft.map(x=>'<div class="miss"><span class="ic">'+(x.ei+1)+'</span>'+
+      g.soft.map(x=>'<div class="gapr"><span class="ic">'+(x.ei+1)+'</span>'+
         '<div class="tx"><b>'+esc(x.n)+'</b><i>Nothing logged</i></div>'+
         '<button class="sw" role="switch" aria-checked="false" aria-label="Skip '+esc(x.n)+'"'+
         ' onclick="GYM4.skipEx(\''+x.id+'\')"></button></div>').join("")+
@@ -2428,9 +2432,9 @@ function gapBody(){
   }
   const skipped=(plan().ex||[]).filter(e=>isSkipped(s,e));
   if(skipped.length){
-    h+='<div class="sheetc skip"><div class="sh"><div class="t">Marked skipped</div>'+
+    h+='<div class="sheetc skip"><div class="sh"><div class="ttl">Marked skipped</div>'+
       '<div class="s">Tap to put one back.</div></div>'+
-      skipped.map(e=>'<div class="miss"><span class="ic">—</span>'+
+      skipped.map(e=>'<div class="gapr"><span class="ic">—</span>'+
         '<div class="tx"><b>'+esc(e.n)+'</b><i>Will be logged as skipped</i></div>'+
         '<button class="sw on" role="switch" aria-checked="true" aria-label="Unskip '+esc(e.n)+'"'+
         ' onclick="GYM4.skipEx(\''+e.id+'\')"></button></div>').join("")+
@@ -2466,6 +2470,7 @@ function fsheet(title,sub,top,body){
   return w;
 }
 
+let migWrote=false;
 function normalize(){
   if(!store.program||!store.program.length) store.program=seed();
   if(!store.days) store.days={};
@@ -2526,6 +2531,21 @@ function normalize(){
     store.diet=Object.assign(seedDiet(),store.diet||{});
     if(!(+store.diet.shift>0)) store.diet.shift=50;
     store.mig.food6=1;
+  }
+  /* The empty rows left behind by the old behaviour. Anything holding a number,
+     even half of one, stays — so a weight with no reps is kept, not tidied away. */
+  if(!store.mig.sess1){
+    let dropped=0;
+    Object.keys(store.days||{}).forEach(id=>{
+      const d=store.days[id]; if(!d||!Array.isArray(d.sessions)) return;
+      const n=d.sessions.length;
+      d.sessions=d.sessions.filter(x=>sessAny(x));
+      dropped+=n-d.sessions.length;
+    });
+    store.mig.sess1=1;
+    /* persist straight away, or closing the app would leave the rows behind
+       and the sweep would have to run all over again */
+    if(dropped) migWrote=true;
   }
   if(!Array.isArray(store.eatLog)) store.eatLog=[];
   if(!Array.isArray(store.combo)) store.combo=[];
@@ -2721,6 +2741,7 @@ const API={
     day=map[new Date().getDay()]||"sun";
     if(!plan()) day=store.program[0].id;
     render();
+    if(migWrote){ migWrote=false; save(); }
   },
   go(id){ day=id; confirmId=null; editing=false; render(); ROOT().scrollIntoView({block:"start"}); },
   jump(dayId,ei){ day=dayId; editing=false; confirmId=null; render(); API.history(ei); },
@@ -2744,12 +2765,14 @@ const API={
       return;
     }
     const s=todaySess();
+    const did=sessSets(s);
     s.closed=Date.now();
     if(!s.t1) s.t1=s.closed;
     openId=null;
     save(); render();
     closeAll();
-    fsheet("Session complete",esc(plan().day)+" · "+esc(plan().label)+" · "+fmt(s.date),"",finishBody());
+    /* nothing was logged, so there is nothing to celebrate — just lock it */
+    if(did) fsheet("Session complete",esc(plan().day)+" · "+esc(plan().label)+" · "+fmt(s.date),"",finishBody());
   },
   reopenDay(){ const s=todaySess(); delete s.closed; save(); render(); },
   gapGo(ei,si){
@@ -2801,8 +2824,10 @@ const API={
     if(!arr.some(x=>x[0]!==""||x[1]!=="")) delete s.ex[e.id];
     stamp(s);
     save();
-    const pv=prevSess();
-    const ps=pv&&pv.ex&&pv.ex[e.id]?pv.ex[e.id]:null;
+    /* the same lookup logView draws the row from, so the arrow cannot disagree
+       with the chips above it */
+    const pr0=prevFor(e.id);
+    const ps=pr0?pr0.sets:null;
     const row=$("g4r-"+ei+"-"+si);
     if(row){
       const ins=row.querySelectorAll("input");
