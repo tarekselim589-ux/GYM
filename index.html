@@ -586,26 +586,49 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .fsum{display:flex;justify-content:center;gap:18px;color:var(--muted);
     font-size:11.5px;font-variant-numeric:tabular-nums;margin:11px 0 0}
   #g4 .fsum b{color:var(--chalk);font-weight:600}
-  #g4 .fadd,#g4 .fgo{width:100%;margin-top:16px;background:var(--aqua);border:none;color:#062028;
+  #g4 .fgo{width:100%;margin-top:16px;background:var(--aqua);border:none;color:#062028;
     border-radius:12px;padding:15px;font-family:inherit;font-size:15px;font-weight:700;
     letter-spacing:-.1px;cursor:pointer}
-  #g4 .fadd:active,#g4 .fgo:active{filter:brightness(.92)}
+  #g4 .fgo:active{filter:brightness(.92)}
+  /* the day's main button: frosted glass with the light spilling out of it */
+  #g4 .fadd{position:relative;width:100%;margin-top:16px;border-radius:14px;padding:17px;
+    font-family:inherit;font-size:16px;font-weight:800;letter-spacing:-.1px;cursor:pointer;
+    color:#AEF5F0;border:1px solid rgba(53,196,192,.5);
+    background:linear-gradient(180deg,rgba(53,196,192,.2),rgba(53,196,192,.07));
+    -webkit-backdrop-filter:blur(16px) saturate(170%);backdrop-filter:blur(16px) saturate(170%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.26),0 0 22px rgba(53,196,192,.25),
+      0 6px 18px rgba(0,0,0,.3)}
+  #g4 .fadd:after{content:"";position:absolute;left:18%;right:18%;bottom:-1px;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(126,240,234,.9),transparent)}
+  #g4 .fadd:active{background:linear-gradient(180deg,rgba(53,196,192,.32),rgba(53,196,192,.14))}
+  /* older browsers get no blur, so the fill carries it instead */
+  @supports not ((-webkit-backdrop-filter:blur(2px)) or (backdrop-filter:blur(2px))){
+    #g4 .fadd{background:linear-gradient(180deg,rgba(53,196,192,.34),rgba(53,196,192,.18))}
+  }
   #g4 .fgo{margin-top:18px}
-  #g4 .frow{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line);padding:13px 0}
-  #g4 .frow:first-of-type{border-top:none}
-  #g4 .fdot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;background:var(--aqua)}
+  #g4 .frow{display:flex;align-items:center;gap:11px;padding:12px;margin-bottom:8px;
+    border:1px solid #244C62;border-radius:13px;
+    background:linear-gradient(180deg,#17364A,#132C3C);box-shadow:0 2px 0 rgba(0,0,0,.26)}
+  /* the bar says at a glance what the item is mostly made of */
+  #g4 .fdot{width:4px;align-self:stretch;border-radius:3px;flex:0 0 auto;background:var(--aqua)}
   #g4 .fdot.f{background:var(--amber)} #g4 .fdot.c{background:#7FA8C4}
   #g4 .frow .ft{flex:1;min-width:0;cursor:pointer}
   #g4 .frow .ft:active .fn{color:var(--aqua)}
-  #g4 .frow .fn{font-size:14.5px;font-weight:600;line-height:1.3;direction:rtl;text-align:left}
-  #g4 .frow .fq{color:var(--muted);font-size:11.5px;font-variant-numeric:tabular-nums;margin-top:3px}
-  #g4 .frow .fq s{text-decoration:none;color:#5D7E91}
-  #g4 .frow .fk{font-size:16px;font-weight:650;font-variant-numeric:tabular-nums;
-    white-space:nowrap;letter-spacing:-.2px}
-  #g4 .frow .fk em{font-style:normal;color:var(--muted);font-size:10px;
-    font-weight:500;margin-left:2px;text-transform:uppercase}
-  #g4 .frow .fx{background:none;border:1px solid var(--line);border-radius:8px;color:var(--muted);
-    font-family:inherit;font-size:15px;line-height:1;width:30px;height:30px;flex:0 0 auto;cursor:pointer}
+  #g4 .frow .fn{font-size:14.5px;font-weight:700;line-height:1.3;direction:rtl;text-align:left}
+  #g4 .frow .fq{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+  #g4 .frow .fq b{font-size:9.5px;font-weight:800;border-radius:5px;padding:2.5px 6px;
+    font-variant-numeric:tabular-nums;letter-spacing:.2px}
+  #g4 .frow .fq b.mp{color:#8FD4D0;background:rgba(53,196,192,.14)}
+  #g4 .frow .fq b.mf{color:#F0C98A;background:rgba(233,166,60,.14)}
+  #g4 .frow .fq b.mc{color:#A9C0D0;background:rgba(159,179,200,.14)}
+  #g4 .frow .fq b.mw{color:#5E7E92;background:rgba(0,0,0,.2);font-weight:700}
+  #g4 .frow .fk{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;
+    white-space:nowrap;letter-spacing:-.5px}
+  #g4 .frow .fk em{font-style:normal;color:#5E7E92;font-size:9px;
+    font-weight:700;margin-left:2px;text-transform:uppercase}
+  #g4 .frow .fx{background:rgba(0,0,0,.18);border:1px solid #2A5368;border-radius:9px;
+    color:#5E7E92;font-family:inherit;font-size:14px;line-height:1;width:32px;height:32px;
+    flex:0 0 auto;cursor:pointer}
   #g4 .frow .fx:active{background:var(--surface-2);color:var(--rose);border-color:var(--rose)}
   #g4 .fhead{display:flex;align-items:baseline;justify-content:space-between;margin:24px 0 2px}
   #g4 .fhead h3{margin:0}
@@ -655,6 +678,13 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .fpick{display:flex;align-items:center;gap:12px;padding:12px 0;
     border-top:1px solid var(--line);cursor:pointer}
   #g4 .fpick:active{background:rgba(27,64,85,.4)}
+  #g4 .fstar{flex:0 0 auto;width:38px;height:38px;border-radius:10px;background:rgba(0,0,0,.18);
+    border:1px solid #2A5368;color:#5E7E92;font-family:inherit;font-size:17px;line-height:1;
+    cursor:pointer;padding:0}
+  #g4 .fstar[data-on="1"]{color:var(--amber);border-color:rgba(233,166,60,.5);
+    background:rgba(233,166,60,.12)}
+  #g4 .fstar.full{color:var(--amber);font-size:13px;font-weight:800}
+  #g4 .fstar:active{border-color:var(--amber)}
   #g4 .fpick .fpt{flex:1;min-width:0}
   #g4 .fpick .fn{font-size:14.5px;font-weight:600;line-height:1.3;direction:rtl;text-align:left}
   #g4 .fpick .fpm{color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums;margin-top:3px}
@@ -690,12 +720,20 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     padding:7px 11px;font-family:inherit;font-size:12px;font-weight:650;cursor:pointer;flex:0 0 auto}
   #g4 .hday .hrep:active{background:var(--surface-2)}
   #g4 .favs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0 0}
-  #g4 .favs button{background:var(--surface);border:1px solid var(--line);color:var(--chalk);
-    border-radius:10px;padding:9px 12px;font-family:inherit;font-size:13px;font-weight:600;
-    cursor:pointer;display:flex;align-items:baseline;gap:7px;max-width:100%}
-  #g4 .favs button:active{border-color:var(--aqua);background:var(--surface-2)}
-  #g4 .favs button span{direction:rtl;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  #g4 .favs button em{font-style:normal;color:var(--muted);font-size:11px;
+  #g4 .favs button{border:1px solid #244C62;color:var(--chalk);border-radius:12px;
+    padding:9px 12px;font-family:inherit;cursor:pointer;display:flex;align-items:center;
+    gap:9px;max-width:100%;direction:rtl;
+    background:linear-gradient(180deg,#19384A,#143040);box-shadow:0 2px 0 rgba(0,0,0,.3)}
+  #g4 .favs button:active{border-color:var(--aqua);
+    background:linear-gradient(180deg,#1C4C54,#163C46)}
+  #g4 .favs button .fvt{display:flex;flex-direction:column;align-items:flex-end;gap:2px;
+    min-width:0}
+  #g4 .favs button span{font-size:13.5px;font-weight:700;line-height:1.15;direction:rtl;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+  #g4 .favs button i{font-style:normal;color:#6E8EA0;font-size:10px;direction:ltr;
+    font-variant-numeric:tabular-nums}
+  #g4 .favs button em{font-style:normal;color:#8FBFC4;font-size:10px;font-weight:800;
+    background:rgba(0,0,0,.26);border-radius:5px;padding:3px 6px;direction:ltr;
     font-variant-numeric:tabular-nums;flex:0 0 auto}
   #g4 .fday{text-align:center;font-size:11px;font-weight:700;letter-spacing:.09em;
     text-transform:uppercase;color:var(--muted);margin:10px 0 0}
@@ -2088,7 +2126,9 @@ function foodView(){
      ' hours. If you forgot to close it, the totals above are adding up more than one day.</div>';
   const F=fdFavs();
   if(F.length) h+='<div class="favs">'+F.map((x,i)=>
-    '<button onclick="GYM4.fdFav('+i+')"><span>'+esc(x.n)+'</span><em>'+qtyTxt(x)+'</em></button>').join("")+'</div>';
+    '<button onclick="GYM4.fdFav('+i+')"><em>'+qtyTxt(x)+'</em>'+
+      '<span class="fvt"><span>'+esc(x.n)+'</span>'+
+      '<i>'+Math.round(+x.k||0)+' kcal</i></span></button>').join("")+'</div>';
   h+='<button class="fadd" onclick="GYM4.fdPick()">Add food</button>';
   h+='<div class="fhead"><h3>Open day</h3>'+
      '<span>'+fmt(iso())+'</span></div>';
@@ -2098,8 +2138,9 @@ function foodView(){
   return h+rows.map((x,i)=>
     '<div class="frow"><span class="fdot '+fdTone(x)+'"></span>'+
       '<div class="ft" onclick="GYM4.fdRowEdit('+i+')"><div class="fn">'+esc(x.n)+'</div>'+
-      '<div class="fq">'+(x.t?'<s>'+esc(x.t)+'</s> \u00b7 ':'')+qtyTxt(x)+
-        ' \u00b7 '+r1(+x.p||0)+'P \u00b7 '+r1(+x.f||0)+'F \u00b7 '+r1(+x.b||0)+'C</div></div>'+
+      '<div class="fq"><b class="mp">'+r1(+x.p||0)+' P</b>'+
+        '<b class="mf">'+r1(+x.f||0)+' F</b><b class="mc">'+r1(+x.b||0)+' C</b>'+
+        '<b class="mw">'+(x.t?esc(x.t)+' \u00b7 ':'')+qtyTxt(x)+'</b></div></div>'+
     '<span class="fk">'+Math.round(+x.k||0)+'<em>kcal</em></span>'+
     '<button class="fx" onclick="GYM4.fdDel('+i+')" aria-label="Remove">\u00d7</button></div>').join("")+
     '<button class="fcombo" onclick="GYM4.fdComboNew()">Save these as a combo</button>'+
@@ -3170,12 +3211,24 @@ const API={
         '<div class="fpk"><b>'+Math.round(t.k)+'</b><span>total</span></div></div>';
     }).join("");
     box.innerHTML=head+groups.map(c=>'<p class="fcat">'+esc(c)+'</p>'+
-      by[c].map(x=>'<div class="fpick" onclick="GYM4.fdChoose(\''+x.id+'\')">'+
+      by[c].map(x=>{
+
+        const on=pinAt(x.n,x.u)>=0;
+
+        return '<div class="fpick" onclick="GYM4.fdChoose(\''+x.id+'\')">'+
         '<span class="fdot '+fdTone(x)+'"></span>'+
         '<div class="fpt"><div class="fn">'+esc(x.n)+'</div>'+
           '<div class="fpm">'+r1(+x.p||0)+'P \u00b7 '+r1(+x.f||0)+'F \u00b7 '+r1(+x.b||0)+'C</div></div>'+
         '<div class="fpk"><b>'+Math.round(+x.k||0)+'</b><span>'+perLab(x.u)+'</span></div>'+
-      '</div>').join("")).join("");
+      '<button class="fstar" data-on="'+(on?1:0)+'" aria-pressed="'+on+'"'+
+
+          ' aria-label="'+(on?"Unpin ":"Pin ")+esc(x.n)+'"'+
+
+          ' onclick="event.stopPropagation();GYM4.fdPinRow(\''+x.id+'\',this)">'+
+
+          (on?"\u2605":"\u2606")+'</button>'+
+
+        '</div>';}).join("")).join("");
   },
   fdChoose(id){
     const x=libOf().find(y=>y.id===id); if(!x) return;
@@ -3320,8 +3373,9 @@ const API={
       ? x.rows.map((r,j)=>
         '<div class="frow"><span class="fdot '+fdTone(r)+'"></span>'+
         '<div class="ft" onclick="GYM4.fdRowEdit('+j+')"><div class="fn">'+esc(r.n)+'</div>'+
-        '<div class="fq">'+(r.t?'<s>'+esc(r.t)+'</s> \u00b7 ':'')+qtyTxt(r)+
-          ' \u00b7 '+r1(+r.p||0)+'P \u00b7 '+r1(+r.f||0)+'F \u00b7 '+r1(+r.b||0)+'C</div></div>'+
+        '<div class="fq"><b class="mp">'+r1(+r.p||0)+' P</b>'+
+          '<b class="mf">'+r1(+r.f||0)+' F</b><b class="mc">'+r1(+r.b||0)+' C</b>'+
+          '<b class="mw">'+(r.t?esc(r.t)+' \u00b7 ':'')+qtyTxt(r)+'</b></div></div>'+
         '<span class="fk">'+Math.round(+r.k||0)+'<em>kcal</em></span>'+
         '<button class="fx" onclick="GYM4.fdDel('+j+')" aria-label="Remove">\u00d7</button></div>').join("")
       : '<p class="fnone">This day is empty now.</p>';
@@ -3355,6 +3409,31 @@ const API={
     store.eatLog.splice(i,1);
     fdWhere=null;
     closeAll(); save(); render();
+  },
+  /* Pinning from the list, without opening the food first. It takes the amount
+     the quantity box would have offered: one of a piece, 100g or 100ml. */
+  fdPinRow(id,btn){
+    const x=libOf().find(y=>y.id===id); if(!x) return;
+    store.pins=pinsOf();
+    const i=pinAt(x.n,x.u);
+    if(i>=0){ store.pins.splice(i,1); }
+    else{
+      if(store.pins.length>=8){
+        if(btn){
+          const old=btn.textContent;
+          btn.classList.add("full"); btn.textContent="8";
+          setTimeout(()=>{ btn.classList.remove("full"); btn.textContent=old; },1400);
+        }
+        return;
+      }
+      const q=x.u==="pc"?1:100;
+      const v=fdCalc(x,q);
+      store.pins.push({n:x.n,u:x.u,q:q,k:v.k,p:v.p,f:v.f,b:v.b});
+    }
+    if(!store.pins.length) delete store.pins;
+    save();
+    render();                 /* the quick row behind the panel */
+    API.fdFilt($("g4fq")?$("g4fq").value:"");   /* and the list in front of it */
   },
   fdPinToggle(id){
     const x=libOf().find(y=>y.id===id); if(!x) return;
