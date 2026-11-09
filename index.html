@@ -2981,6 +2981,7 @@ const API={
     ROOT().scrollIntoView({block:"start"}); },
   home(){ home=true; editing=false; confirmId=null; openId=null; render();
     ROOT().scrollIntoView({block:"start"}); },
+  isHome(){ return home; },
   jump(dayId,ei){ home=false; day=dayId; editing=false; confirmId=null; render(); API.history(ei); },
   toggleEdit(){ editing=!editing; confirmId=null; render(); ROOT().scrollIntoView({block:"start"}); },
 
@@ -3839,6 +3840,68 @@ const API={
   },
   mdel(d){ store.measures=(store.measures||[]).filter(e=>e.d!==d); save(); render(); }
 };
+
+
+/* ---------- drag sideways to come back ----------
+   Listens anywhere on the page rather than at the screen edge: in plain Safari
+   an edge drag is the browser's own back gesture and would leave the app. The
+   gesture is ignored on the home screen, inside a number box, and on anything
+   that scrolls sideways itself. Either direction works. */
+(function(){
+  const EL=document.getElementById("g4");
+  if(!EL) return;
+  let x0=0, y0=0, t0=0, live=false;
+
+  function scrollsSideways(n){
+    while(n&&n!==EL){
+      if(n.scrollWidth>n.clientWidth+4){
+        const o=getComputedStyle(n).overflowX;
+        if(o==="auto"||o==="scroll") return true;
+      }
+      n=n.parentElement;
+    }
+    return false;
+  }
+  function blocked(n){
+    if(!n||!n.closest) return true;
+    if(n.closest("input,textarea,select,button,a,[contenteditable]")) return true;
+    return scrollsSideways(n);
+  }
+
+  EL.addEventListener("touchstart",function(e){
+    live=false;
+    if(e.touches.length!==1) return;
+    if(blocked(e.target)) return;
+    const t=e.touches[0];
+    x0=t.clientX; y0=t.clientY; t0=Date.now(); live=true;
+  },{passive:true});
+
+  EL.addEventListener("touchend",function(e){
+    if(!live) return;
+    live=false;
+    const t=e.changedTouches&&e.changedTouches[0];
+    if(!t) return;
+    const dx=t.clientX-x0, dy=t.clientY-y0, ms=Date.now()-t0;
+    /* a real sideways flick: far enough, clearly horizontal, and not a slow drag */
+    if(Math.abs(dx)<70) return;
+    if(Math.abs(dx)<Math.abs(dy)*1.6) return;
+    if(ms>800) return;
+    back();
+  },{passive:true});
+
+  EL.addEventListener("touchcancel",function(){ live=false; },{passive:true});
+
+  /* a panel on top of the day closes first, the day itself comes second */
+  function back(){
+    if(document.querySelector("#g4 .sheet, #g4 .fsheet")){
+      if(window.GYM4&&GYM4.closeSheet) closeAll();
+      else document.querySelectorAll("#g4 .sheet, #g4 .fsheet").forEach(s=>s.remove());
+      return;
+    }
+    if(window.GYM4&&GYM4.isHome&&GYM4.isHome()) return;
+    if(window.GYM4&&GYM4.home) GYM4.home();
+  }
+})();
 
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) API.awake(); });
 let started=false;
