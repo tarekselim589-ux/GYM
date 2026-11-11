@@ -174,7 +174,7 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .shead span:nth-child(1){text-align:center}
   #g4 .set{display:grid;grid-template-columns:18px 1fr 1fr 22px;gap:8px;align-items:center}
   #g4 .set .n{color:var(--muted);font-size:12px;text-align:center;font-variant-numeric:tabular-nums}
-  #g4 .fillnext{display:block;width:100%;margin-top:10px;background:rgba(76,220,214,.12);
+  #g4 .fillnext{display:block;width:100%;margin-top:10px;background:rgba(76,220,214,.07);
     border:1px solid var(--aqua);color:var(--aqua);border-radius:9px;padding:11px;
     font-family:inherit;font-size:13.5px;font-weight:650;cursor:pointer}
   #g4 .fillnext:active{background:var(--aqua);color:#0A3B39}
@@ -278,7 +278,7 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     letter-spacing:.5px;padding:3.5px 7px;border-radius:6px;z-index:2}
   #g4 .tile .badge.ok{background:rgba(76,220,214,.16);color:var(--aqua);
     border:1px solid rgba(76,220,214,.45)}
-  #g4 .tile .badge.due{background:rgba(236,176,83,.14);color:var(--amber);
+  #g4 .tile .badge.due{background:rgba(236,176,83,.14);color:#F4CE92;
     border:1px solid rgba(236,176,83,.45)}
   #g4 .tile .badge.late{background:rgba(234,171,159,.18);color:#F0A090;
     border:1px solid rgba(234,171,159,.55)}
@@ -294,7 +294,7 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     font-variant-numeric:tabular-nums}
   #g4 .tile.food .big s{text-decoration:none;font-size:12px;color:#A9C1CD;font-weight:600;margin-left:3px}
   #g4 .tile.food .pill{display:inline-block;margin-top:5px;font-size:9.5px;font-weight:800;
-    letter-spacing:.7px;text-transform:uppercase;color:var(--amber);background:rgba(236,176,83,.13);
+    letter-spacing:.7px;text-transform:uppercase;color:#F4CE92;background:rgba(236,176,83,.13);
     border:1px solid rgba(236,176,83,.35);border-radius:6px;padding:2.5px 7px}
   #g4 .tile.food .m{display:flex;gap:9px;margin-top:8px}
   #g4 .tile.food .m span{font-size:10.5px;color:#A9C1CD;font-variant-numeric:tabular-nums}
@@ -368,7 +368,7 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .rowq .prb{flex:0 0 auto}
   #g4 .prb.hd{display:inline-block;vertical-align:2px;margin-left:6px}
   #g4 .tagm{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.6px;
-    text-transform:uppercase;color:var(--mc,#4CDCD6);background:rgba(255,255,255,.05);
+    text-transform:uppercase;color:var(--mc,#4CDCD6);background:rgba(0,0,0,.18);
     border-radius:5px;padding:2px 6px;margin-bottom:7px}
 
   /* ---- close the day ---- */
@@ -634,15 +634,15 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .frow .fq{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
   #g4 .frow .fq b{font-size:9.5px;font-weight:800;border-radius:5px;padding:2.5px 6px;
     font-variant-numeric:tabular-nums;letter-spacing:.2px}
-  #g4 .frow .fq b.mp{color:#8FE4DF;background:rgba(76,220,214,.14)}
-  #g4 .frow .fq b.mf{color:#F0C078;background:rgba(236,176,83,.14)}
-  #g4 .frow .fq b.mc{color:#9BC8EE;background:rgba(143,187,226,.14)}
-  #g4 .frow .fq b.mw{color:#A9C1CD;background:rgba(255,255,255,.07);font-weight:700}
+  #g4 .frow .fq b.mp{color:#8FE4DF;background:rgba(0,0,0,.25)}
+  #g4 .frow .fq b.mf{color:#F0C078;background:rgba(0,0,0,.25)}
+  #g4 .frow .fq b.mc{color:#9BC8EE;background:rgba(0,0,0,.25)}
+  #g4 .frow .fq b.mw{color:#A9C1CD;background:rgba(0,0,0,.25);font-weight:700}
   #g4 .frow .fk{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;
     white-space:nowrap;letter-spacing:-.5px}
   #g4 .frow .fk em{font-style:normal;color:#A9C1CD;font-size:9px;
     font-weight:700;margin-left:2px;text-transform:uppercase}
-  #g4 .frow .fx{background:rgba(255,255,255,.07);border:1px solid #3A6880;border-radius:9px;
+  #g4 .frow .fx{background:rgba(0,0,0,.25);border:1px solid #3A6880;border-radius:9px;
     color:#A9C1CD;font-family:inherit;font-size:14px;line-height:1;width:32px;height:32px;
     flex:0 0 auto;cursor:pointer}
   #g4 .frow .fx:active{background:var(--surface-2);color:var(--rose);border-color:var(--rose)}
@@ -720,7 +720,7 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     font-variant-numeric:tabular-nums;margin:14px 0 0;justify-content:center}
   #g4 .fopen b{color:var(--chalk);font-weight:600}
   #g4 .fdot2{width:7px;height:7px;border-radius:50%;background:var(--aqua);flex:0 0 auto}
-  #g4 .flong{background:rgba(236,176,83,.12);border:1px solid rgba(236,176,83,.4);color:var(--amber);
+  #g4 .flong{background:rgba(0,0,0,.22);border:1px solid rgba(236,176,83,.4);color:var(--amber);
     border-radius:10px;padding:11px 13px;font-size:12.5px;margin:14px 0 0;line-height:1.6}
   #g4 .hday{display:flex;align-items:center;gap:12px;border-top:1px solid var(--line);padding:13px 0}
   #g4 .hday:first-of-type{border-top:none}
@@ -762,7 +762,7 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     align-items:center;gap:3px;color:var(--muted)}
   #g4 .wd b{font-size:11.5px;font-weight:650}
   #g4 .wd em{font-style:normal;font-size:8.5px;letter-spacing:.3px;text-transform:uppercase;opacity:.8}
-  #g4 .wd.on{background:rgba(76,220,214,.16);border-color:var(--aqua);color:var(--aqua)}
+  #g4 .wd.on{background:rgba(0,0,0,.25);border-color:var(--aqua);color:var(--aqua)}
   #g4 .cyc{background:var(--surface);border:1px solid var(--line);border-radius:12px;
     padding:12px 13px;margin-top:11px}
   #g4 .cyc .cr{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
@@ -849,6 +849,96 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .filein::-webkit-file-upload-button{background:var(--aqua);border:none;color:#0A3B39;
     font-family:inherit;font-size:14px;font-weight:650;border-radius:8px;padding:9px 14px;margin-right:10px}
   @media (prefers-reduced-motion:reduce){#g4 *{transition:none!important}}
+
+/* ---------- Plan ---------- */
+#g4 .plh{font-size:11px;letter-spacing:1.3px;text-transform:uppercase;color:var(--muted);
+  font-weight:800;margin:22px 0 8px}
+#g4 .pllbl{display:block;color:var(--muted);font-size:11px;margin-bottom:5px}
+#g4 .plsrc{color:var(--muted);font-size:11.5px;line-height:1.55;margin:7px 0 0}
+#g4 .plsrc b{color:var(--amber);font-weight:700}
+#g4 .pllink{background:none;border:none;padding:0;font-family:inherit;font-size:11.5px;
+  font-weight:750;color:var(--aqua);text-decoration:underline;cursor:pointer}
+#g4 .plwrow{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+#g4 .plwf{position:relative}
+#g4 .plwf input{width:100%;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:12px;padding:14px 44px 14px 13px;font-family:inherit;font-size:24px;
+  font-weight:800;letter-spacing:-.6px;color:var(--chalk)}
+#g4 .plwf.goal input{color:var(--amber)}
+#g4 .plwf .u{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:9px;
+  font-weight:800;color:var(--muted);background:rgba(0,0,0,.22);border-radius:5px;padding:3px 6px}
+#g4 .pllog{width:100%;margin-top:9px;padding:12px;border-radius:11px;background:var(--aqua);
+  border:none;color:#0A3B39;font-family:inherit;font-size:14px;font-weight:800}
+#g4 .pleta{margin-top:11px;padding:11px 12px;border-radius:11px;background:var(--surface-2);
+  border:1px solid var(--line);display:flex;align-items:baseline;gap:7px;flex-wrap:wrap}
+#g4 .pleta b{color:var(--chalk);font-size:17px;font-weight:800;letter-spacing:-.3px}
+#g4 .pleta span{color:var(--muted);font-size:12px}
+#g4 .pleta i{font-style:normal;color:var(--aqua);font-weight:750;font-size:12.5px}
+#g4 .plchip{display:inline-block;font-size:9.5px;font-weight:800;letter-spacing:.9px;
+  text-transform:uppercase;border-radius:6px;padding:4px 8px;margin-bottom:8px;
+  background:rgba(0,0,0,.22);color:var(--amber);border:1px solid rgba(236,176,83,.45)}
+#g4 .plchip.on{background:rgba(76,220,214,.14);color:var(--aqua);border-color:rgba(76,220,214,.5)}
+#g4 .plbig{position:relative}
+#g4 .plbig input{width:100%;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:12px;padding:16px 62px 16px 14px;font-family:inherit;font-size:30px;
+  font-weight:800;letter-spacing:-.8px;color:var(--chalk)}
+#g4 .plbig input[readonly]{opacity:.85}
+#g4 .plbig .u{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:10px;
+  font-weight:800;color:var(--muted);background:rgba(0,0,0,.22);border-radius:5px;padding:4px 7px}
+#g4 .plseg{display:flex;gap:7px}
+#g4 .plseg button{flex:1;padding:11px 4px;border-radius:11px;font-family:inherit;font-size:13px;
+  font-weight:750;background:var(--surface-2);border:1px solid var(--line);color:var(--muted)}
+#g4 .plseg.sm button{font-size:12px;padding:10px 2px}
+#g4 .plseg button.hot{border-color:rgba(236,176,83,.55);color:var(--amber)}
+#g4 .plseg button[aria-pressed="true"]{background:var(--aqua);border-color:var(--aqua);color:#0A3B39}
+#g4 .plwarn{margin:8px 0 0;color:var(--amber);font-size:11.5px;line-height:1.55}
+#g4 .plgap{margin-top:14px;padding:13px;border-radius:12px;background:var(--surface-2);
+  border:1px solid var(--line);color:var(--ink2);font-size:12.5px;line-height:1.6}
+#g4 .plout{margin-top:15px;padding:15px 14px 14px;border-radius:14px;
+  background:linear-gradient(150deg,#2A5467 0%,#2F5872 60%,#234458 100%);
+  border:1px solid rgba(76,220,214,.4)}
+#g4 .plok{font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--aqua);
+  font-weight:800}
+#g4 .plkk{font-size:40px;font-weight:850;color:var(--chalk);letter-spacing:-1.6px;
+  line-height:1.1;margin-top:3px}
+#g4 .plkk em{font-style:normal;font-size:13px;font-weight:650;color:var(--muted);margin-left:7px}
+#g4 .plmac{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-top:13px}
+#g4 .plmac>div{background:rgba(29,59,76,.7);padding:9px 4px;text-align:center}
+#g4 .plmac b{display:block;font-size:20px;font-weight:800;letter-spacing:-.5px}
+#g4 .plmac span{display:block;color:var(--muted);font-size:9.5px;text-transform:uppercase;
+  letter-spacing:.7px;margin-top:2px}
+#g4 .plmac .p b{color:var(--aqua)}
+#g4 .plmac .f b{color:var(--amber)}
+#g4 .plmac .c b{color:#8FBBE2}
+#g4 .plpkl{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.9px;
+  font-weight:800;margin-top:13px}
+#g4 .plpk{display:flex;gap:6px;margin-top:7px}
+#g4 .plpk button{flex:1;padding:9px 2px;border-radius:9px;font-family:inherit;font-size:12px;
+  font-weight:750;background:rgba(29,59,76,.6);border:1px solid var(--line);color:var(--muted)}
+#g4 .plpk button[aria-pressed="true"]{background:rgba(0,0,0,.25);border-color:var(--aqua);
+  color:var(--aqua)}
+#g4 .plnote{margin:11px 0 0;color:var(--ink2);font-size:11.5px;line-height:1.55}
+#g4 .plnote.done{color:var(--aqua);font-weight:700}
+#g4 .plapply{width:100%;margin-top:12px;padding:14px;border-radius:12px;background:var(--aqua);
+  border:none;color:#0A3B39;font-family:inherit;font-size:15px;font-weight:800}
+#g4 .plreal{padding:13px 13px 12px;border-radius:14px;background:rgba(236,176,83,.10);
+  border:1px solid rgba(236,176,83,.42)}
+#g4 .plreal.thin{background:var(--surface-2);border-color:var(--line)}
+#g4 .plrt{font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--amber);
+  font-weight:800;margin-bottom:9px}
+#g4 .plreal.thin .plrt{color:var(--muted)}
+#g4 .plrg{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:rgba(255,255,255,.14);
+  border-radius:10px;overflow:hidden}
+#g4 .plrg>div{background:rgba(29,59,76,.72);padding:9px 8px}
+#g4 .plrg b{display:block;font-size:21px;font-weight:800;color:var(--chalk);letter-spacing:-.5px}
+#g4 .plrg b.dn{color:#6FD39A}
+#g4 .plrg b.up{color:var(--rose)}
+#g4 .plrg span{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+#g4 .plrv{margin:10px 0 0;color:var(--ink2);font-size:12.5px;line-height:1.55}
+#g4 .plrv b{color:var(--amber)}
+/* .hint is a call-out elsewhere; here it is only a caption under a heading */
+#g4 .plh+.hint{background:none;border:none;padding:0;margin:0 0 9px;color:var(--muted);
+  font-size:12px;line-height:1.55}
 </style>
 
 <script>
@@ -1053,7 +1143,8 @@ function seedLib(){
   }));
   return out;
 }
-function seedDiet(){ return {k:2450,p:190,f:70,b:265,shift:50,days:DAYLOAD.slice()}; }
+function seedDiet(){ return {k:2450,p:190,f:70,b:265,shift:50,days:DAYLOAD.slice(),
+  burn:0,goal:"lose",rate:0.5,tgtkg:0,ppk:2.2,burnMode:"auto"}; }
 
 let store={}, day="sun", editing=false, confirmId=null, wake=null, openId=null, home=true;
 
@@ -1311,6 +1402,91 @@ function fdCalib(){
     maint:Math.round(maint/10)*10,target:target,rate:rate,floored:raw<1200};
 }
 const fdRate=()=>{ const r=store.diet&&+store.diet.rate; return (isFinite(r)&&r>0)?r:0.5; };
+
+/* ---------- the plan ----------
+   Three things he sets - what he burns, which way he wants to go, how fast -
+   and the four numbers he eats to. Protein is per kg of him because that is how
+   the evidence is written; fat holds a floor so hormones are not the price of a
+   cut; carbs take whatever is left, which is what makes carbs the thing that
+   moves when the deficit moves. */
+const PPKS=[1.8,2.0,2.2,2.4];
+function planPpk(){
+  const v=+((store.diet||{}).ppk);
+  return (isFinite(v)&&v>=1&&v<=4)?v:2.2;
+}
+function planGoal(){
+  const g=(store.diet||{}).goal;
+  return (g==="hold"||g==="gain")?g:"lose";
+}
+/* His typed number is scaffolding. The moment the scale has enough to say, the
+   measured one takes over - unless he asks for his own back. */
+function planBurn(){
+  const g=dietBase(), c=fdCalib();
+  const typed=(+g.burn>0)?+g.burn:0;
+  if(c.ok && g.burnMode!=="typed")
+    return {v:c.maint, src:"own", typed:typed, measured:c.maint, ready:true};
+  return {v:typed, src:"typed", typed:typed, measured:c.ok?c.maint:0, ready:!!c.ok};
+}
+function planCalc(){
+  const kg=curKg(), goal=planGoal(), B=planBurn();
+  let rate=+(store.diet||{}).rate;
+  if(!isFinite(rate)||rate<0) rate=0.5;
+  if(goal==="hold") rate=0;
+  const dir=goal==="gain"?1:goal==="lose"?-1:0;
+  const out={kg:kg,goal:goal,rate:rate,burn:B,ppk:planPpk(),ok:false,warn:""};
+  if(!B.v){ out.warn="burn"; return out; }
+  if(!kg){ out.warn="weigh"; return out; }
+  out.kcal=Math.round((B.v+dir*rate*7700/7)/10)*10;
+  out.p=Math.round(kg*out.ppk/5)*5;
+  out.f=Math.round(kg*(goal==="lose"?0.8:1.0));
+  out.b=Math.round((out.kcal-out.p*4-out.f*9)/4);
+  out.ok=true;
+  /* a plan he cannot run is not a plan */
+  if(out.kcal<1200) out.warn="floor";
+  else if(out.b<80){
+    out.warn="carb";
+    /* the fastest rate that still leaves him something to train on */
+    for(let i=0;i<PLRATES.length;i++){
+      const r=PLRATES[i], k=Math.round((B.v+dir*r*7700/7)/10)*10;
+      if(Math.round((k-out.p*4-out.f*9)/4)>=80){ out.fix=r; break; }
+    }
+  }
+  return out;
+}
+const PLRATES=[0.25,0.5,0.75];
+const PLGAIN=[0.125,0.25];
+const planRates=()=>planGoal()==="gain"?PLGAIN:PLRATES;
+/* How long to the weight he named, at the pace he is actually keeping. */
+function planEta(pc){
+  const tgt=+(store.diet||{}).tgtkg||0;
+  if(!pc.kg||!tgt||pc.goal==="hold"||!pc.rate) return null;
+  const diff=tgt-pc.kg;
+  if(pc.goal==="lose"&&diff>=-0.2) return {done:true};
+  if(pc.goal==="gain"&&diff<=0.2) return {done:true};
+  if((pc.goal==="lose")!==(diff<0)) return {wrongway:true,kg:Math.abs(diff)};
+  const wks=Math.abs(diff)/pc.rate;
+  return {kg:Math.abs(diff),wks:Math.round(wks),
+    when:new Date(Date.now()+Math.round(wks*7)*864e5)};
+}
+/* What actually happened, which is the only question the rest of the screen
+   cannot answer. Shown half-built rather than hidden, because the missing half
+   is the nudge: it names what he still owes it. */
+function planReal(){
+  const WIN=14, cut=iso(new Date(Date.now()-WIN*864e5));
+  const byDay={};
+  (store.eatLog||[]).forEach(x=>{
+    if(!x||!x.d||x.d<cut||!Array.isArray(x.rows)||!x.rows.length) return;
+    byDay[x.d]=(byDay[x.d]||0)+sumRows(x.rows).k;
+  });
+  const ds=Object.keys(byDay).sort();
+  const W=(store.weights||[]).filter(w=>w&&w.d>=cut&&isFinite(+w.v))
+    .slice().sort((a,b)=>a.d<b.d?-1:1);
+  const avg=ds.length?ds.reduce((a,d)=>a+byDay[d],0)/ds.length:0;
+  const two=W.length>1;
+  return {days:ds.length, avg:avg, weighs:W.length,
+    dkg:two?(+W[W.length-1].v)-(+W[0].v):null,
+    span:two?Math.round((t0(W[W.length-1].d)-t0(W[0].d))/864e5):0};
+}
 /* a date that is the kind of day we want, so the editor can show both versions */
 function nextDayOfKind(heavy){
   for(let i=0;i<7;i++){
@@ -1865,6 +2041,16 @@ function homeView(){
     '<div class="dn">Stats</div><div class="sp">Records</div>'+
     '<div class="ft"><b>'+np+'</b> PR'+(np===1?"":"s")+' this week</div></button>';
 
+  /* plan */
+  const pcH=planCalc();
+  const plb=pcH.warn==="burn"||pcH.warn==="weigh"?'<span class="badge due">SET UP</span>':'';
+  const plan_=' <button class="tile" style="--mc:#4CDCD6" onclick="GYM4.go(\'pl\')">'+plb+
+    '<div class="dn">Plan</div><div class="sp">Targets</div>'+
+    '<div class="ft">'+(pcH.ok
+      ? '<b>'+pcH.kcal.toLocaleString()+'</b> kcal \u00b7 '+
+        (pcH.goal==="hold"?"holding":pcH.goal==="gain"?"gaining":"cutting")
+      : 'not set up yet')+'</div></button>';
+
   /* body */
   const ws=(store.weights||[]).filter(x=>x&&isFinite(+x.v)).slice().sort((a,b)=>a.d<b.d?-1:1);
   const lw=ws.length?ws[ws.length-1]:null;
@@ -1888,7 +2074,7 @@ function homeView(){
 
   return '<div class="hw">'+hero+
     '<h3 class="hh">Training</h3><div class="hgrid">'+prog.map(dayCard).join("")+'</div>'+
-    '<h3 class="hh">Today</h3><div class="hgrid">'+food+stats+body+'</div>'+
+    '<h3 class="hh">Today</h3><div class="hgrid">'+food+plan_+stats+body+'</div>'+
     wl+'</div>';
 }
 
@@ -2008,10 +2194,22 @@ function render(){
     return;
   }
   const eb=$("g4edit");
-  eb.style.display=(day==="st"||day==="bd")?"none":"";
+  eb.style.display=(day==="st"||day==="bd"||day==="pl")?"none":"";
   eb.setAttribute("data-on",editing?"1":"0");
   eb.textContent=editing?"Done":"Edit";
 
+  if(day==="pl"){
+    const pc=planCalc();
+    $("g4h1").textContent="Plan";
+    $("g4h2").textContent=(function(){
+      const t=+(store.diet||{}).tgtkg||0;
+      const way=pc.goal==="hold"?"Holding":pc.goal==="gain"?"Gaining":"Cutting";
+      if(pc.kg&&t) return r1(pc.kg)+" \u2192 "+r1(t)+" kg \u00b7 "+
+        (pc.rate?pc.rate+" kg a week":"holding");
+      return way+(pc.rate?" \u00b7 "+pc.rate+" kg a week":"");
+    })();
+    m.innerHTML=warn+backupBanner()+planView(); return;
+  }
   if(day==="bd"){
     $("g4h1").textContent="Body";
     $("g4h2").textContent="Weight and measurements";
@@ -2262,7 +2460,7 @@ function foodView(){
     '<button class="fx" onclick="GYM4.fdDel('+i+')" aria-label="Remove">\u00d7</button></div>').join("")+
     '<button class="fcombo" onclick="GYM4.fdComboNew()">Save these as a combo</button>'+
     '<button class="fclose" onclick="GYM4.fdClose(this)">'+CLOSE_LABEL+'</button>'+
-    fdCoachView()+fdHist();
+    fdHist();
 }
 
 /* What his own intake and weight say, rather than a formula's guess */
@@ -2311,44 +2509,14 @@ function fdCoachView(){
   return h+'</div>';
 }
 
-/* the days he has closed, newest first */
-const CLOSE_LABEL="Close this day and start a new one";
-function fdHist(){
-  const L=store.eatLog||[];
-  if(!L.length) return "";
-  const start=Math.max(0,L.length-14);
-  const show=L.slice(start).map((x,j)=>({x:x,i:start+j})).reverse();
-  return '<div class="fhead"><h3>Closed days</h3>'+
-    '<span>'+L.length+'</span></div>'+
-    show.map(o=>{
-      const x=o.x, t=sumRows(x.rows);
-      const when=(x.start&&x.end)?hm(x.start)+" \u2192 "+hm(x.end):"";
-      return '<div class="hday"><div class="ht" onclick="GYM4.fdDayOpen('+o.i+')">'+
-        '<div class="hd">'+fmt(x.d)+(when?'<i>'+when+'</i>':'')+'</div>'+
-        '<div class="hm">'+r1(t.p)+'P \u00b7 '+r1(t.f)+'F \u00b7 '+r1(t.b)+'C \u00b7 '+
-          x.rows.length+' item'+(x.rows.length===1?"":"s")+'</div></div>'+
-        '<span class="hk">'+Math.round(t.k)+'<em>kcal</em></span>'+
-        '<button class="hrep" onclick="GYM4.fdRepeat('+o.i+')">Repeat</button></div>';
-    }).join("");
-}
-
-function foodEditView(){
-  const g=dietBase(), L=libOf();
-  const tgt=(key,lab,v)=>'<div><label>'+lab+'</label><input type="text" inputmode="decimal" min="0" '+
-    'value="'+v+'" onchange="GYM4.fdTgt(\''+key+'\',this.value)"></div>';
-  const num=(i,key,lab,v)=>'<div><label>'+lab+'</label><input type="text" inputmode="decimal" min="0" '+
-    'value="'+(+v||0)+'" onchange="GYM4.fdLibSet('+i+',\''+key+'\',this.value)"></div>';
-  let h='<div class="hint">Your daily targets, and the food list behind the Add button. '+
-    'Changing or deleting an item here never touches a day you have already logged.</div>';
-  h+='<h3>Daily targets</h3><div class="hint">This is the average day. '+
-     'Carb cycling below moves carbs between your heavier and lighter days, '+
-     'leaving the week the same.</div>'+
-     '<div class="egrid two">'+
-     tgt("k","Calories",Math.round(g.k))+tgt("p","Protein (g)",r1(g.p))+
-     tgt("f","Fat (g)",r1(g.f))+tgt("b","Carbs (g)",r1(g.b))+'</div>';
+/* Carb cycling lives on the Plan screen now: it shapes the targets, it is not
+   part of keeping the food list. */
+function planCycleView(){
+  const g=dietBase();
+  let h='';
   const C=loadCount(), T=C.hi, R=C.lo, sh=Math.max(0,+g.shift||0);
   const WK=dayLoad();
-  h+='<h3>Carb cycling</h3>'+
+  h+='<h3 class="plh">Carb cycling</h3>'+
     '<div class="hint">Your heavy days take the extra carbs and the lighter ones give '+
     'the same amount back, so the week stays where it is. Tap any day to move it.</div>';
   h+='<div class="rate">'+[0,30,50,70].map(v=>
@@ -2374,6 +2542,175 @@ function foodEditView(){
   }else{
     h+='<div class="hint">Off. Every day gets the same target.</div>';
   }
+  return h;
+}
+/* ---------- the Plan screen ---------- */
+function planRealView(pc){
+  const R=planReal(), needD=Math.max(0,5-R.days), needW=Math.max(0,2-R.weighs);
+  let h='<div class="plreal'+((needD||needW)?" thin":"")+'">'+
+    '<div class="plrt">How it is actually going · last 14 days</div><div class="plrg">'+
+    '<div><b>'+(R.days?Math.round(R.avg).toLocaleString():"—")+'</b>'+
+      '<span>'+(R.days?"kcal a day you ate":"nothing logged yet")+'</span></div>'+
+    '<div><b class="'+(R.dkg===null?"":R.dkg<0?"dn":R.dkg>0?"up":"")+'">'+
+      (R.dkg===null?"—":(R.dkg>0?"+":"")+r1(R.dkg)+" kg")+'</b>'+
+      '<span>'+(R.dkg===null?"needs two weigh-ins":"what the scale did")+'</span></div></div>';
+  if(needD||needW){
+    const want=[];
+    if(needD) want.push("<b>"+needD+" more day"+(needD===1?"":"s")+"</b> logged");
+    if(needW) want.push("<b>"+needW+" more weigh-in"+(needW===1?"":"s")+"</b>");
+    return h+'<p class="plrv">'+want.join(" and ")+
+      ' and this tells you whether the plan below is working.</p></div>';
+  }
+  if(!pc.ok) return h+'</div>';
+  const gap=Math.round(R.avg-pc.kcal);
+  const want=pc.goal==="hold"?0:(pc.goal==="lose"?-1:1)*pc.rate*R.span/7;
+  let v;
+  if(Math.abs(gap)<=75){
+    v='You are eating what you planned. ';
+    v+=(pc.goal==="hold")?'Hold it there.'
+      :(Math.abs(R.dkg)<Math.abs(want)*0.6
+        ? 'The scale is moving slower than that should — give it another week before changing anything.'
+        : 'And the scale agrees. Leave it alone.');
+  }else if((gap>0)===(pc.goal!=="gain")){
+    v='You are eating <b>'+Math.abs(gap)+' kcal a day '+(gap>0?"over":"under")+
+      '</b> your target. The plan is fine — the gap is in what you eat, not in the number.';
+  }else{
+    v='You are eating <b>'+Math.abs(gap)+' kcal a day '+(gap>0?"over":"under")+
+      '</b> your target, which is pulling against what you picked.';
+  }
+  return h+'<p class="plrv">'+v+'</p></div>';
+}
+function planView(){
+  const pc=planCalc(), g=dietBase(), B=pc.burn;
+  const kg=pc.kg, tgt=+g.tgtkg||0;
+  let h=planRealView(pc);
+
+  /* ---- him ---- */
+  h+='<h3 class="plh">You</h3><div class="plwrow">'+
+    '<div><span class="pllbl">Your weight today</span><div class="plwf">'+
+      '<input type="text" inputmode="decimal" id="g4pw" value="'+(kg?r1(kg):"")+'" '+
+      'placeholder="--" onchange="GYM4.plWeigh(this.value)"><span class="u">KG</span></div></div>'+
+    '<div><span class="pllbl">Where you want to get to</span><div class="plwf goal">'+
+      '<input type="text" inputmode="decimal" value="'+(tgt?r1(tgt):"")+'" '+
+      'placeholder="--" onchange="GYM4.plSet(\'tgtkg\',this.value)"><span class="u">KG</span></div></div>'+
+    '</div>'+
+    '<button class=\"pllog\" onclick=\"GYM4.plWeighBtn()\">Log today\u2019s weight</button>'+
+    '<p class="plsrc">The weight goes in the same place as the <b>Body</b> tab — '+
+      'one weight, two doors.</p>';
+  const eta=planEta(pc);
+  if(eta){
+    if(eta.done) h+='<div class="pleta"><b>You are there.</b><span>Switch to Hold to keep it.</span></div>';
+    else if(eta.wrongway) h+='<div class="pleta"><b>'+r1(eta.kg)+' kg away</b>'+
+      '<span>·</span><span>but in the other direction from the goal you picked</span></div>';
+    else h+='<div class="pleta"><b>'+r1(eta.kg)+' kg to go</b><span>·</span>'+
+      '<span>about</span><i>'+eta.wks+' week'+(eta.wks===1?"":"s")+'</i>'+
+      '<span>at today’s rate · moves as you get lighter</span></div>';
+  }
+
+  /* ---- the plan ---- */
+  h+='<h3 class="plh">Your plan</h3>';
+  h+='<span class="plchip'+(B.src==="own"?" on":"")+'">● Running on '+
+     (B.src==="own"?"your own data":"your number")+'</span>';
+  h+='<span class="pllbl">What you burn in a day</span>'+
+    '<div class="plbig"><input type="text" inputmode="numeric" value="'+
+      (B.v?Math.round(B.v):"")+'" placeholder="--" '+
+      (B.src==="own"?'readonly ':'')+'onchange="GYM4.plSet(\'burn\',this.value)">'+
+      '<span class="u">KCAL</span></div>';
+  if(B.src==="own")
+    h+='<p class="plsrc">Worked out from what you logged and what the scale did '+
+      '— not from a watch. <button class="pllink" onclick="GYM4.plBurnMode(\'typed\')">'+
+      'Use my own number instead</button></p>';
+  else
+    h+='<p class="plsrc">A starting guess — nobody knows this number yet, your watch '+
+      'included. <b>It gets replaced</b> by your own once the scale has enough to say.'+
+      (B.ready?' <button class="pllink" onclick="GYM4.plBurnMode(\'auto\')">'+
+        'Use the measured '+Math.round(B.measured)+' instead</button>':'')+'</p>';
+
+  h+='<span class="pllbl" style="margin-top:15px">What you want</span><div class="plseg">'+
+    [["lose","Lose"],["hold","Hold"],["gain","Gain"]].map(x=>
+      '<button aria-pressed="'+(pc.goal===x[0])+'" onclick="GYM4.plSet(\'goal\',\''+x[0]+'\')">'+
+      x[1]+'</button>').join("")+'</div>';
+
+  if(pc.goal!=="hold"){
+    const RS=planRates();
+    h+='<span class="pllbl" style="margin-top:15px">How fast</span><div class="plseg sm">'+
+      RS.map(r=>{
+        const hot=pc.goal==="lose"&&kg&&(r/kg*100)>=0.8;
+        return '<button class="'+(hot?"hot":"")+'" aria-pressed="'+(Math.abs(r-pc.rate)<0.001)+
+          '" onclick="GYM4.plSet(\'rate\','+r+')">'+r+' kg/wk'+(hot?" ⚠":"")+'</button>';
+      }).join("")+'</div>';
+    const hotSel=pc.goal==="lose"&&kg&&(pc.rate/kg*100)>=0.8;
+    if(hotSel) h+='<p class="plwarn">'+pc.rate+' kg a week is '+(pc.rate/kg*100).toFixed(2)+
+      '% of you a week — the top of what still holds muscle. Drop to '+
+      (pc.rate===0.75?"0.5":"0.25")+' if the gym starts feeling heavy.</p>';
+  }
+
+  /* ---- what comes out ---- */
+  if(pc.warn==="burn")
+    h+='<div class="plgap">Put in what you burn in a day and the rest of this fills itself. '+
+      'If you have no idea, 30 to 33 kcal per kg of you is the usual starting guess — '+
+      (kg?'about '+Math.round(kg*31)+' for you.':'weigh yourself and it will say.')+'</div>';
+  else if(pc.warn==="weigh")
+    h+='<div class="plgap">Weigh yourself above. Protein and fat are set per kg of you, '+
+      'so without a weight there is nothing to work from.</div>';
+  else{
+    h+='<div class="plout"><div class="plok">Eat this a day</div>'+
+      '<div class="plkk">'+pc.kcal.toLocaleString()+'<em>kcal</em></div>'+
+      '<div class="plmac">'+
+        '<div class="p"><b>'+pc.p+'</b><span>Protein g</span></div>'+
+        '<div class="f"><b>'+pc.f+'</b><span>Fat g</span></div>'+
+        '<div class="c"><b>'+pc.b+'</b><span>Carbs g</span></div></div>'+
+      '<div class="plpkl">Protein per kg of you</div><div class="plpk">'+
+        PPKS.map(v=>'<button aria-pressed="'+(Math.abs(v-pc.ppk)<0.001)+
+          '" onclick="GYM4.plSet(\'ppk\','+v+')">'+v.toFixed(1)+'</button>').join("")+'</div>'+
+      '<p class="plnote">Fat holds at '+(pc.goal==="lose"?"0.8":"1.0")+
+        ' g per kg as a floor for hormones. Carbs take whatever is left. '+
+        'The only number worth an opinion is the protein.</p>';
+    if(pc.warn==="floor")
+      h+='<p class="plwarn">That lands under 1200 kcal, which stops being advice. '+
+        'Pick a slower rate.</p>';
+    else if(pc.warn==="carb")
+      h+='<p class="plwarn">This leaves only '+pc.b+' g of carbs — not enough to train on.'+
+        (pc.fix?' <button class="pllink" onclick="GYM4.plSet(\'rate\','+pc.fix+')">Try '+
+          pc.fix+' kg a week instead</button>':' Pick a slower rate.')+'</p>';
+    const same=Math.round(g.k)===pc.kcal&&Math.round(g.p)===pc.p&&
+               Math.round(g.f)===pc.f&&Math.round(g.b)===pc.b;
+    h+=same?'<p class="plnote done">✓ These are your targets.</p>'
+      :'<button class="plapply" onclick="GYM4.plApply()">Make these my targets</button>';
+    h+='</div>';
+  }
+
+  h+=planCycleView()+fdCoachView();
+  return h;
+}
+/* the days he has closed, newest first */
+const CLOSE_LABEL="Close this day and start a new one";
+function fdHist(){
+  const L=store.eatLog||[];
+  if(!L.length) return "";
+  const start=Math.max(0,L.length-14);
+  const show=L.slice(start).map((x,j)=>({x:x,i:start+j})).reverse();
+  return '<div class="fhead"><h3>Closed days</h3>'+
+    '<span>'+L.length+'</span></div>'+
+    show.map(o=>{
+      const x=o.x, t=sumRows(x.rows);
+      const when=(x.start&&x.end)?hm(x.start)+" \u2192 "+hm(x.end):"";
+      return '<div class="hday"><div class="ht" onclick="GYM4.fdDayOpen('+o.i+')">'+
+        '<div class="hd">'+fmt(x.d)+(when?'<i>'+when+'</i>':'')+'</div>'+
+        '<div class="hm">'+r1(t.p)+'P \u00b7 '+r1(t.f)+'F \u00b7 '+r1(t.b)+'C \u00b7 '+
+          x.rows.length+' item'+(x.rows.length===1?"":"s")+'</div></div>'+
+        '<span class="hk">'+Math.round(t.k)+'<em>kcal</em></span>'+
+        '<button class="hrep" onclick="GYM4.fdRepeat('+o.i+')">Repeat</button></div>';
+    }).join("");
+}
+
+function foodEditView(){
+  const g=dietBase(), L=libOf();
+  const num=(i,key,lab,v)=>'<div><label>'+lab+'</label><input type="text" inputmode="decimal" min="0" '+
+    'value="'+(+v||0)+'" onchange="GYM4.fdLibSet('+i+',\''+key+'\',this.value)"></div>';
+  let h='<div class="hint">The food list behind the Add button. Changing or deleting '+
+    'an item here never touches a day you have already logged. '+
+    'Your targets live in <b>Plan</b>.</div>';
   h+='<h3>Food list, '+L.length+' items</h3>';
   h+=L.map((x,i)=>{
     if(confirmId===x.id)
@@ -3650,6 +3987,56 @@ const API={
     store.diet=Object.assign(seedDiet(),store.diet||{});
     store.diet.rate=r; save(); render();
   },
+  /* The plan's own settings. Each one is just a number on store.diet, so the
+     screen stays a pure function of what he has set. */
+  plSet(key,val){
+    store.diet=Object.assign(seedDiet(),store.diet||{});
+    if(key==="goal"){
+      store.diet.goal=(val==="hold"||val==="gain")?val:"lose";
+      /* the rates on offer differ between losing and gaining, so land on one
+         that exists rather than leaving a dead selection */
+      const RS=planRates();
+      if(RS.indexOf(+store.diet.rate)<0) store.diet.rate=RS[RS.length-1];
+      if(store.diet.goal==="hold") store.diet.rate=0;
+    }
+    else if(key==="rate") store.diet.rate=Math.max(0,parseFloat(val)||0);
+    else if(key==="ppk"){
+      const v=parseFloat(val);
+      store.diet.ppk=(isFinite(v)&&v>=1&&v<=4)?v:2.2;
+    }
+    else if(key==="burn") store.diet.burn=Math.max(0,Math.round(parseFloat(val)||0));
+    else if(key==="tgtkg"){
+      const v=parseFloat(val);
+      store.diet.tgtkg=(isFinite(v)&&v>0)?v:0;
+    }
+    else return;
+    save(); render();
+  },
+  plBurnMode(m){
+    store.diet=Object.assign(seedDiet(),store.diet||{});
+    store.diet.burnMode=(m==="typed")?"typed":"auto";
+    save(); render();
+  },
+  /* Same list the Body tab writes to. One weight, two doors - a second store
+     would drift and the calibration reads only one of them. */
+  plWeigh(v){
+    const n=parseFloat(v);
+    if(!isFinite(n)||n<=0) return;
+    const d=iso();
+    store.weights=(store.weights||[]).filter(x=>x&&x.d!==d);
+    store.weights.push({d:d,v:Math.round(n*10)/10});
+    store.weights.sort((a,b)=>a.d<b.d?-1:1);
+    save(); render();
+  },
+  plWeighBtn(){ const el=$("g4pw"); if(el) GYM4.plWeigh(el.value); },
+  plWeighBtn(){ const el=$("g4pw"); if(el) GYM4.plWeigh(el.value); },
+  plApply(){
+    const pc=planCalc();
+    if(!pc.ok) return;
+    store.diet=Object.assign(seedDiet(),store.diet||{});
+    store.diet.k=pc.kcal; store.diet.p=pc.p; store.diet.f=pc.f; store.diet.b=pc.b;
+    save(); render();
+  },
   fdApply(k){
     store.diet=Object.assign(seedDiet(),store.diet||{});
     store.diet.k=Math.max(0,+k||0);
@@ -4063,6 +4450,8 @@ const API={
   /* read-only handles on the weight-grid maths, so the test suite can check it
      against the real log instead of guessing from the screen. Changes nothing. */
   __p(){ return store.program; },
+  __plan(){ return planCalc(); },
+  __preal(){ return planReal(); },
   __lat(e,d){ return latOf(e,d); },
   __latUp(f,w){ return latUp(f,w); },
   __latSnap(f,w){ return latSnap(f,w); },
