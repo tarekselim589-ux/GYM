@@ -1393,14 +1393,14 @@ function exSeries(dayId,exId){
 }
 const repMax=r=>{const m=String(r).match(/(\d+)\s*-\s*(\d+)/);if(m)return +m[2];const s=String(r).match(/\d+/);return s?+s[0]:0;};
 const stepOf=w=>w<15?1:w<30?2:w<60?2.5:5;
-function nextWeight(sets,range){
+function nextWeight(sets,range,L){
   const done=(sets||[]).filter(filled);
   if(!done.length) return null;
   const top=repMax(range);
   if(!top||!done.every(x=>+x[1]>=top)) return null;
   const w=Math.max.apply(null,done.map(x=>+x[0]));
   if(!isFinite(w)||!w) return null;
-  return Math.round((w+stepOf(w))*2)/2;
+  return latUp(L,w);
 }
 /* What to put on the bar next time, set by set.
    Two cases. If every set landed inside the rep range, each set keeps its weight
@@ -1410,7 +1410,88 @@ function nextWeight(sets,range){
    under a 6-10 prescription is not work, and creeping it to 16 reps makes it worse. */
 const repLo=r=>{const m=String(r).match(/\d+/);return m?+m[0]:0;};
 const roundKg=w=>w<20?Math.round(w):Math.round(w/2.5)*2.5;
-function nextLadder(ps,range,wantSets){
+/* The weights a machine can actually make.
+   His gym runs Matrix, and Matrix plates are imperial - 10 lb (4.5 kg) or
+   15 lb (6.8 kg) - so the kilos printed on a stack run 59, 66, 73 and never
+   multiples of 5. Hard-coding one gym's table would break the day a machine
+   changes, so the ladder is read off the weights he has actually used on this
+   exercise: those numbers ARE the pin positions. A step set by hand on the
+   exercise always wins, for a machine too new to have a history. */
+const LSTEPS=[20,15,11.3,10,9,6.8,5,4.5,2.5,2.3,2,1.25,1];
+const LTOL=0.65, LMIN=3;
+let latCache={};
+function latFit(ws){
+  const u=[];
+  ws.forEach(w=>{ if(!u.some(x=>Math.abs(x-w)<1e-9)) u.push(w); });
+  u.sort((a,b)=>a-b);
+  if(u.length<LMIN) return null;
+  const span=u[u.length-1]-u[0];
+  /* whole-kg stacks print whole kilos; only a log that holds a half tells us
+     the exercise really moves in halves (dumbbells) */
+  const half=u.some(x=>Math.abs(x-Math.round(x))>1e-9);
+  /* A bigger step is usually the real stack, but not when it only fits sloppily:
+     dumbbells going 18-20-22-24 match a 2 kg step exactly and a 2.3 kg one only
+     within 0.6. Score every fit by size minus three times its worst error, so a
+     clean small step beats a barely-fitting larger one while 6.8 still beats the
+     1 kg grid that trivially fits any whole number. */
+  let best=null;
+  for(let i=0;i<LSTEPS.length;i++){
+    const st=LSTEPS[i];
+    if(st>span) continue;
+    for(let j=0;j<u.length;j++){
+      const b=u[j];
+      let worst=0, fits=true;
+      for(let k=0;k<u.length;k++){
+        const d=Math.abs(b+Math.round((u[k]-b)/st)*st-u[k]);
+        if(d>LTOL){ fits=false; break; }
+        if(d>worst) worst=d;
+      }
+      if(!fits) continue;
+      const sc=st-3*worst;
+      if(!best||sc>best.sc) best={step:st,base:b,half:half,sc:sc};
+      break;
+    }
+  }
+  return best;
+}
+function latOf(e,dayId){
+  if(!e) return null;
+  const cap=(+e.cap>0)?+e.cap:0;
+  if(+e.step>0) return {step:+e.step,base:(+e.base>0?+e.base:0),half:true,cap:cap};
+  const k=(dayId||day)+"/"+e.id;
+  let f=latCache[k];
+  if(f===undefined){
+    const ws=[];
+    exSeries(dayId||day,e.id).forEach(p=>(p.all||[]).forEach(x=>{
+      const w=+x[0]; if(isFinite(w)&&w>0) ws.push(w); }));
+    f=latFit(ws); latCache[k]=f;
+  }
+  return {step:f?f.step:0,base:f?f.base:0,half:f?f.half:true,cap:cap};
+}
+const latRound=(L,v)=>(L&&L.step>0&&!L.half)?Math.round(v):Math.round(v*2)/2;
+function latSnap(L,w){
+  if(!isFinite(w)||w<=0) return w;
+  let v;
+  if(L&&L.step>0){
+    v=L.base+Math.round((w-L.base)/L.step)*L.step;
+    if(v<=0) v=L.base;
+  } else v=roundKg(w);
+  v=latRound(L,v);
+  if(L&&L.cap>0&&v>L.cap) v=latRound(L,L.cap);
+  return v;
+}
+function latUp(L,w){
+  let v;
+  if(L&&L.step>0){
+    const n=Math.floor((w-L.base)/L.step+1e-6)+1;
+    v=latRound(L,L.base+n*L.step);
+    if(v<=w) v=latRound(L,L.base+(n+1)*L.step);
+  } else v=Math.round((w+stepOf(w))*2)/2;
+  if(L&&L.cap>0&&v>L.cap) return (L.cap>w)?latRound(L,L.cap):w;
+  return v;
+}
+const atCap=(L,w)=>!!(L&&L.cap>0&&w>=L.cap-1e-9);
+function nextLadder(ps,range,wantSets,L){
   const done=(ps||[]).filter(filled).map(x=>({w:+x[0],r:+x[1]}))
     .filter(x=>isFinite(x.w)&&isFinite(x.r)&&x.w>0&&x.r>0);
   if(!done.length) return null;
@@ -1423,7 +1504,7 @@ function nextLadder(ps,range,wantSets){
     const n=Math.max(1,wantSets||done.length), items=[];
     for(let i=0;i<n;i++){
       const t=(n===1)?hi:Math.max(lo,Math.floor(hi-i*(hi-lo)/(n-1)));
-      items.push({w:roundKg(E/(1+t/30)),r:t});
+      items.push({w:latSnap(L,E/(1+t/30)),r:t});
     }
     return {mode:"rebuilt",items:items};
   }
@@ -1434,8 +1515,11 @@ function nextLadder(ps,range,wantSets){
   let top=done[0];
   done.forEach(x=>{ if(x.w>top.w||(x.w===top.w&&x.r>top.r)) top=x; });
   if(top.r>=hi){
-    const f=(top.w+stepOf(top.w))/top.w;
-    return {mode:"stepped",items:done.map(x=>({w:roundKg(x.w*f),r:x.r}))};
+    /* the stack has no heavier pin: reps are the only way up */
+    if(atCap(L,top.w))
+      return {mode:"capped",items:done.map(x=>({w:x.w,r:x.r+1}))};
+    const f=latUp(L,top.w)/top.w;
+    return {mode:"stepped",items:done.map(x=>({w:latSnap(L,x.w*f),r:x.r}))};
   }
 
   /* 3. otherwise: same weights, one more rep on every set */
@@ -1906,6 +1990,7 @@ function closedView(p,s){
 
 function render(){
   const m=$("g4main");
+  latCache={};
   const warn=Store.ok?"":'<div class="warn">Saving is not available here. Open this in Safari so your logs persist.</div>';
   const nav=$("g4nav");
   if(nav){
@@ -2000,12 +2085,14 @@ function logView(e,ei,pv,s){
   const allS=exSeries(day,e.id);
   const past=allS.filter(p=>p.date!==iso());
   let cue="";
-  const L=ps?nextLadder(ps,e.r,e.s):null;
+  const LT=latOf(e,day);
+  const L=ps?nextLadder(ps,e.r,e.s,LT):null;
   if(L){
     cue+='<div class="next"><span class="lbl">Next</span>'+
       L.items.map(function(x){ return '<span class="chip">'+x.w+'kg × '+x.r+'</span>'; }).join("")+
       (L.mode==="rebuilt"?'<span class="nb">rebuilt so every set lands inside '+esc(e.r)+'</span>'
-        :L.mode==="stepped"?'<span class="nb">new weights — match last time\'s reps, then build from there</span>':'')+
+        :L.mode==="stepped"?'<span class="nb">new weights — match last time\'s reps, then build from there</span>'
+        :L.mode==="capped"?'<span class="nb">the machine tops out here — add reps, not weight</span>':'')+
       /* only while the exercise is untouched, so it can never overwrite him */
       ((cur||[]).some(filled)?'':'<button class="fillnext" onclick="GYM4.fillNext('+ei+')">Fill these in</button>')+
       '</div>';
@@ -2021,11 +2108,11 @@ function logView(e,ei,pv,s){
     const c=cur[i]||["","",""], p=ps&&ps[i]?ps[i]:null;
     rows+='<div class="set" id="g4r-'+ei+'-'+i+'"><span class="n">'+(i+1)+'</span>'+
       '<div class="field'+(c[0]!==""&&c[0]!==undefined?" has":"")+'">'+
-      '<input type="number" inputmode="decimal" step="0.5" value="'+esc(c[0]||"")+'"'+
+      '<input type="text" inputmode="decimal" step="0.5" value="'+esc(c[0]||"")+'"'+
         ' placeholder="'+(p?esc(p[0]):"")+'" oninput="GYM4.log('+ei+','+i+',0,this.value)"'+
         ' onfocus="GYM4.awake()" aria-label="Set '+(i+1)+' weight"><span class="unit">kg</span></div>'+
       '<div class="field'+(c[1]!==""&&c[1]!==undefined?" has":"")+'">'+
-      '<input type="number" inputmode="numeric" step="1" value="'+esc(c[1]||"")+'"'+
+      '<input type="text" inputmode="numeric" step="1" value="'+esc(c[1]||"")+'"'+
         ' placeholder="'+(p?esc(p[1]):"")+'" oninput="GYM4.log('+ei+','+i+',1,this.value)"'+
         ' onfocus="GYM4.awake()" aria-label="Set '+(i+1)+' reps"><span class="unit">rep</span></div>'+
       '<span class="mark" data-state="'+mark(c,p)+'">▲</span></div>';
@@ -2042,6 +2129,16 @@ function logView(e,ei,pv,s){
     '</section>';
 }
 
+/* Auto says what it worked out, so he can see whether to trust it. */
+function stepOpts(e){
+  const det=(+e.step>0)?0:(latOf(e,day)||{}).step;
+  let o='<option value=""'+(!(+e.step>0)?" selected":"")+'>Auto'+
+    (det?" \u00b7 "+det+"kg":" \u00b7 no log yet")+'</option>';
+  [1,1.25,2,2.3,2.5,4.5,5,6.8,9,10,15,20].forEach(v=>{
+    o+='<option value="'+v+'"'+((+e.step===v)?" selected":"")+'>'+v+' kg</option>';
+  });
+  return o;
+}
 function editView(e,i,total){
   if(confirmId===e.id){
     return '<section class="ex"><div class="confirm">'+
@@ -2058,12 +2155,16 @@ function editView(e,i,total){
       '<button class="ebtn" onclick="GYM4.move('+i+',1)" '+(i===total-1?"disabled":"")+' aria-label="Move down">▼</button>'+
     '</div>'+
     '<div class="egrid two">'+
-      '<div><label>Sets</label><input type="number" inputmode="numeric" min="1" max="10" value="'+e.s+'" onchange="GYM4.set('+i+',\'s\',this.value)"></div>'+
+      '<div><label>Sets</label><input type="text" inputmode="numeric" min="1" max="10" value="'+e.s+'" onchange="GYM4.set('+i+',\'s\',this.value)"></div>'+
       '<div><label>Reps</label><input type="text" value="'+esc(e.r)+'" onchange="GYM4.set('+i+',\'r\',this.value)"></div>'+
     '</div>'+
     '<div class="egrid two">'+
       '<div><label>Muscle</label><select onchange="GYM4.set('+i+',\'m\',this.value)">'+opts+'</select></div>'+
       '<div><label>Head / focus</label><input type="text" value="'+esc(e.h||"")+'" placeholder="e.g. width" onchange="GYM4.set('+i+',\'h\',this.value)"></div>'+
+    '</div>'+
+    '<div class="egrid two">'+
+      '<div><label>Weight step</label><select onchange="GYM4.set('+i+',\'step\',this.value)">'+stepOpts(e)+'</select></div>'+
+      '<div><label>Machine max</label><input type="text" inputmode="decimal" step="0.5" min="0" value="'+(e.cap||"")+'" placeholder="no limit" onchange="GYM4.set('+i+',\'cap\',this.value)"></div>'+
     '</div>'+
     '<button class="rmbtn" onclick="GYM4.ask('+i+')">Delete this exercise</button>'+
   '</section>';
@@ -2233,9 +2334,9 @@ function fdHist(){
 
 function foodEditView(){
   const g=dietBase(), L=libOf();
-  const tgt=(key,lab,v)=>'<div><label>'+lab+'</label><input type="number" inputmode="decimal" min="0" '+
+  const tgt=(key,lab,v)=>'<div><label>'+lab+'</label><input type="text" inputmode="decimal" min="0" '+
     'value="'+v+'" onchange="GYM4.fdTgt(\''+key+'\',this.value)"></div>';
-  const num=(i,key,lab,v)=>'<div><label>'+lab+'</label><input type="number" inputmode="decimal" min="0" '+
+  const num=(i,key,lab,v)=>'<div><label>'+lab+'</label><input type="text" inputmode="decimal" min="0" '+
     'value="'+(+v||0)+'" onchange="GYM4.fdLibSet('+i+',\''+key+'\',this.value)"></div>';
   let h='<div class="hint">Your daily targets, and the food list behind the Add button. '+
     'Changing or deleting an item here never touches a day you have already logged.</div>';
@@ -2289,7 +2390,7 @@ function foodEditView(){
       '</div>'+
       '<div class="egrid two">'+
         '<div><label>Measured</label><select onchange="GYM4.fdLibSet('+i+',\'u\',this.value)">'+sel+'</select></div>'+
-        '<div><label>Calories</label><input type="number" inputmode="decimal" min="0" value="'+(+x.k||0)+
+        '<div><label>Calories</label><input type="text" inputmode="decimal" min="0" value="'+(+x.k||0)+
           '" onchange="GYM4.fdLibSet('+i+',\'k\',this.value)"></div>'+
       '</div>'+
       '<div class="egrid three">'+num(i,"p","Protein",x.p)+num(i,"f","Fat",x.f)+num(i,"b","Carbs",x.b)+'</div>'+
@@ -2612,11 +2713,11 @@ function bodyView(){
 
   const minputs='<div class="mgrid">'+MF.map(f=>
     '<div'+(f[2]?' class="wide"':'')+'><label>'+f[1]+' (cm)</label><div class="field">'+
-    '<input type="number" inputmode="decimal" step="0.1" id="g4m-'+f[0]+'" placeholder="'+
+    '<input type="text" inputmode="decimal" step="0.1" id="g4m-'+f[0]+'" placeholder="'+
     (mval(latest,f[0])!==null?mval(latest,f[0]).toFixed(1):"–")+'" aria-label="'+f[1]+'"><span class="unit">cm</span></div></div>'
   ).join("")+
   '<div class="wide"><label>Height (cm), set once</label><div class="field">'+
-  '<input type="number" inputmode="decimal" step="0.5" id="g4m-height" placeholder="'+
+  '<input type="text" inputmode="decimal" step="0.5" id="g4m-height" placeholder="'+
   (store.height?(+store.height).toFixed(0):"–")+'" aria-label="Height"><span class="unit">cm</span></div></div>'+
   '</div><button class="mfull" onclick="GYM4.madd()">Save measurements</button>';
 
@@ -2639,7 +2740,7 @@ function bodyView(){
     '<p class="verdict" style="margin-top:12px">Each chart has its own scale, so read the shape and not the height.</p>';
 
   return '<h3>Body weight</h3>'+
-    '<div class="wgrid"><div class="field"><input type="number" inputmode="decimal" step="0.1" id="g4w" '+
+    '<div class="wgrid"><div class="field"><input type="text" inputmode="decimal" step="0.1" id="g4w" '+
       'placeholder="'+(w.length?w[0].v.toFixed(1):"86.0")+'" aria-label="Weight today"><span class="unit">kg</span></div>'+
       '<button onclick="GYM4.wadd()">Log</button></div>'+
     '<div class="stat"><div><div class="k">Last 7 days</div><div class="v">'+(w1!==null?w1.toFixed(1):"—")+'</div></div>'+
@@ -3108,7 +3209,7 @@ const API={
   fillNext(ei){
     const p=plan(), e=p.ex[ei];
     const pr=prevFor(e.id); if(!pr) return;
-    const L=nextLadder(pr.sets,e.r,e.s);
+    const L=nextLadder(pr.sets,e.r,e.s,latOf(e,day));
     if(!L||!L.items||!L.items.length) return;
     const s=todaySess();
     const arr=s.ex[e.id]=s.ex[e.id]||[];
@@ -3120,6 +3221,9 @@ const API={
       arr[i][0]=String(x.w); arr[i][1]=String(x.r);
     });
     stamp(s);
+    /* stay on this exercise so he can edit what was just written; he moves on
+       by tapping the next one himself */
+    openId=e.id;
     GYM4.awake(); save(); render();
   },
   log(ei,si,f,val){
@@ -3159,6 +3263,8 @@ const API={
     else if(key==="n") e.n=String(val).trim()||"Untitled";
     else if(key==="m") e.m=String(val);
     else if(key==="h") e.h=String(val).trim()||"general";
+    else if(key==="step"){ const v=parseFloat(val); if(v>0) e.step=v; else delete e.step; }
+    else if(key==="cap"){ const v=parseFloat(val); if(v>0) e.cap=v; else delete e.cap; }
     else e.r=String(val).trim()||"8-12";
     save(); render();
   },
@@ -3256,7 +3362,7 @@ const API={
       (pc?"How many pieces":"Weight in grams")+
         " \u00b7 "+Math.round(+x.k||0)+" kcal "+perLab(x.u),
       '',
-      '<div class="qgrid" style="margin-top:16px"><input type="number" inputmode="decimal" min="0" id="g4fqty" '+
+      '<div class="qgrid" style="margin-top:16px"><input type="text" inputmode="decimal" min="0" id="g4fqty" '+
         'value="'+(pc?1:100)+'" oninput="GYM4.fdPrev(\''+id+'\')"><span class="qu">'+unitLab(x.u)+'</span></div>'+
       '<div class="chips">'+chips+'</div>'+
       '<div class="prev" id="g4fprev"></div>'+
@@ -3346,7 +3452,7 @@ const API={
     const chips=(pc?[1,2,3]:[50,100,150,200,250,300])
       .map(v=>'<button onclick="GYM4.fdQ2('+v+','+i+')">'+v+'</button>').join("");
     fsheet(esc(r.n),"Logged at "+qtyTxt(r)+" \u00b7 change it below",'',
-      '<div class="qgrid" style="margin-top:16px"><input type="number" inputmode="decimal" min="0" '+
+      '<div class="qgrid" style="margin-top:16px"><input type="text" inputmode="decimal" min="0" '+
         'id="g4fqty" value="'+(+r.q||0)+'" oninput="GYM4.fdPrev2('+i+')">'+
         '<span class="qu">'+unitLab(r.u)+'</span></div>'+
       '<div class="chips">'+chips+'</div>'+
@@ -3643,15 +3749,15 @@ const API={
           (x==="g"?"per 100 g":x==="ml"?"per 100 ml":"per piece")+'</option>').join("")+
         '</select>'+
       '<div id="g4szwrap"><p class="clab">One pack \u2014 optional</p>'+
-        '<div class="qgrid"><input type="number" inputmode="decimal" min="0" id="g4nsz" '+
+        '<div class="qgrid"><input type="text" inputmode="decimal" min="0" id="g4nsz" '+
           'value="'+esc(+P.sz>0?String(+P.sz):"")+'" oninput="GYM4.fdNewPrev()">'+
           '<span class="qu" id="g4szu">g</span></div></div>'+
       '<p class="clab">Protein \u00b7 Fat \u00b7 Carbs</p>'+
-      '<div class="n3"><input type="number" inputmode="decimal" min="0" id="g4np" placeholder="P" value="'+esc(V(P.p))+'">'+
-        '<input type="number" inputmode="decimal" min="0" id="g4nf" placeholder="F" value="'+esc(V(P.f))+'">'+
-        '<input type="number" inputmode="decimal" min="0" id="g4nb" placeholder="C" value="'+esc(V(P.b))+'"></div>'+
+      '<div class="n3"><input type="text" inputmode="decimal" min="0" id="g4np" placeholder="P" value="'+esc(V(P.p))+'">'+
+        '<input type="text" inputmode="decimal" min="0" id="g4nf" placeholder="F" value="'+esc(V(P.f))+'">'+
+        '<input type="text" inputmode="decimal" min="0" id="g4nb" placeholder="C" value="'+esc(V(P.b))+'"></div>'+
       '<p class="clab">Calories \u2014 leave it empty and it works it out</p>'+
-      '<input class="ftext" type="number" inputmode="decimal" min="0" id="g4nk" value="'+esc(V(P.k))+'" '+
+      '<input class="ftext" type="text" inputmode="decimal" min="0" id="g4nk" value="'+esc(V(P.k))+'" '+
         'oninput="GYM4.fdNewPrev()">'+
       '<p class="scanmsg" id="g4nprev" style="text-align:left"></p>'+
       '<button class="fgo" onclick="GYM4.fdSaveNew()">Save to the list</button>');
@@ -3953,9 +4059,66 @@ const API={
     if(btn.getAttribute("data-arm")!=="1"){ btn.setAttribute("data-arm","1"); btn.textContent="Sure? Tap again"; setTimeout(function(){ btn.removeAttribute("data-arm"); btn.textContent="Sign out"; },3000); return; }
     window.FB.signOut();
   },
-  mdel(d){ store.measures=(store.measures||[]).filter(e=>e.d!==d); save(); render(); }
+  mdel(d){ store.measures=(store.measures||[]).filter(e=>e.d!==d); save(); render(); },
+  /* read-only handles on the weight-grid maths, so the test suite can check it
+     against the real log instead of guessing from the screen. Changes nothing. */
+  __p(){ return store.program; },
+  __lat(e,d){ return latOf(e,d); },
+  __latUp(f,w){ return latUp(f,w); },
+  __latSnap(f,w){ return latSnap(f,w); },
+  __series(d,id){ return exSeries(d,id); },
+  __ladder(sets,r,n,f){ return nextLadder(sets,r,n,f); }
 };
 
+
+/* ---------- Arabic digits ----------
+   The Arabic keyboard on his phone types ٠١٢ and iOS gives no way to make it
+   type 012 unless the whole phone is switched to Arabic. A number box throws
+   those characters away without a word - it simply reads back empty - so the
+   boxes take text and the digits are folded here, in the capture phase, before
+   any field's own handler reads the value. Folding covers Arabic-Indic and
+   Persian digits and the Arabic decimal and thousands marks. Since the boxes
+   are no longer type="number", anything that is not part of a number is also
+   dropped, which a number box used to do for us: pasting "60 kg" leaves 60. */
+(function(){
+  const EL=document.getElementById("g4");
+  if(!EL) return;
+  const AR=/[\u0660-\u0669\u06F0-\u06F9\u066B\u066C\u060C\u06F0]/;
+  function fold(v){
+    return String(v)
+      .replace(/[\u0660-\u0669]/g,d=>String.fromCharCode(d.charCodeAt(0)-0x0660+48))
+      .replace(/[\u06F0-\u06F9]/g,d=>String.fromCharCode(d.charCodeAt(0)-0x06F0+48))
+      .replace(/[\u066B\u060C]/g,".")
+      .replace(/\u066C/g,"");
+  }
+  function clean(v,dec){
+    let out=fold(v).replace(dec?/[^0-9.\-]/g:/[^0-9\-]/g,"");
+    /* one dot, one leading minus */
+    const neg=out.charAt(0)==="-";
+    out=out.replace(/-/g,"");
+    const i=out.indexOf(".");
+    if(i>=0) out=out.slice(0,i+1)+out.slice(i+1).replace(/\./g,"");
+    return (neg?"-":"")+out;
+  }
+  function tidy(ev){
+    const el=ev.target;
+    if(!el||el.tagName!=="INPUT") return;
+    const im=(el.getAttribute("inputmode")||"").toLowerCase();
+    if(im!=="decimal"&&im!=="numeric") return;
+    const v=el.value;
+    if(v==="") return;
+    const n=clean(v,im==="decimal");
+    if(n===v) return;
+    /* keep the caret where he left it, allowing for characters dropped */
+    let p=el.selectionStart;
+    if(typeof p==="number") p=Math.max(0,p-(v.length-n.length));
+    el.value=n;
+    try{ el.setSelectionRange(p,p); }catch(e){}
+  }
+  EL.addEventListener("input",tidy,true);
+  EL.addEventListener("change",tidy,true);
+  /* the sign-in box lives outside #g4 and takes no numbers, so it is left alone */
+})();
 
 /* ---------- drag sideways to come back ----------
    Listens anywhere on the page rather than at the screen edge: in plain Safari
