@@ -939,6 +939,29 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
 /* .hint is a call-out elsewhere; here it is only a caption under a heading */
 #g4 .plh+.hint{background:none;border:none;padding:0;margin:0 0 9px;color:var(--muted);
   font-size:12px;line-height:1.55}
+
+/* ---------- the Plan screen reads right to left ---------- */
+#g4 .plar{direction:rtl;text-align:right}
+/* numbers stay left-to-right inside Arabic sentences */
+/* doubled on purpose: .plrg span and .plmac span are more specific than a single
+   class, and they would shrink every number this wrapper holds */
+#g4 .n9.n9{unicode-bidi:isolate;display:inline;font-size:inherit;font-weight:inherit;
+  color:inherit;margin:0;letter-spacing:inherit;text-transform:none}
+/* a sentence that starts or ends with a number must not drag itself around */
+#g4 .plar .plsrc,#g4 .plar .plnote,#g4 .plar .plwarn,#g4 .plar .plgap,
+#g4 .plar .plrv,#g4 .plar .pleta,#g4 .plar .hint,#g4 .plar .cwait,
+#g4 .plar .cnote{unicode-bidi:plaintext;text-align:right}
+#g4 .plar .plwf input,#g4 .plar .plbig input{direction:ltr;text-align:right;
+  padding-right:13px;padding-left:44px}
+#g4 .plar .plbig input{padding-left:62px}
+#g4 .plar .plwf .u,#g4 .plar .plbig .u{right:auto;left:10px}
+#g4 .plar .plbig .u{left:12px}
+#g4 .plar .plkk{direction:ltr;text-align:right}
+#g4 .plar .plkk em{margin-left:0;margin-right:7px}
+#g4 .plar .plmac>div,#g4 .plar .plpk button,#g4 .plar .plseg button{text-align:center}
+#g4 .plar .cr{flex-direction:row-reverse}
+#g4 .plar .fhead{flex-direction:row-reverse}
+#g4h1[dir="rtl"],#g4h2[dir="rtl"]{text-align:right;direction:rtl;unicode-bidi:plaintext}
 </style>
 
 <script>
@@ -1409,6 +1432,22 @@ const fdRate=()=>{ const r=store.diet&&+store.diet.rate; return (isFinite(r)&&r>
    the evidence is written; fat holds a floor so hormones are not the price of a
    cut; carbs take whatever is left, which is what makes carbs the thing that
    moves when the deficit moves. */
+/* Arabic runs right to left but these numbers do not, so each one is isolated;
+   without it a line like '5 \u0623\u064a\u0627\u0645' reorders on screen. */
+const AN=x=>'<span class="n9">'+x+'</span>';
+function arDays(n){ n=+n;
+  if(n===1) return "\u064a\u0648\u0645 \u0648\u0627\u062d\u062f";
+  if(n===2) return "\u064a\u0648\u0645\u064a\u0646";
+  return AN(n)+" "+(n>=3&&n<=10?"\u0623\u064a\u0627\u0645":"\u064a\u0648\u0645"); }
+function arWeighs(n){ n=+n;
+  if(n===1) return "\u0648\u0632\u0646\u0629 \u0648\u0627\u062d\u062f\u0629";
+  if(n===2) return "\u0648\u0632\u0646\u062a\u064a\u0646";
+  return AN(n)+" \u0648\u0632\u0646\u0627\u062a"; }
+function arWeeks(n){ n=+n;
+  if(n===1) return "\u0623\u0633\u0628\u0648\u0639";
+  if(n===2) return "\u0623\u0633\u0628\u0648\u0639\u064a\u0646";
+  return AN(n)+" "+(n>=3&&n<=10?"\u0623\u0633\u0627\u0628\u064a\u0639":"\u0623\u0633\u0628\u0648\u0639"); }
+const ARDAY=["\u0623\u062d\u062f","\u0627\u062a\u0646\u064a\u0646","\u062a\u0644\u0627\u062a","\u0623\u0631\u0628\u0639","\u062e\u0645\u064a\u0633","\u062c\u0645\u0639\u0629","\u0633\u0628\u062a"];
 const PPKS=[1.8,2.0,2.2,2.4];
 function planPpk(){
   const v=+((store.diet||{}).ppk);
@@ -2186,6 +2225,7 @@ function render(){
   }
   if(home){
     const hh=new Date().getHours();
+    $("g4h1").removeAttribute("dir"); $("g4h2").removeAttribute("dir");
     $("g4h1").textContent="TAREK";
     $("g4h2").textContent=(hh<12?"Good morning":hh<18?"Good afternoon":"Good evening")+
       " \u00b7 "+fmt(iso());
@@ -2194,20 +2234,21 @@ function render(){
     return;
   }
   const eb=$("g4edit");
+  /* only the Plan screen is Arabic, so the header goes back to LTR everywhere else */
+  if(day!=="pl"){ $("g4h1").removeAttribute("dir"); $("g4h2").removeAttribute("dir"); }
   eb.style.display=(day==="st"||day==="bd"||day==="pl")?"none":"";
   eb.setAttribute("data-on",editing?"1":"0");
   eb.textContent=editing?"Done":"Edit";
 
   if(day==="pl"){
-    const pc=planCalc();
-    $("g4h1").textContent="Plan";
-    $("g4h2").textContent=(function(){
-      const t=+(store.diet||{}).tgtkg||0;
-      const way=pc.goal==="hold"?"Holding":pc.goal==="gain"?"Gaining":"Cutting";
-      if(pc.kg&&t) return r1(pc.kg)+" \u2192 "+r1(t)+" kg \u00b7 "+
-        (pc.rate?pc.rate+" kg a week":"holding");
-      return way+(pc.rate?" \u00b7 "+pc.rate+" kg a week":"");
-    })();
+    const pc=planCalc(), t=+(store.diet||{}).tgtkg||0;
+    $("g4h1").textContent="\u0627\u0644\u062e\u0637\u0629";
+    $("g4h2").innerHTML=(pc.kg&&t)
+      ? '\u0645\u0646 '+AN(r1(pc.kg))+' \u0644\u0640 '+AN(r1(t))+' \u0643\u062c\u0645'+
+        (pc.rate?' \u00b7 '+AN(pc.rate)+' \u0643\u062c\u0645 \u0643\u0644 \u0623\u0633\u0628\u0648\u0639':'')
+      : (pc.goal==="hold"?"\u062b\u0627\u0628\u062a":pc.goal==="gain"?"\u062a\u0636\u062e\u064a\u0645":"\u062a\u0646\u0634\u064a\u0641")+
+        (pc.rate?' \u00b7 '+AN(pc.rate)+' \u0643\u062c\u0645 \u0643\u0644 \u0623\u0633\u0628\u0648\u0639':'');
+    $("g4h1").setAttribute("dir","rtl"); $("g4h2").setAttribute("dir","rtl");
     m.innerHTML=warn+backupBanner()+planView(); return;
   }
   if(day==="bd"){
@@ -2466,46 +2507,39 @@ function foodView(){
 /* What his own intake and weight say, rather than a formula's guess */
 function fdCoachView(){
   const c=fdCalib();
-  let h='<div class="fhead"><h3>Calibration</h3><span>last 21 days</span></div><div class="coach">';
+  let h='<div class="fhead"><h3>المعايرة</h3>'+
+    '<span>آخر '+arDays(21)+'</span></div><div class="coach">';
   if(!c.ok){
-    const n=c.need;
+    const n=c.need, left=Math.max(0,10-n.days);
     if(c.why==="days")
-      h+='<p class="cwait">Close <b>'+Math.max(0,10-n.days)+' more day'+((10-n.days)===1?"":"s")+
-        '</b> and this works out what you actually burn, from your own numbers. '+
-        n.days+' of 10 so far.</p>';
+      h+='<p class="cwait">اقفل <b>'+arDays(left)+' كمان</b> '+
+        'وهاحسبلك بتحرق كام فعلاً من أرقامك إنت. '+
+        'عندك '+AN(n.days)+' من '+AN(10)+' دلوقتي.</p>';
     else if(c.why==="weight")
-      h+='<p class="cwait">Now weigh yourself on the <b>Body</b> tab. '+
-        'It needs two weigh-ins at least <b>10 days apart</b> to read the trend. '+
-        n.weighs+' so far'+(n.span?', '+n.span+' days apart':'')+'.</p>';
+      h+='<p class="cwait">ازن نفسك فوق. محتاج <b>وزنتين '+
+        'بينهم '+arDays(10)+'</b> على الأقل عشان يقرا الاتجاه. '+
+        'عندك '+AN(n.weighs)+(n.span?' · بينهم '+arDays(n.span):'')+'.</p>';
     else
-      h+='<p class="cwait">Too many days missing between your weigh-ins — <b>'+n.days+
-        '</b> logged out of <b>'+n.span+'</b>. Keep closing your days and it will read the trend.</p>';
+      h+='<p class="cwait">أيام كتير ناقصة بين وزنتين — '+
+        '<b>'+AN(n.days)+'</b> مسجلة من <b>'+AN(n.span)+'</b>. '+
+        'كمل قفل أيامك وهيقرا الاتجاه.</p>';
     return h+'</div>';
   }
-  const up=c.dkg>0.05, dn=c.dkg<-0.05;
-  const kg7=curKg();
-  const A7=fdAvg7();
-  h+='<div class="cr"><span>Average intake</span><b>'+Math.round(c.avg)+' kcal</b></div>'+
-     ((kg7>0&&A7)?'<div class="cr"><span>Protein</span><b>'+(A7.p/kg7).toFixed(2)+
-       ' g per kg</b></div>':'')+
-     '<div class="cr"><span>Over</span><b>'+c.days+' logged days</b></div>'+
-     '<div class="cr"><span>Weight</span><b class="'+(up?"up":dn?"down":"")+'">'+
-       (c.dkg>=0?"+":"")+c.dkg.toFixed(1)+' kg in '+c.span+' days</b></div>'+
-     '<div class="cr"><span>So you burn about</span><b>'+c.maint+' kcal</b></div>'+
-     '<div class="cmain"><div class="ck">To lose '+c.rate+' kg a week, eat</div>'+
-       '<div class="cv">'+c.target+'<em>kcal a day</em></div>'+
-     '<div class="rate">'+[0.25,0.5,0.75].map(r=>
-       '<button aria-pressed="'+(Math.abs(r-c.rate)<0.01)+'" onclick="GYM4.fdSetRate('+r+')">'+
-       r+' kg/wk</button>').join("")+'</div>'+
-     (c.floored
-       ? '<p class="cnote" style="color:var(--amber)">'+c.rate+
-         ' kg a week is more than your numbers support \u2014 it would put you under 1200 kcal. '+
-         'Pick a slower rate.</p>'
-       : (Math.round(dietBase().k)===c.target?'':
-          '<button class="capply" onclick="GYM4.fdApply('+c.target+')">Use '+c.target+' as my goal</button>'))+
-     '</div>'+
-     '<p class="cnote">Worked out from what you logged and what the scale did, not from a formula. '+
-     'It sharpens every day you log, and it moves on its own as you get lighter.</p>';
+  /* The rate and the goal live in the plan above now; this block is the evidence
+     behind the burn, not a second place to set things. */
+  const up=c.dkg>0.05, dn=c.dkg<-0.05, kg7=curKg(), A7=fdAvg7();
+  h+='<div class="cr"><span>متوسط أكلك</span><b>'+
+       AN(Math.round(c.avg))+' كالوري</b></div>'+
+     ((kg7>0&&A7)?'<div class="cr"><span>البروتين</span><b>'+
+       AN((A7.p/kg7).toFixed(2))+' جم لكل كيلو</b></div>':'')+
+     '<div class="cr"><span>على مدار</span><b>'+
+       arDays(c.days)+' مسجلة</b></div>'+
+     '<div class="cr"><span>الوزن</span><b class="'+(up?"up":dn?"down":"")+'">'+
+       AN((c.dkg>=0?"+":"")+c.dkg.toFixed(1))+' كجم في '+arDays(c.span)+'</b></div>'+
+     '<div class="cr"><span>يعني بتحرق حوالي</span><b>'+
+       AN(c.maint)+' كالوري</b></div>'+
+     '<p class="cnote">محسوب من اللي سجلته ومن اللي الميزان عمله، '+
+     'مش من معادلة. وبيدق أكتر كل ما تسجل، وبيتحرك لوحده وإنت بتخف.</p>';
   return h+'</div>';
 }
 
@@ -2513,34 +2547,33 @@ function fdCoachView(){
    part of keeping the food list. */
 function planCycleView(){
   const g=dietBase();
-  let h='';
   const C=loadCount(), T=C.hi, R=C.lo, sh=Math.max(0,+g.shift||0);
   const WK=dayLoad();
-  h+='<h3 class="plh">Carb cycling</h3>'+
-    '<div class="hint">Your heavy days take the extra carbs and the lighter ones give '+
-    'the same amount back, so the week stays where it is. Tap any day to move it.</div>';
+  let h='<h3 class="plh">توزيع الكارب</h3>'+
+    '<div class="hint">أيامك التقيلة بتاخد كارب زيادة، والخفيفة بترجّعه، '+
+    'والأسبوع يفضل زي ما هو. دوس على أي يوم عشان تغيّره.</div>';
   h+='<div class="rate">'+[0,30,50,70].map(v=>
       '<button aria-pressed="'+(sh===v)+'" onclick="GYM4.fdShift('+v+')">'+
-      (v?"+"+v+"g":"Off")+'</button>').join("")+'</div>';
+      (v?"+"+AN(v):"قافل")+'</button>').join("")+'</div>';
   h+='<div class="wk">'+WK.map((on,i)=>
       '<button class="wd'+(on?" on":"")+'" onclick="GYM4.fdDayLoad('+i+')">'+
-      '<b>'+DAYNAMES[i].slice(0,3)+'</b><em>'+(on?"heavy":"light")+'</em></button>').join("")+'</div>';
+      '<b>'+ARDAY[i]+'</b><em>'+(on?"تقيل":"خفيف")+'</em></button>').join("")+'</div>';
   if(sh&&T>0&&R>0){
     const tD=dietOf(nextDayOfKind(true)), rD=dietOf(nextDayOfKind(false));
-    h+='<div class="cyc"><div class="cr"><span>'+T+' heavy days</span><b>'+
-        Math.round(tD.k)+' kcal \u00b7 '+r1(tD.b)+'g carbs</b></div>'+
-      '<div class="cr"><span>'+R+' lighter days</span><b>'+
-        Math.round(rD.k)+' kcal \u00b7 '+r1(rD.b)+'g carbs</b></div>'+
-      '<div class="cr"><span>Week</span><b>'+(function(){
+    h+='<div class="cyc"><div class="cr"><span>'+arDays(T)+(T<=2?' تقيل':' تقيلة')+'</span><b>'+
+        AN(Math.round(tD.k))+' كالوري · '+AN(r1(tD.b))+' جم كارب</b></div>'+
+      '<div class="cr"><span>'+arDays(R)+(R<=2?' خفيف':' خفيفة')+'</span><b>'+
+        AN(Math.round(rD.k))+' كالوري · '+AN(r1(rD.b))+' جم كارب</b></div>'+
+      '<div class="cr"><span>الأسبوع</span><b>'+(function(){
         const got=Math.round(tD.k*T+rD.k*R), base=Math.round(g.k*7);
         return Math.abs(got-base)<=10
-          ? base+' kcal, unchanged'
-          : got+' kcal instead of '+base;
+          ? AN(base.toLocaleString())+' كالوري، زي ما هو'
+          : AN(got.toLocaleString())+' بدل '+AN(base.toLocaleString());
       })()+'</b></div></div>';
   }else if(sh){
-    h+='<div class="hint">Mark at least one heavy day and one lighter day.</div>';
+    h+='<div class="hint">حدد يوم تقيل واحد على الأقل ويوم خفيف.</div>';
   }else{
-    h+='<div class="hint">Off. Every day gets the same target.</div>';
+    h+='<div class="hint">قافل. كل الأيام ليها نفس الهدف.</div>';
   }
   return h;
 }
@@ -2548,140 +2581,137 @@ function planCycleView(){
 function planRealView(pc){
   const R=planReal(), needD=Math.max(0,5-R.days), needW=Math.max(0,2-R.weighs);
   let h='<div class="plreal'+((needD||needW)?" thin":"")+'">'+
-    '<div class="plrt">How it is actually going · last 14 days</div><div class="plrg">'+
-    '<div><b>'+(R.days?Math.round(R.avg).toLocaleString():"—")+'</b>'+
-      '<span>'+(R.days?"kcal a day you ate":"nothing logged yet")+'</span></div>'+
+    '<div class="plrt">الوضع الحقيقي · آخر '+arDays(14)+'</div><div class="plrg">'+
+    '<div><b>'+(R.days?AN(Math.round(R.avg).toLocaleString()):"—")+'</b>'+
+      '<span>'+(R.days?"كالوري أكلتهم في اليوم":"لسه مسجلتش حاجة")+'</span></div>'+
     '<div><b class="'+(R.dkg===null?"":R.dkg<0?"dn":R.dkg>0?"up":"")+'">'+
-      (R.dkg===null?"—":(R.dkg>0?"+":"")+r1(R.dkg)+" kg")+'</b>'+
-      '<span>'+(R.dkg===null?"needs two weigh-ins":"what the scale did")+'</span></div></div>';
+      (R.dkg===null?"—":AN((R.dkg>0?"+":"")+r1(R.dkg))+" كجم")+'</b>'+
+      '<span>'+(R.dkg===null?"محتاج وزنتين":"اللي الميزان عمله")+'</span></div></div>';
   if(needD||needW){
     const want=[];
-    if(needD) want.push("<b>"+needD+" more day"+(needD===1?"":"s")+"</b> logged");
-    if(needW) want.push("<b>"+needW+" more weigh-in"+(needW===1?"":"s")+"</b>");
-    return h+'<p class="plrv">'+want.join(" and ")+
-      ' and this tells you whether the plan below is working.</p></div>';
+    if(needD) want.push("<b>"+arDays(needD)+" كمان</b> مسجلة");
+    if(needW) want.push("<b>"+arWeighs(needW)+" كمان</b>");
+    return h+'<p class="plrv">'+want.join(" و")+
+      ' وأقولك الخطة اللي تحت ماشية ولا لأ.</p></div>';
   }
   if(!pc.ok) return h+'</div>';
   const gap=Math.round(R.avg-pc.kcal);
   const want=pc.goal==="hold"?0:(pc.goal==="lose"?-1:1)*pc.rate*R.span/7;
   let v;
   if(Math.abs(gap)<=75){
-    v='You are eating what you planned. ';
-    v+=(pc.goal==="hold")?'Hold it there.'
+    v='إنت بتاكل اللي خططته. ';
+    v+=(pc.goal==="hold")?'ثبّت كده.'
       :(Math.abs(R.dkg)<Math.abs(want)*0.6
-        ? 'The scale is moving slower than that should — give it another week before changing anything.'
-        : 'And the scale agrees. Leave it alone.');
+        ? 'بس الميزان ماشي أبطأ من كده — استنى أسبوع كمان قبل ما تغيّر أي حاجة.'
+        : 'والميزان موافق. سيبها زي ما هي.');
   }else if((gap>0)===(pc.goal!=="gain")){
-    v='You are eating <b>'+Math.abs(gap)+' kcal a day '+(gap>0?"over":"under")+
-      '</b> your target. The plan is fine — the gap is in what you eat, not in the number.';
+    v='إنت بتاكل <b>'+AN(Math.abs(gap))+' كالوري '+(gap>0?"زيادة":"أقل")+
+      '</b> عن هدفك كل يوم. الخطة سليمة — المشكلة في الأكل مش في الرقم.';
   }else{
-    v='You are eating <b>'+Math.abs(gap)+' kcal a day '+(gap>0?"over":"under")+
-      '</b> your target, which is pulling against what you picked.';
+    v='إنت بتاكل <b>'+AN(Math.abs(gap))+' كالوري '+(gap>0?"زيادة":"أقل")+
+      '</b> عن هدفك، وده بيشد عكس اللي إنت اخترته.';
   }
   return h+'<p class="plrv">'+v+'</p></div>';
 }
 function planView(){
   const pc=planCalc(), g=dietBase(), B=pc.burn;
   const kg=pc.kg, tgt=+g.tgtkg||0;
-  let h=planRealView(pc);
+  let h='<div class="plar" dir="rtl">'+planRealView(pc);
 
   /* ---- him ---- */
-  h+='<h3 class="plh">You</h3><div class="plwrow">'+
-    '<div><span class="pllbl">Your weight today</span><div class="plwf">'+
+  h+='<h3 class="plh">إنت</h3><div class="plwrow">'+
+    '<div><span class="pllbl">وزنك النهاردة</span><div class="plwf">'+
       '<input type="text" inputmode="decimal" id="g4pw" value="'+(kg?r1(kg):"")+'" '+
-      'placeholder="--" onchange="GYM4.plWeigh(this.value)"><span class="u">KG</span></div></div>'+
-    '<div><span class="pllbl">Where you want to get to</span><div class="plwf goal">'+
+      'placeholder="--" onchange="GYM4.plWeigh(this.value)"><span class="u">كجم</span></div></div>'+
+    '<div><span class="pllbl">عايز توصل كام</span><div class="plwf goal">'+
       '<input type="text" inputmode="decimal" value="'+(tgt?r1(tgt):"")+'" '+
-      'placeholder="--" onchange="GYM4.plSet(\'tgtkg\',this.value)"><span class="u">KG</span></div></div>'+
+      'placeholder="--" onchange="GYM4.plSet(\'tgtkg\',this.value)"><span class="u">كجم</span></div></div>'+
     '</div>'+
-    '<button class=\"pllog\" onclick=\"GYM4.plWeighBtn()\">Log today\u2019s weight</button>'+
-    '<p class="plsrc">The weight goes in the same place as the <b>Body</b> tab — '+
-      'one weight, two doors.</p>';
+    '<button class="pllog" onclick="GYM4.plWeighBtn()">سجّل وزن النهاردة</button>'+
+    '<p class="plsrc">الوزن بيتسجل في نفس مكان تبويت <b>Body</b> — مش مكان تاني.</p>';
   const eta=planEta(pc);
   if(eta){
-    if(eta.done) h+='<div class="pleta"><b>You are there.</b><span>Switch to Hold to keep it.</span></div>';
-    else if(eta.wrongway) h+='<div class="pleta"><b>'+r1(eta.kg)+' kg away</b>'+
-      '<span>·</span><span>but in the other direction from the goal you picked</span></div>';
-    else h+='<div class="pleta"><b>'+r1(eta.kg)+' kg to go</b><span>·</span>'+
-      '<span>about</span><i>'+eta.wks+' week'+(eta.wks===1?"":"s")+'</i>'+
-      '<span>at today’s rate · moves as you get lighter</span></div>';
+    if(eta.done) h+='<div class="pleta"><b>إنت وصلت.</b> حوّل على «أثبت» عشان تحافظ عليه.</div>';
+    else if(eta.wrongway) h+='<div class="pleta"><b>فاضل '+AN(r1(eta.kg))+' كيلو</b>'+
+      ' — بس في الاتجاه المعاكس للهدف اللي اخترته.</div>';
+    else h+='<div class="pleta"><b>فاضل '+AN(r1(eta.kg))+' كيلو</b> · حوالي '+
+      '<i>'+arWeeks(eta.wks)+'</i> بسرعتك الحالية — التاريخ بيتحرك وإنت بتخف.</div>';
   }
 
   /* ---- the plan ---- */
-  h+='<h3 class="plh">Your plan</h3>';
-  h+='<span class="plchip'+(B.src==="own"?" on":"")+'">● Running on '+
-     (B.src==="own"?"your own data":"your number")+'</span>';
-  h+='<span class="pllbl">What you burn in a day</span>'+
+  h+='<h3 class="plh">خطتك</h3>';
+  h+='<span class="plchip'+(B.src==="own"?" on":"")+'">● شغال على '+
+     (B.src==="own"?"أرقامك إنت":"رقمك إنت")+'</span>';
+  h+='<span class="pllbl">بتحرق كام في اليوم</span>'+
     '<div class="plbig"><input type="text" inputmode="numeric" value="'+
       (B.v?Math.round(B.v):"")+'" placeholder="--" '+
       (B.src==="own"?'readonly ':'')+'onchange="GYM4.plSet(\'burn\',this.value)">'+
-      '<span class="u">KCAL</span></div>';
+      '<span class="u">كالوري</span></div>';
   if(B.src==="own")
-    h+='<p class="plsrc">Worked out from what you logged and what the scale did '+
-      '— not from a watch. <button class="pllink" onclick="GYM4.plBurnMode(\'typed\')">'+
-      'Use my own number instead</button></p>';
+    h+='<p class="plsrc">محسوب من اللي سجلته ومن اللي الميزان عمله — مش من ساعة. '+
+      '<button class="pllink" onclick="GYM4.plBurnMode(\'typed\')">رجّع رقمي أنا</button></p>';
   else
-    h+='<p class="plsrc">A starting guess — nobody knows this number yet, your watch '+
-      'included. <b>It gets replaced</b> by your own once the scale has enough to say.'+
+    h+='<p class="plsrc">رقم مبدئي. محدش عارف الرقم ده بالظبط، ولا الساعة بتاعتك. '+
+      '<b>هيتبدل</b> برقمك الحقيقي أول ما الميزان يتكلم.'+
       (B.ready?' <button class="pllink" onclick="GYM4.plBurnMode(\'auto\')">'+
-        'Use the measured '+Math.round(B.measured)+' instead</button>':'')+'</p>';
+        'استخدم '+AN(Math.round(B.measured))+' المحسوب</button>':'')+'</p>';
 
-  h+='<span class="pllbl" style="margin-top:15px">What you want</span><div class="plseg">'+
-    [["lose","Lose"],["hold","Hold"],["gain","Gain"]].map(x=>
+  h+='<span class="pllbl" style="margin-top:15px">عايز إيه</span><div class="plseg">'+
+    [["lose","أنشّف"],["hold","أثبت"],["gain","أزيد"]].map(x=>
       '<button aria-pressed="'+(pc.goal===x[0])+'" onclick="GYM4.plSet(\'goal\',\''+x[0]+'\')">'+
       x[1]+'</button>').join("")+'</div>';
 
   if(pc.goal!=="hold"){
     const RS=planRates();
-    h+='<span class="pllbl" style="margin-top:15px">How fast</span><div class="plseg sm">'+
+    h+='<span class="pllbl" style="margin-top:15px">بأي سرعة</span><div class="plseg sm">'+
       RS.map(r=>{
         const hot=pc.goal==="lose"&&kg&&(r/kg*100)>=0.8;
         return '<button class="'+(hot?"hot":"")+'" aria-pressed="'+(Math.abs(r-pc.rate)<0.001)+
-          '" onclick="GYM4.plSet(\'rate\','+r+')">'+r+' kg/wk'+(hot?" ⚠":"")+'</button>';
+          '" onclick="GYM4.plSet(\'rate\','+r+')">'+AN(r)+' كجم'+(hot?" \u26a0":"")+'</button>';
       }).join("")+'</div>';
     const hotSel=pc.goal==="lose"&&kg&&(pc.rate/kg*100)>=0.8;
-    if(hotSel) h+='<p class="plwarn">'+pc.rate+' kg a week is '+(pc.rate/kg*100).toFixed(2)+
-      '% of you a week — the top of what still holds muscle. Drop to '+
-      (pc.rate===0.75?"0.5":"0.25")+' if the gym starts feeling heavy.</p>';
+    if(hotSel) h+='<p class="plwarn">'+AN(pc.rate)+' كجم في الأسبوع دي '+
+      AN((pc.rate/kg*100).toFixed(2)+"%")+' من وزنك — أعلى حد يحافظ على العضل. '+
+      'لو حسيت الجيم بقى تقيل، انزل للـ '+AN(pc.rate===0.75?"0.5":"0.25")+' كجم.</p>';
   }
 
   /* ---- what comes out ---- */
   if(pc.warn==="burn")
-    h+='<div class="plgap">Put in what you burn in a day and the rest of this fills itself. '+
-      'If you have no idea, 30 to 33 kcal per kg of you is the usual starting guess — '+
-      (kg?'about '+Math.round(kg*31)+' for you.':'weigh yourself and it will say.')+'</div>';
+    h+='<div class="plgap">اكتب بتحرق كام في اليوم والباقي هيتملي لوحده. '+
+      'لو مش عارف، '+AN(30)+' لـ '+AN(33)+' كالوري لكل كيلو من وزنك هو التخمين المعتاد — '+
+      (kg?'يعني حوالي '+AN(Math.round(kg*31))+' ليك.':'ازن نفسك فوق وهيقولك.')+'</div>';
   else if(pc.warn==="weigh")
-    h+='<div class="plgap">Weigh yourself above. Protein and fat are set per kg of you, '+
-      'so without a weight there is nothing to work from.</div>';
+    h+='<div class="plgap">ازن نفسك فوق الأول. البروتين والدهون بيتحسبوا لكل كيلو من وزنك، '+
+      'فمن غير وزن مفيش حاجة نبني عليها.</div>';
   else{
-    h+='<div class="plout"><div class="plok">Eat this a day</div>'+
-      '<div class="plkk">'+pc.kcal.toLocaleString()+'<em>kcal</em></div>'+
+    h+='<div class="plout"><div class="plok">كُل كده في اليوم</div>'+
+      '<div class="plkk">'+AN(pc.kcal.toLocaleString())+'<em>كالوري</em></div>'+
       '<div class="plmac">'+
-        '<div class="p"><b>'+pc.p+'</b><span>Protein g</span></div>'+
-        '<div class="f"><b>'+pc.f+'</b><span>Fat g</span></div>'+
-        '<div class="c"><b>'+pc.b+'</b><span>Carbs g</span></div></div>'+
-      '<div class="plpkl">Protein per kg of you</div><div class="plpk">'+
+        '<div class="p"><b>'+pc.p+'</b><span>بروتين جم</span></div>'+
+        '<div class="f"><b>'+pc.f+'</b><span>دهون جم</span></div>'+
+        '<div class="c"><b>'+pc.b+'</b><span>كارب جم</span></div></div>'+
+      '<div class="plpkl">البروتين لكل كيلو من وزنك</div><div class="plpk">'+
         PPKS.map(v=>'<button aria-pressed="'+(Math.abs(v-pc.ppk)<0.001)+
           '" onclick="GYM4.plSet(\'ppk\','+v+')">'+v.toFixed(1)+'</button>').join("")+'</div>'+
-      '<p class="plnote">Fat holds at '+(pc.goal==="lose"?"0.8":"1.0")+
-        ' g per kg as a floor for hormones. Carbs take whatever is left. '+
-        'The only number worth an opinion is the protein.</p>';
+      '<p class="plnote">الدهون ثابتة '+AN(pc.goal==="lose"?"0.8":"1.0")+
+        ' جم لكل كيلو — حد أدنى للهرمونات. والكارب بياخد الباقي. '+
+        'الرقم الوحيد اللي ليك فيه رأي هو البروتين.</p>';
     if(pc.warn==="floor")
-      h+='<p class="plwarn">That lands under 1200 kcal, which stops being advice. '+
-        'Pick a slower rate.</p>';
+      h+='<p class="plwarn">كده هينزل تحت '+AN(1200)+' كالوري، وده مبقاش كلام ينفذ. '+
+        'اختار سرعة أبطأ.</p>';
     else if(pc.warn==="carb")
-      h+='<p class="plwarn">This leaves only '+pc.b+' g of carbs — not enough to train on.'+
-        (pc.fix?' <button class="pllink" onclick="GYM4.plSet(\'rate\','+pc.fix+')">Try '+
-          pc.fix+' kg a week instead</button>':' Pick a slower rate.')+'</p>';
+      h+='<p class="plwarn">كده الكارب هيبقى '+AN(pc.b)+' جم بس — مش كفاية تلعب بيها.'+
+        (pc.fix?' <button class="pllink" onclick="GYM4.plSet(\'rate\','+pc.fix+')">'+
+          'جرّب '+AN(pc.fix)+' كجم في الأسبوع</button>':' اختار سرعة أبطأ.')+'</p>';
     const same=Math.round(g.k)===pc.kcal&&Math.round(g.p)===pc.p&&
                Math.round(g.f)===pc.f&&Math.round(g.b)===pc.b;
-    h+=same?'<p class="plnote done">✓ These are your targets.</p>'
-      :'<button class="plapply" onclick="GYM4.plApply()">Make these my targets</button>';
+    h+=same?'<p class="plnote done">✓ دول أهدافك فعلاً.</p>'
+      :'<button class="plapply" onclick="GYM4.plApply()">خليهم أهدافي</button>';
     h+='</div>';
   }
 
   h+=planCycleView()+fdCoachView();
-  return h;
+  return h+'</div>';
 }
 /* the days he has closed, newest first */
 const CLOSE_LABEL="Close this day and start a new one";
