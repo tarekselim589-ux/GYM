@@ -280,7 +280,7 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     border:1px solid rgba(76,220,214,.45)}
   #g4 .tile .badge.due{background:rgba(236,176,83,.14);color:#F4CE92;
     border:1px solid rgba(236,176,83,.45)}
-  #g4 .tile .badge.late{background:rgba(234,171,159,.18);color:#F0A090;
+  #g4 .tile .badge.late{background:rgba(0,0,0,.22);color:#F0A090;
     border:1px solid rgba(234,171,159,.55)}
   #g4 .tile.flag{border-color:rgba(234,171,159,.45);box-shadow:0 0 0 1px rgba(234,171,159,.12)}
   #g4 .tile.food{grid-column:1/-1;flex-direction:row;align-items:center;gap:15px;min-height:0}
@@ -962,6 +962,20 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
 #g4 .plar .cr{flex-direction:row-reverse}
 #g4 .plar .fhead{flex-direction:row-reverse}
 #g4h1[dir="rtl"],#g4h2[dir="rtl"]{text-align:right;direction:rtl;unicode-bidi:plaintext}
+
+/* ---------- the combo basket ---------- */
+#g4 .cbrow{display:flex;align-items:center;gap:10px;padding:10px 0;
+  border-bottom:1px solid var(--line2)}
+#g4 .cbrow:last-of-type{border-bottom:none}
+#g4 .cbrow .ft{flex:1;min-width:0}
+#g4 .cbsum{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+  margin-top:10px;padding:10px 12px;border-radius:11px;background:rgba(0,0,0,.22);
+  border:1px solid var(--line)}
+#g4 .cbsum span{color:var(--muted);font-size:11.5px}
+#g4 .cbsum b{color:var(--chalk);font-size:13px;font-weight:750}
+#g4 .hday .cbed{flex:0 0 auto;background:rgba(0,0,0,.22);border:1px solid var(--line);
+  color:var(--aqua);border-radius:9px;padding:7px 11px;font-family:inherit;
+  font-size:12px;font-weight:750}
 </style>
 
 <script>
@@ -1357,6 +1371,10 @@ async function offLookup(code){
 /* null means the open day; a number is an index into the closed list, so a day
    he already filed can still be corrected. */
 let fdWhere=null;
+/* Building or editing a combo. While this is set the picker fills a basket
+   instead of the open day, so a sandwich can be put together at 2am without
+   anything being counted as eaten. */
+let cbBuild=null;
 function rowsAt(){
   if(fdWhere===null) return eatTodayW();
   const x=(store.eatLog||[])[fdWhere];
@@ -1423,6 +1441,15 @@ function fdCalib(){
   const target=Math.max(1200,raw);
   return {ok:true,avg:avg,dkg:dkg,span:span,days:dates.length,
     maint:Math.round(maint/10)*10,target:target,rate:rate,floored:raw<1200};
+}
+/* Categories were whatever each food happened to carry, so the picker's groups
+   came out in library order and anything new landed in Other. Fixed list, fixed
+   order, Other last - it is the one for food he did not make himself. */
+const FCATS=["Protein","Carbs","Dairy","Fruit & veg","Nuts & fats","Snacks","Other"];
+const fcatOf=x=>{ const c=(x&&x.c)||"Other"; return FCATS.indexOf(c)>=0?c:"Other"; };
+function fcatOpts(cur){
+  const c=FCATS.indexOf(cur)>=0?cur:"Other";
+  return FCATS.map(x=>'<option value="'+esc(x)+'"'+(x===c?' selected':'')+'>'+esc(x)+'</option>').join("");
 }
 const fdRate=()=>{ const r=store.diet&&+store.diet.rate; return (isFinite(r)&&r>0)?r:0.5; };
 
@@ -2756,6 +2783,10 @@ function foodEditView(){
         '<button class="ebtn" onclick="GYM4.fdAsk(\''+x.id+'\')" aria-label="Delete">\u00d7</button>'+
       '</div>'+
       '<div class="egrid two">'+
+        '<div style="grid-column:1/-1"><label>Category</label>'+
+          '<select onchange="GYM4.fdLibSet('+i+',\'c\',this.value)">'+fcatOpts(fcatOf(x))+'</select></div>'+
+      '</div>'+
+      '<div class="egrid two">'+
         '<div><label>Measured</label><select onchange="GYM4.fdLibSet('+i+',\'u\',this.value)">'+sel+'</select></div>'+
         '<div><label>Calories</label><input type="text" inputmode="decimal" min="0" value="'+(+x.k||0)+
           '" onchange="GYM4.fdLibSet('+i+',\'k\',this.value)"></div>'+
@@ -2790,9 +2821,12 @@ function foodEditView(){
         '<div class="hm">'+r1(t.p)+'P \u00b7 '+r1(t.f)+'F \u00b7 '+r1(t.b)+'C \u00b7 '+
         c.rows.length+' item'+(c.rows.length===1?"":"s")+'</div></div>'+
         '<span class="hk">'+Math.round(t.k)+'<em>kcal</em></span>'+
+        '<button class="cbed" onclick="GYM4.fdComboBuild(\''+c.id+'\')">Edit</button>'+
         '<button class="fx" onclick="GYM4.fdAsk(\''+c.id+'\')" aria-label="Delete">\u00d7</button></div>';
     }).join("");
-  }
+  }else h+='<h3>Combos</h3><div class="hint">A combo is a set of foods kept under one '+
+    'name \u2014 a sandwich, a shake \u2014 so logging it is one tap instead of four.</div>';
+  h+='<button class="addex" onclick="GYM4.fdComboBuild(null)">+ New combo</button>';
   return h;
 }
 
@@ -3302,6 +3336,25 @@ function normalize(){
     if(!(+store.diet.shift>0)) store.diet.shift=50;
     store.mig.food6=1;
   }
+  /* Everything added by hand landed in Other, so the ones already there get put
+     where they belong and the breaded chicken breast he air-fries is added. Only
+     items still sitting in Other are touched, so a category he has since set by
+     hand is never overwritten. Anything in Other this does not recognise stays
+     there - a wrong guess would just hide the food somewhere he is not looking. */
+  if(!store.mig.food7){
+    store.lib=store.lib||[];
+    const MOVE=[["عسل","Carbs"],["معمول","Snacks"]];
+    store.lib.forEach(x=>{
+      if(!x||(x.c&&x.c!=="Other")) return;
+      const n=String(x.n||"");
+      for(let i=0;i<MOVE.length;i++) if(n.indexOf(MOVE[i][0])===0){ x.c=MOVE[i][1]; return; }
+    });
+    const PAN="بانيه";
+    if(!store.lib.some(x=>x&&String(x.n||"").indexOf(PAN)>=0))
+      store.lib.push({id:uid(),c:"Protein",n:PAN,u:"g",k:220,p:27,f:6,b:11});
+    store.mig.food7=1;
+    migWrote=true;
+  }
   /* The empty rows left behind by the old behaviour. Anything holding a number,
      even half of one, stays — so a weight with no reps is kept, not tidied away. */
   if(!store.mig.sess1){
@@ -3676,20 +3729,22 @@ const API={
   fdFilt(q){
     const box=$("g4flist"); if(!box) return;
     q=String(q||"").trim().toLowerCase();
-    const groups=[], by={};
+    const by={};
     libOf().forEach(x=>{
       if(q&&String(x.n||"").toLowerCase().indexOf(q)<0) return;
-      const c=x.c||"Other";
-      if(!by[c]){ by[c]=[]; groups.push(c); }
+      const c=fcatOf(x);
+      if(!by[c]) by[c]=[];
       by[c].push(x);
     });
+    const groups=FCATS.filter(c=>by[c]&&by[c].length);
     if(!groups.length&&!comboOf().some(c=>!q||String(c.n||"").toLowerCase().indexOf(q)>=0)){
       box.innerHTML='<p class="fnone">No match for \u201c'+esc(q)+'\u201d.<br>'+
         'Tap <b>Add a new food</b> and enter it yourself.</p>';
       return;
     }
     let head="";
-    const CB=comboOf().filter(c=>!q||String(c.n||"").toLowerCase().indexOf(q)>=0);
+    /* no combos inside a combo: while building, only plain foods are offered */
+    const CB=cbBuild?[]:comboOf().filter(c=>!q||String(c.n||"").toLowerCase().indexOf(q)>=0);
     if(CB.length) head='<p class="fcat">Combos</p>'+CB.map(c=>{
       const t=sumRows(c.rows);
       return '<div class="fpick" onclick="GYM4.fdComboAdd(\''+c.id+'\')">'+
@@ -3754,6 +3809,10 @@ const API={
     const e=$("g4fqty"), q=e?parseFloat(e.value):0;
     if(!isFinite(q)||q<=0) return;
     const v=fdCalc(x,q);
+    if(cbBuild){
+      cbBuild.rows.push({n:x.n,u:x.u,q:q,k:v.k,p:v.p,f:v.f,b:v.b});
+      API.fdComboBuild(); return;          /* straight back to the basket */
+    }
     rowsAt().push({t:nowHM(),n:x.n,u:x.u,q:q,k:v.k,p:v.p,f:v.f,b:v.b});
     const w=fdWhere;
     closeAll(); save(); render();
@@ -3968,6 +4027,72 @@ const API={
     save(); render();
   },
   fdDayClose(){ fdWhere=null; closeAll(); render(); },
+  /* Open the basket. With an id it loads that combo for editing; with nothing
+     it carries on with whatever is already in the basket, which is how it comes
+     back after picking an item. */
+  fdComboBuild(id){
+    if(id!==undefined&&id!==null){
+      const c=comboOf().find(x=>x.id===id);
+      cbBuild=c?{id:c.id,n:c.n,rows:(c.rows||[]).map(r=>Object.assign({},r))}
+               :{id:null,n:"",rows:[]};
+    }else if(id===null) cbBuild={id:null,n:"",rows:[]};
+    else if(!cbBuild) cbBuild={id:null,n:"",rows:[]};
+    const B=cbBuild, t=sumRows(B.rows);
+    stopScanner(); closeAll();
+    const list=B.rows.length
+      ? B.rows.map((r,i)=>'<div class="cbrow">'+
+          '<div class="ft"><div class="fn">'+esc(r.n)+'</div>'+
+          '<div class="fq"><b class="mp">'+r1(+r.p||0)+' P</b>'+
+            '<b class="mf">'+r1(+r.f||0)+' F</b><b class="mc">'+r1(+r.b||0)+' C</b>'+
+            '<b class="mw">'+qtyTxt(r)+'</b></div></div>'+
+          '<span class="fk">'+Math.round(+r.k||0)+'<em>kcal</em></span>'+
+          '<button class="fx" onclick="GYM4.fdCbDel('+i+')" aria-label="Remove">×</button>'+
+        '</div>').join("")
+      : '<p class="fnone">Nothing in it yet. Tap <b>Add an item</b> below.</p>';
+    fsheet(B.id?"Edit the combo":"New combo",
+      "Build it once, then it is one tap every time — nothing here counts as eaten",
+      '',
+      '<p class="clab">Name</p><input class="ftext" type="text" id="g4cbn" '+
+        'placeholder="Panee sandwich" value="'+esc(B.n||"")+'">'+
+      '<p class="clab">What is in it</p>'+list+
+      (B.rows.length?'<div class="cbsum"><span>'+B.rows.length+' item'+
+        (B.rows.length===1?"":"s")+'</span><b>'+Math.round(t.k)+' kcal · '+
+        r1(t.p)+'P · '+r1(t.f)+'F · '+r1(t.b)+'C</b></div>':'')+
+      '<button class="fnewrow" onclick="GYM4.fdCbPick()">+ Add an item</button>'+
+      '<button class="fgo" onclick="GYM4.fdCbSave()">'+
+        (B.id?"Save the changes":"Save the combo")+'</button>'+
+      (B.id?'<button class="fpin" onclick="GYM4.fdCbCancel()">Cancel</button>':''));
+    const f=$("g4cbn");
+    if(f&&!B.n) f.focus();
+    if(f) f.addEventListener("input",()=>{ if(cbBuild) cbBuild.n=f.value; });
+  },
+  /* the name lives in the DOM, so it has to be kept before the sheet is replaced */
+  fdCbPick(){
+    if(!cbBuild) return;
+    const f=$("g4cbn"); if(f) cbBuild.n=f.value;
+    API.fdPick();
+  },
+  fdCbDel(i){
+    if(!cbBuild) return;
+    const f=$("g4cbn"); if(f) cbBuild.n=f.value;
+    if(i>=0&&i<cbBuild.rows.length) cbBuild.rows.splice(i,1);
+    API.fdComboBuild();
+  },
+  fdCbCancel(){ cbBuild=null; closeAll(); render(); },
+  fdCbSave(){
+    if(!cbBuild) return;
+    const f=$("g4cbn"), n=f?String(f.value).trim():String(cbBuild.n||"").trim();
+    if(!n){ if(f) f.focus(); return; }
+    if(!cbBuild.rows.length){ return; }
+    const rows=cbBuild.rows.map(r=>({n:r.n,u:r.u,q:r.q,k:r.k,p:r.p,f:r.f,b:r.b}));
+    store.combo=comboOf();
+    if(cbBuild.id){
+      const c=store.combo.find(x=>x.id===cbBuild.id);
+      if(c){ c.n=n; c.rows=rows; }
+      else store.combo.push({id:uid(),n:n,rows:rows});
+    }else store.combo.push({id:uid(),n:n,rows:rows});
+    cbBuild=null; closeAll(); save(); render();
+  },
   fdComboNew(){
     const rows=eatToday();
     if(!rows.length) return;
@@ -4161,6 +4286,7 @@ const API={
       "Copy the numbers straight off the label",'',
       (P.note?'<p class="scanmsg" style="text-align:left;margin:14px 0 0">'+P.note+'</p>':'')+
       '<p class="clab">Name</p><input class="ftext" type="text" id="g4nn" value="'+esc(V(P.n))+'">'+
+      '<p class="clab">Category</p><select class="fsel" id="g4nc">'+fcatOpts(P.c)+'</select>'+
       '<p class="clab">Measured</p><select class="fsel" id="g4nu" onchange="GYM4.fdNewPrev()">'+
         ['g','ml','pc'].map(x=>'<option value="'+x+'"'+((P.u||"g")===x?' selected':'')+'>'+
           (x==="g"?"per 100 g":x==="ml"?"per 100 ml":"per piece")+'</option>').join("")+
@@ -4195,10 +4321,11 @@ const API={
     let n=String(V("g4nn")).trim();
     /* a pack size turns the per-100 numbers into one piece */
     const sz=(u==="pc")?0:num("g4nsz");
-    let out={n:n,u:u,k:k,p:pr,f:ft,b:cb,sz:sz};
+    const cat=V("g4nc");
+    let out={n:n,u:u,k:k,p:pr,f:ft,b:cb,sz:sz,c:(FCATS.indexOf(cat)>=0?cat:"Other")};
     if(sz>0){
       const m=sz/100;
-      out={n:n,u:"pc",k:Math.round(k*m),p:r1(pr*m),f:r1(ft*m),b:r1(cb*m),sz:sz};
+      out={n:n,u:"pc",k:Math.round(k*m),p:r1(pr*m),f:r1(ft*m),b:r1(cb*m),sz:sz,c:out.c};
       const tag=sz+(u==="ml"?"ml":"g");
       if(n&&n.indexOf(String(sz))<0) out.n=n+" \u2014 "+tag;
     }
@@ -4222,12 +4349,13 @@ const API={
     const o=API.fdNewRead();
     if(!o.n){ const f=$("g4nn"); if(f) f.focus(); return; }
     store.lib=store.lib||[];
-    store.lib.push({id:uid(),c:"Other",n:o.n,u:o.u,k:o.k,p:o.p,f:o.f,b:o.b});
+    store.lib.push({id:uid(),c:o.c||"Other",n:o.n,u:o.u,k:o.k,p:o.p,f:o.f,b:o.b});
     closeAll(); save(); render();
   },
   fdLibSet(i,key,val){
     const x=(store.lib||[])[i]; if(!x) return;
     if(key==="n") x.n=String(val).trim()||x.n;
+    else if(key==="c") x.c=(FCATS.indexOf(val)>=0)?val:"Other";
     else if(key==="u") x.u=(val==="ml"||val==="pc")?val:"g";
     else if(key==="k"||key==="p"||key==="f"||key==="b") x[key]=Math.max(0,parseFloat(val)||0);
     save(); render();
@@ -4441,7 +4569,13 @@ const API={
     const s=btn.closest(".sheet")||btn.closest(".fsheet");
     if(s) s.remove();
     stopScanner();
-    if(fdWhere!==null&&!document.querySelector("#g4 .fsheet")){ fdWhere=null; render(); }
+    if(!document.querySelector("#g4 .fsheet")){
+      let gone=false;
+      if(fdWhere!==null){ fdWhere=null; gone=true; }
+      /* closing the sheet by hand is a cancel: do not keep a basket nobody can see */
+      if(cbBuild){ cbBuild=null; gone=true; }
+      if(gone) render();
+    }
   },
 
   wadd(){
@@ -4481,6 +4615,7 @@ const API={
      against the real log instead of guessing from the screen. Changes nothing. */
   __p(){ return store.program; },
   __plan(){ return planCalc(); },
+  __setCat(id,c){ const x=(store.lib||[]).find(y=>y.id===id); if(x){ x.c=c; save(); render(); } },
   __preal(){ return planReal(); },
   __lat(e,d){ return latOf(e,d); },
   __latUp(f,w){ return latUp(f,w); },
