@@ -983,6 +983,27 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   border:1px solid var(--line);color:var(--aqua);font-family:inherit;font-size:19px;
   font-weight:700;line-height:1;display:grid;place-items:center;padding:0}
 #g4 .fcbadd:active{border-color:var(--aqua);background:rgba(76,220,214,.10)}
+
+/* ---------- swapping an exercise out ---------- */
+#g4 .exbtns{display:flex;gap:8px;margin-top:4px}
+#g4 .exbtns .rmbtn,#g4 .exbtns .swapbtn{flex:1;margin-top:0}
+#g4 .swapbtn{background:rgba(0,0,0,.22);border:1px solid var(--line);color:var(--aqua);
+  border-radius:11px;padding:11px;font-family:inherit;font-size:13px;font-weight:750}
+#g4 .swapbtn:active{border-color:var(--aqua);background:rgba(76,220,214,.10)}
+#g4 h3.benchsec{margin-top:26px}
+#g4 .benchrow{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:12px;
+  padding:11px 12px;margin-bottom:8px;font-family:inherit}
+#g4 .benchrow .bq{flex:0 0 auto;width:3px;height:30px;border-radius:2px}
+#g4 .benchrow .bt{flex:1;min-width:0}
+#g4 .benchrow .bt b{display:block;font-size:14.5px;font-weight:700;color:var(--chalk);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#g4 .benchrow .bt em{display:block;font-style:normal;font-size:11.5px;color:var(--muted);
+  margin-top:2px}
+#g4 .benchrow .bgo{flex:0 0 auto;background:rgba(0,0,0,.22);border:1px solid var(--line);
+  color:var(--aqua);border-radius:9px;padding:7px 11px;font-family:inherit;
+  font-size:12px;font-weight:750}
+#g4 .fsbody .benchrow:active{border-color:var(--aqua)}
 </style>
 
 <script>
@@ -1623,6 +1644,26 @@ function mark(cur,prev){
   return d>0?"up":"down";
 }
 // best set of each session, oldest first, plus all sets of that session
+/* Swapped-out exercises wait here, on their own day, keeping their id - and the
+   id is what every logged set is filed under, so the history comes back with
+   them. Nothing is ever deleted by a single tap. */
+function benchOf(p){
+  p=p||plan();
+  if(!Array.isArray(p.bench)) p.bench=[];
+  return p.bench;
+}
+/* the last real set he did on it, so he can see what he is bringing back */
+function exLast(dayId,exId){
+  const ss=exSeries(dayId,exId);
+  return ss.length?ss[ss.length-1]:null;
+}
+function lastTxt(dayId,exId){
+  const l=exLast(dayId,exId);
+  if(!l) return "never logged";
+  const d=daysAgo(l.date);
+  return r1(l.w)+" kg \u00d7 "+l.r+" \u00b7 "+
+    (d<=0?"today":d===1?"yesterday":d+" days ago");
+}
 function exSeries(dayId,exId){
   const out=[];
   ((store.days[dayId]||{sessions:[]}).sessions||[]).forEach(s=>{
@@ -2316,7 +2357,7 @@ function render(){
     m.innerHTML=warn+
       '<div class="hint">Rename, reorder, delete, or change sets and reps. Muscle and head feed the volume and balance stats, so set them on any exercise you add. History follows the exercise, not its name.</div>'+
       p.ex.map((e,i)=>editView(e,i,p.ex.length)).join("")+
-      '<button class="addex" onclick="GYM4.add()">+ Add exercise</button>';
+      '<button class="addex" onclick="GYM4.add()">+ Add exercise</button>'+benchView();
   }else{
     const s=todaySess(), pv=prevSess();
     if(s.closed){
@@ -2412,11 +2453,36 @@ function stepOpts(e){
   });
   return o;
 }
+/* What is waiting out of the day, with the last real set he did on each, so he
+   can see what he is bringing back before he brings it. */
+function benchView(){
+  const p=plan(), B=benchOf(p);
+  if(!B.length) return "";
+  let h='<h3 class="benchsec">On the bench, '+B.length+'</h3>'+
+    '<div class="hint">Out of the day but not gone. Every number they ever had '+
+    'is still filed under them and comes back with them.</div>';
+  h+=B.map(b=>{
+    if(confirmId==="bench:"+b.id)
+      return '<section class="ex"><div class="confirm">'+
+        '<p>Delete <b>'+esc(b.n)+'</b> for good? This is the one that does '+
+        'throw its numbers away.</p><div class="row">'+
+        '<button class="yes" onclick="GYM4.benchDrop(\''+b.id+'\')">Delete it</button>'+
+        '<button onclick="GYM4.cancel()">Keep it</button></div></div></section>';
+    return '<div class="benchrow plain">'+
+      '<span class="bq" style="background:'+mcol(b)+'"></span>'+
+      '<span class="bt"><b>'+esc(b.n)+'</b><em>'+esc(lastTxt(day,b.id))+'</em></span>'+
+      '<button class="bgo" onclick="GYM4.benchBack(\''+b.id+'\')">Bring back</button>'+
+      '<button class="fx" onclick="GYM4.benchAsk(\''+b.id+'\')" aria-label="Delete for good">×</button>'+
+    '</div>';
+  }).join("");
+  return h;
+}
 function editView(e,i,total){
   if(confirmId===e.id){
     return '<section class="ex"><div class="confirm">'+
-      '<p>Delete <b>'+esc(e.n)+'</b>? Its logged history goes with it.</p>'+
-      '<div class="row"><button class="yes" onclick="GYM4.remove('+i+')">Delete</button>'+
+      '<p>Take <b>'+esc(e.n)+'</b> out of this day? Its numbers are kept, and '+
+      'it waits below in case you want it back.</p>'+
+      '<div class="row"><button class="yes" onclick="GYM4.remove('+i+')">Take it out</button>'+
       '<button onclick="GYM4.cancel()">Keep it</button></div></div></section>';
   }
   const opts=Object.keys(MUSCLES).map(k=>
@@ -2439,7 +2505,10 @@ function editView(e,i,total){
       '<div><label>Weight step</label><select onchange="GYM4.set('+i+',\'step\',this.value)">'+stepOpts(e)+'</select></div>'+
       '<div><label>Machine max</label><input type="text" inputmode="decimal" step="0.5" min="0" value="'+(e.cap||"")+'" placeholder="no limit" onchange="GYM4.set('+i+',\'cap\',this.value)"></div>'+
     '</div>'+
-    '<button class="rmbtn" onclick="GYM4.ask('+i+')">Delete this exercise</button>'+
+    '<div class="exbtns">'+
+      '<button class="swapbtn" onclick="GYM4.swapAsk('+i+')">Swap it</button>'+
+      '<button class="rmbtn" onclick="GYM4.ask('+i+')">Take it out</button>'+
+    '</div>'+
   '</section>';
 }
 
@@ -3284,6 +3353,7 @@ function fsheet(title,sub,top,body){
 let migWrote=false;
 function normalize(){
   if(!store.program||!store.program.length) store.program=seed();
+  store.program.forEach(p=>{ if(!Array.isArray(p.bench)) p.bench=[]; });
   if(!store.days) store.days={};
   if(!store.weights) store.weights=[];
   if(!store.measures) store.measures=[];
@@ -3471,6 +3541,15 @@ function mergeIn(d){
       (ip.ex||[]).forEach(ie=>{
         if(ie&&ie.id&&!cp.ex.some(e=>e.id===ie.id)){ cp.ex.push(clone(ie)); n.ex++; }
       });
+      /* a benched exercise still owns its history, so it has to come across too */
+      if(Array.isArray(ip.bench)){
+        cp.bench=Array.isArray(cp.bench)?cp.bench:[];
+        ip.bench.forEach(ie=>{
+          if(!ie||!ie.id) return;
+          if(cp.ex.some(e=>e.id===ie.id)||cp.bench.some(e=>e.id===ie.id)) return;
+          cp.bench.push(clone(ie)); n.ex++;
+        });
+      }
     });
   }
 
@@ -3701,12 +3780,76 @@ const API={
     const t=ex[i]; ex[i]=ex[j]; ex[j]=t;
     save(); render();
   },
+  /* Tap the exercise you want gone, pick what takes its place. The one being
+     replaced goes to the bench with its id, so its numbers are not lost, and
+     the replacement lands in the same slot rather than at the end of the day. */
+  swapAsk(i){
+    const p=plan(), e=p.ex[i];
+    if(!e) return;
+    const B=benchOf(p);
+    closeAll();
+    const rows=B.length
+      ? B.map(b=>'<button class="benchrow" onclick="GYM4.swapTo('+i+',\''+b.id+'\')">'+
+          '<span class="bq" style="background:'+mcol(b)+'"></span>'+
+          '<span class="bt"><b>'+esc(b.n)+'</b>'+
+          '<em>'+esc(lastTxt(day,b.id))+'</em></span>'+
+          '<span class="bgo">Put it in</span></button>').join("")
+      : '<p class="fnone">Nothing on the bench for this day yet. Anything you '+
+        'swap out or take out waits here.</p>';
+    fsheet("Swap "+esc(e.n),
+      "Whatever you pick takes its place in the same spot. "+esc(e.n)+
+        " keeps all its numbers and waits on the bench.",
+      '',
+      '<p class="clab">Bring one back</p>'+rows+
+      '<button class="fnewrow" onclick="GYM4.swapNew('+i+')">+ A new exercise instead</button>');
+  },
+  swapTo(i,id){
+    const p=plan(), out=p.ex[i], B=benchOf(p);
+    const j=B.findIndex(x=>x.id===id);
+    if(!out||j<0) return;
+    const incoming=B.splice(j,1)[0];
+    p.ex.splice(i,1,incoming);
+    B.push(out);
+    closeAll(); openId=null; save(); render();
+  },
+  swapNew(i){
+    const p=plan(), out=p.ex[i];
+    if(!out) return;
+    p.ex.splice(i,1,{id:uid(),n:"New exercise",s:out.s||3,r:out.r||"8-12",
+      rest:60,why:"",m:out.m||"other",h:out.h||"general"});
+    benchOf(p).push(out);
+    closeAll(); openId=null; save(); render();
+    const f=document.querySelectorAll("#g4 .erow .nm");
+    if(f.length>i){ f[i].focus(); f[i].select(); }
+  },
+  benchBack(id){
+    const p=plan(), B=benchOf(p);
+    const j=B.findIndex(x=>x.id===id);
+    if(j<0) return;
+    p.ex.push(B.splice(j,1)[0]);
+    confirmId=null; save(); render();
+  },
+  benchAsk(id){ confirmId="bench:"+id; render(); },
+  /* the only place anything is really deleted, and it takes two taps */
+  benchDrop(id){
+    const p=plan(), B=benchOf(p);
+    const j=B.findIndex(x=>x.id===id);
+    if(j>=0){
+      logs(day).sessions.forEach(ss=>{ if(ss.ex) delete ss.ex[id]; });
+      B.splice(j,1);
+    }
+    confirmId=null; save(); render();
+  },
   ask(i){ confirmId=plan().ex[i].id; render(); },
   cancel(){ confirmId=null; render(); },
+  /* Out of the day, not out of the file: the sets stay filed under its id,
+     waiting on the bench until he wants it back. */
   remove(i){
     const p=plan(), e=p.ex[i];
-    logs(day).sessions.forEach(s=>{ if(s.ex) delete s.ex[e.id]; });
-    p.ex.splice(i,1); confirmId=null; save(); render();
+    if(!e) return;
+    p.ex.splice(i,1);
+    benchOf(p).push(e);
+    confirmId=null; save(); render();
   },
   add(){
     plan().ex.push({id:uid(),n:"New exercise",s:3,r:"8-12",rest:60,why:"",m:"other",h:"general"});
@@ -4626,6 +4769,7 @@ const API={
      against the real log instead of guessing from the screen. Changes nothing. */
   __p(){ return store.program; },
   __plan(){ return planCalc(); },
+  __merge(d){ const n=mergeIn(d); save(); render(); return n; },
   __setCat(id,c){ const x=(store.lib||[]).find(y=>y.id===id); if(x){ x.c=c; save(); render(); } },
   __preal(){ return planReal(); },
   __lat(e,d){ return latOf(e,d); },
