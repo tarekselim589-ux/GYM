@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js" crossorigin>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js" crossorigin>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js" crossorigin>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Gym Log 4-Day</title>
@@ -4906,6 +4909,11 @@ window.addEventListener("fbauth",function(e){
 });
 if(window.FB&&("user" in window.FB)){ if(window.FB.user) start(); else showLogin(); }
 setTimeout(function(){ if(!started&&!window.FB) showLogin(); },8000);
+setTimeout(function(){ if(!started&&window.FB&&!("user" in window.FB)){
+  var l=$("lgLoad"); l.textContent="Connection is slow. ";
+  var b=document.createElement("button"); b.type="button"; b.className="lgbtn"; b.style.marginTop="10px"; b.textContent="Try again";
+  b.onclick=function(){ location.reload(); }; l.appendChild(b);
+} },7000);
 $("lgForm").addEventListener("submit",async function(e){
   e.preventDefault();
   const er=$("lgErr"), btn=$("lgBtn"), em=$("lgEmail").value.trim(), pw=$("lgPass").value; er.hidden=true;
@@ -4918,6 +4926,9 @@ $("lgForm").addEventListener("submit",async function(e){
 });
 return API;
 })();
+</script>
+<script>
+if("serviceWorker" in navigator) addEventListener("load",function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
 </script>
 </body>
 </html>
