@@ -318,10 +318,10 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
 
   /* ---- the strip that moves while he trains ---- */
   #g4 .bkslim{display:flex;align-items:center;gap:10px;border:1px solid rgba(236,176,83,.3);
-    background:rgba(236,176,83,.07);border-radius:9px;padding:9px 11px;color:var(--amber);
+    background:rgba(0,0,0,.20);border-radius:9px;padding:9px 11px;color:#F4CE92;
     font-size:11.5px;margin:10px 0}
   #g4 .bkslim span{flex:1;min-width:0}
-  #g4 .bkslim button{background:none;border:1px solid rgba(236,176,83,.45);color:var(--amber);
+  #g4 .bkslim button{background:none;border:1px solid rgba(236,176,83,.45);color:#F4CE92;
     border-radius:6px;padding:4px 10px;font-family:inherit;font-size:11px;font-weight:650;
     cursor:pointer;flex:0 0 auto}
   #g4 .live{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);
@@ -1324,8 +1324,12 @@ const r1=n=>Math.round(n*10)/10;
    midnight. Nothing here looks at the clock to decide where an entry belongs. */
 const eatNow=()=>{ const e=store.eatNow; return (e&&Array.isArray(e.rows))?e:{start:0,rows:[]}; };
 function eatNowW(){
-  if(!store.eatNow||!Array.isArray(store.eatNow.rows)) store.eatNow={start:Date.now(),rows:[]};
-  if(!store.eatNow.start) store.eatNow.start=Date.now();
+  if(!store.eatNow||!Array.isArray(store.eatNow.rows)) store.eatNow={start:0,rows:[]};
+  /* The open day is dated by its start, and the start is the first thing he eats
+     - not the moment the previous day was closed. Closing Thursday at 22:45 used
+     to stamp Friday's food with Thursday's date, which put two days on one date
+     and doubled it in every average. */
+  if(!store.eatNow.start&&store.eatNow.rows.length) store.eatNow.start=Date.now();
   return store.eatNow;
 }
 function eatToday(){ return eatNow().rows; }
@@ -1710,7 +1714,19 @@ const roundKg=w=>w<20?Math.round(w):Math.round(w/2.5)*2.5;
    changes, so the ladder is read off the weights he has actually used on this
    exercise: those numbers ARE the pin positions. A step set by hand on the
    exercise always wins, for a machine too new to have a history. */
-const LSTEPS=[20,15,11.3,10,9,6.8,5,4.5,2.5,2.3,2,1.25,1];
+/* His stacks are imperial: a plate is 10 lb and the kilos printed on it are
+   that rounded - 14, 18, 23, 27. Stepping by a round 4.5 drifts off those by
+   half a kilo, which rounds the wrong way on every other pin and offers 28, 46,
+   72, 90 - numbers no pin has. So the imperial steps are the exact conversions,
+   and the plain metric ones sit beside them for plate-loaded gear. */
+const LB=0.45359237;
+const LSTEPS=[20,15,25*LB,10,20*LB,15*LB,5,10*LB,2.5,5*LB,2,1.25,2.5*LB,1];
+const LLB={};
+[2.5,5,10,15,20,25].forEach(n=>{ LLB[(n*LB).toFixed(4)]=n+" lb"; });
+const stepName=v=>{
+  const k=LLB[(+v).toFixed(4)];
+  return k?(k+" \u00b7 "+(Math.round(v*10)/10)+" kg"):(v+" kg");
+};
 const LTOL=0.65, LMIN=3;
 let latCache={};
 function latFit(ws){
@@ -1719,15 +1735,37 @@ function latFit(ws){
   u.sort((a,b)=>a-b);
   if(u.length<LMIN) return null;
   const span=u[u.length-1]-u[0];
-  /* whole-kg stacks print whole kilos; only a log that holds a half tells us
-     the exercise really moves in halves (dumbbells) */
   const half=u.some(x=>Math.abs(x-Math.round(x))>1e-9);
-  /* A bigger step is usually the real stack, but not when it only fits sloppily:
-     dumbbells going 18-20-22-24 match a 2 kg step exactly and a 2.3 kg one only
-     within 0.6. Score every fit by size minus three times its worst error, so a
-     clean small step beats a barely-fitting larger one while 6.8 still beats the
-     1 kg grid that trivially fits any whole number. */
+  const rnd=v=>half?Math.round(v*2)/2:Math.round(v);
+  /* A stack is k plates from some starting point, and the kilos printed on it
+     are that rounded. So the ladder is round((k+A)*step), where A is where the
+     stack starts inside one plate - 0 for a stack that begins at zero, 0.67 for
+     one that begins at 130 lb with 15 lb plates. Stepping in printed kilos
+     instead drifts and lands on pins the machine does not have. */
   let best=null;
+  for(let i=0;i<LSTEPS.length;i++){
+    const st=LSTEPS[i];
+    if(st>span) continue;
+    let hit=null;
+    for(let a=0;a<50;a++){
+      const A=a/50;
+      let ok=true, err=0;
+      for(let j=0;j<u.length;j++){
+        const k=Math.round(u[j]/st-A);
+        if(rnd((k+A)*st)!==u[j]){ ok=false; break; }
+        err+=Math.abs((k+A)*st-u[j]);
+      }
+      if(!ok) continue;
+      const near=Math.min(A,1-A);   /* a plain k-plates stack is the common case */
+      if(!hit||near<hit.near-1e-9) hit={A:A,near:near,err:err/u.length};
+    }
+    if(!hit) continue;
+    const sc=st-3*hit.err;
+    if(!best||sc>best.sc) best={step:st,A:hit.A,half:half,sc:sc};
+  }
+  if(best) return best;
+  /* Nothing reproduces his numbers exactly - dumbbells he rounded by hand, say.
+     Fall back to the loose fit so there is still something better than a guess. */
   for(let i=0;i<LSTEPS.length;i++){
     const st=LSTEPS[i];
     if(st>span) continue;
@@ -1740,17 +1778,19 @@ function latFit(ws){
         if(d>worst) worst=d;
       }
       if(!fits) continue;
-      const sc=st-3*worst;
-      if(!best||sc>best.sc) best={step:st,base:b,half:half,sc:sc};
+      const sc=st-3*worst, A=((b/st)%1+1)%1;
+      if(!best||sc>best.sc) best={step:st,A:A,half:half,sc:sc};
       break;
     }
   }
   return best;
 }
+const isLb=v=>Object.prototype.hasOwnProperty.call(LLB,(+v).toFixed(4));
 function latOf(e,dayId){
   if(!e) return null;
   const cap=(+e.cap>0)?+e.cap:0;
-  if(+e.step>0) return {step:+e.step,base:(+e.base>0?+e.base:0),half:true,cap:cap};
+  /* a hand-set imperial step means a stack, which prints whole kilos */
+  if(+e.step>0) return {step:+e.step,A:0,half:!isLb(+e.step),cap:cap};
   const k=(dayId||day)+"/"+e.id;
   let f=latCache[k];
   if(f===undefined){
@@ -1759,26 +1799,28 @@ function latOf(e,dayId){
       const w=+x[0]; if(isFinite(w)&&w>0) ws.push(w); }));
     f=latFit(ws); latCache[k]=f;
   }
-  return {step:f?f.step:0,base:f?f.base:0,half:f?f.half:true,cap:cap};
+  return {step:f?f.step:0,A:f?f.A:0,half:f?f.half:true,cap:cap};
 }
 const latRound=(L,v)=>(L&&L.step>0&&!L.half)?Math.round(v):Math.round(v*2)/2;
+const latPin=(L,k)=>latRound(L,(k+(L.A||0))*L.step);
 function latSnap(L,w){
   if(!isFinite(w)||w<=0) return w;
   let v;
   if(L&&L.step>0){
-    v=L.base+Math.round((w-L.base)/L.step)*L.step;
-    if(v<=0) v=L.base;
-  } else v=roundKg(w);
-  v=latRound(L,v);
+    let k=Math.round(w/L.step-(L.A||0));
+    if(k<1) k=1;
+    v=latPin(L,k);
+  } else v=latRound(L,roundKg(w));
   if(L&&L.cap>0&&v>L.cap) v=latRound(L,L.cap);
   return v;
 }
 function latUp(L,w){
   let v;
   if(L&&L.step>0){
-    const n=Math.floor((w-L.base)/L.step+1e-6)+1;
-    v=latRound(L,L.base+n*L.step);
-    if(v<=w) v=latRound(L,L.base+(n+1)*L.step);
+    let k=Math.floor(w/L.step-(L.A||0)+1e-6)+1;
+    v=latPin(L,k);
+    /* the printed kilos repeat where two pins round the same way */
+    while(v<=w&&k<400){ k++; v=latPin(L,k); }
   } else v=Math.round((w+stepOf(w))*2)/2;
   if(L&&L.cap>0&&v>L.cap) return (L.cap>w)?latRound(L,L.cap):w;
   return v;
@@ -2450,9 +2492,10 @@ function logView(e,ei,pv,s){
 function stepOpts(e){
   const det=(+e.step>0)?0:(latOf(e,day)||{}).step;
   let o='<option value=""'+(!(+e.step>0)?" selected":"")+'>Auto'+
-    (det?" \u00b7 "+det+"kg":" \u00b7 no log yet")+'</option>';
-  [1,1.25,2,2.3,2.5,4.5,5,6.8,9,10,15,20].forEach(v=>{
-    o+='<option value="'+v+'"'+((+e.step===v)?" selected":"")+'>'+v+' kg</option>';
+    (det?" \u00b7 "+stepName(det):" \u00b7 no log yet")+'</option>';
+  LSTEPS.slice().sort((a,b)=>a-b).forEach(v=>{
+    o+='<option value="'+v+'"'+((Math.abs(+e.step-v)<0.001)?" selected":"")+'>'+
+      stepName(v)+'</option>';
   });
   return o;
 }
@@ -3451,9 +3494,54 @@ function normalize(){
     if(dropped) migWrote=true;
   }
   if(!Array.isArray(store.eatLog)) store.eatLog=[];
+  /* One-off: days closed after midnight were stamped with the previous day, so
+     some dates hold two days of food and the day between them holds none. A
+     record whose first row reads earlier on the clock than its own start began
+     the following morning, so it moves there - but only onto a free date, since
+     guessing a date that is already taken would be worse than leaving it. */
+  if(!store.mig.eat1){
+    /* Older days were stamped with the time they were CLOSED, which for a day
+       closed after midnight is the day after. Put each one back on the day it
+       started, oldest first, so the chain unwinds and frees the date the next
+       one wants. Only onto a free date - never over a day that already exists. */
+    store.eatLog.sort((a,b)=>((a&&a.start)||0)-((b&&b.start)||0));
+    store.eatLog.forEach(x=>{
+      if(!x||!x.start||!x.d) return;
+      const want=iso(new Date(x.start));
+      if(want===x.d) return;
+      if(store.eatLog.some(y=>y!==x&&y&&y.d===want)) return;
+      x.d=want;
+    });
+    store.eatLog.sort((a,b)=>a.d<b.d?-1:1);
+    const by={};
+    store.eatLog.forEach(x=>{ if(x&&x.d) (by[x.d]=by[x.d]||[]).push(x); });
+    const taken=d=>store.eatLog.some(x=>x&&x.d===d);
+    const hm=t=>{ const p=String(t||"").split(":");
+      return p.length===2?(+p[0]*60+ +p[1]):-1; };
+    let moved=0, stuck=0;
+    Object.keys(by).forEach(day=>{
+      const list=by[day];
+      if(list.length<2) return;
+      /* the first record closed on that date keeps it */
+      for(let i=1;i<list.length;i++){
+        const r=list[i], rows=r.rows||[];
+        const st=r.start?new Date(r.start):null;
+        if(!st||!rows.length){ stuck++; continue; }
+        const first=hm(rows[0].t), startMin=st.getHours()*60+st.getMinutes();
+        if(first<0||first>=startMin){ stuck++; continue; }
+        const nd=iso(new Date(st.getTime()+864e5));
+        if(taken(nd)){ stuck++; continue; }
+        r.d=nd; r.start=st.getTime()+864e5; moved++;
+      }
+    });
+    if(moved) store.eatLog.sort((a,b)=>a.d<b.d?-1:1);
+    store.mig.eat1=1;
+    store.migEat={moved:moved,stuck:stuck};
+    if(moved||stuck) migWrote=true;
+  }
   if(!Array.isArray(store.combo)) store.combo=[];
   if(!Array.isArray(store.pins)) store.pins=[];
-  if(!store.eatNow||!Array.isArray(store.eatNow.rows)) store.eatNow={start:Date.now(),rows:[]};
+  if(!store.eatNow||!Array.isArray(store.eatNow.rows)) store.eatNow={start:0,rows:[]};
   // keep the closed list small: the last 60 days
   while(store.eatLog.length>60) store.eatLog.shift();
   const ref={};
@@ -4370,10 +4458,15 @@ const API={
       store.eatLog=Array.isArray(store.eatLog)?store.eatLog:[];
       /* a day that runs past midnight is still that day, so date it by its start */
       const st=cur.start||Date.now();
-      store.eatLog.push({d:iso(new Date(st)),start:st,end:Date.now(),rows:cur.rows});
+      const d=iso(new Date(st));
+      const had=store.eatLog.find(x=>x&&x.d===d);
+      /* two records on one date would be counted as one enormous day by every
+         average, so the rows join the day that is already there */
+      if(had){ had.rows=(had.rows||[]).concat(cur.rows); had.end=Date.now(); }
+      else store.eatLog.push({d:d,start:st,end:Date.now(),rows:cur.rows});
       while(store.eatLog.length>60) store.eatLog.shift();
     }
-    store.eatNow={start:Date.now(),rows:[]};
+    store.eatNow={start:0,rows:[]};
     save(); render();
   },
   /* Point the camera at the barcode, or type the digits printed under it.
