@@ -3241,11 +3241,26 @@ function bodyView(){
   const df=(w1!==null&&w2!==null)?w1-w2:null;
   let v="Log your weight 3-4 times a week, mornings on an empty stomach. Two weeks of data are needed before a comparison means anything.";
   if(df!==null){
-    const g=Math.round(df*1000);
-    if(g<=-350&&g>=-700)v="<b>On target.</b> You are losing 350-700 g a week, the rate that keeps muscle. Keep the same intake.";
-    else if(g<-700)v="<b>Losing too fast.</b> Past about 700 g a week you start giving up muscle, more so on short sleep. Add 200-300 calories per day.";
-    else if(g<0)v="<b>Losing too slowly.</b> Cut about 200 calories per day, or drop 50 g of rice from the post-gym meal.";
-    else v="<b>Not losing.</b> You are at or above maintenance. Cut 300 calories per day.";
+    /* judge the week against the goal and rate set in Plan, not a fixed fat-loss band */
+    const g=Math.round(df*1000), goal=planGoal();
+    let rt=+(store.diet||{}).rate;
+    if(!isFinite(rt)||rt<=0) rt=0.5;
+    const lo=Math.round(rt*700), hi=Math.round(rt*1300);
+    if(goal==="hold"){
+      if(Math.abs(g)<=200)v="<b>Holding steady.</b> Your weight is within 200 g of last week. Keep the same intake.";
+      else if(g>0)v="<b>Drifting up.</b> Up "+g+" g against your goal to hold. Cut about 200 calories per day.";
+      else v="<b>Drifting down.</b> Down "+Math.abs(g)+" g against your goal to hold. Add about 200 calories per day.";
+    } else if(goal==="gain"){
+      if(g>=lo&&g<=hi)v="<b>On target.</b> You are gaining "+g+" g a week, in line with your plan. Keep the same intake.";
+      else if(g>hi)v="<b>Gaining too fast.</b> "+g+" g a week is more than your plan, and the extra is mostly fat. Cut about 200 calories per day.";
+      else if(g>0)v="<b>Gaining too slowly.</b> Only "+g+" g a week. Add about 200 calories per day.";
+      else v="<b>Not gaining.</b> You are at or below maintenance. Add 300 calories per day.";
+    } else {
+      if(g<=-lo&&g>=-hi)v="<b>On target.</b> You are losing "+Math.abs(g)+" g a week, in line with your plan. Keep the same intake.";
+      else if(g<-hi)v="<b>Losing too fast.</b> "+Math.abs(g)+" g a week is faster than your plan, and you start giving up muscle, more so on short sleep. Add 200-300 calories per day.";
+      else if(g<0)v="<b>Losing too slowly.</b> Cut about 200 calories per day, or drop 50 g of rice from the post-gym meal.";
+      else v="<b>Not losing.</b> You are at or above maintenance. Cut 300 calories per day.";
+    }
   }
   const wrows=w.slice(0,14).map(e=>'<div class="hrow"><span class="d">'+fmt(e.d)+'</span>'+
     '<span class="v">'+e.v.toFixed(1)+' kg</span>'+
