@@ -1085,9 +1085,13 @@ const Store=(function(){
     },
     get durable(){ return false; },
     ok: true,
+    /* hold: the app opened from this phone's copy and the account copy is still
+       being checked, so nothing is read from or sent to the account until then */
+    hold:false,
+    tsOf:ts,
     async readLocal(){
       const found=[];
-      if(this.cloud){ const c=await window.FB.read(); if(c&&c.s) found.push(c.s); }
+      if(this.cloud&&!this.hold){ const c=await window.FB.read(); if(c&&c.s) found.push(c.s); }
       if(local){ try{ const v=localStorage.getItem(KEY); if(v) found.push(v); }catch(e){} }
       if(idb){ const v=await IDB.get(KEY); if(v) found.push(v); }
       return newest(found)||mem;
@@ -1097,7 +1101,7 @@ const Store=(function(){
       if(local){ try{ localStorage.setItem(KEY,s); ok=true; }catch(e){} }
       if(idb){ if(await IDB.set(KEY,s)) ok=true; }
       if(!ok) mem=s;
-      if(this.cloud){ clearTimeout(this._t); const self=this; this._t=setTimeout(function(){
+      if(this.cloud&&!this.hold){ clearTimeout(this._t); const self=this; this._t=setTimeout(function(){
         window.FB.write(s,ts(s)).catch(function(){ const b=document.getElementById("g4cloudErr"); if(b){ b.hidden=false; setTimeout(function(){b.hidden=true;},5000);} });
       },800); }
       return ok;
@@ -3856,6 +3860,15 @@ const API={
     render();
     if(migWrote){ migWrote=false; save(); }
   },
+  /* the account had a newer copy than this phone: show it and keep it here too */
+  async load(raw){
+    try{ store=JSON.parse(raw); }catch(e){ return; }
+    normalize();
+    if(!plan()) day=store.program[0].id;
+    confirmId=null;
+    render();
+    if(migWrote){ migWrote=false; save(); } else await Store.write(JSON.stringify(store));
+  },
   go(id){ home=false; day=id; confirmId=null; editing=false; openId=null; render();
     ROOT().scrollIntoView({block:"start"}); },
   home(){ home=true; editing=false; confirmId=null; openId=null; render();
@@ -5145,7 +5158,21 @@ let started=false;
 function showLogin(){ $("lg").hidden=false; $("lgLoad").hidden=true; $("lgFields").hidden=false; }
 async function start(){
   if(started) return; started=true; Store.cloud=true; $("lg").hidden=true;
+  /* Open straight away from this phone's copy, then check the account copy.
+     If the phone has nothing saved, wait for the account like before, so an
+     empty program is never shown or sent over the saved one. */
+  Store.hold=true;
+  const dev=await Store.readLocal();
+  if(!dev) Store.hold=false;
+  const baseTs=dev?Store.tsOf(dev):0;
   await API.init();
+  if(Store.hold){
+    try{
+      const c=await window.FB.read();
+      if(c&&c.s&&Store.tsOf(c.s)>baseTs) await API.load(c.s);
+    }catch(e){}
+    Store.hold=false;
+  }
   const raw=JSON.stringify(store);
   window.FB.write(raw,store.ts||Date.now()).catch(function(){});
   setTimeout(function(){ dailySnap(); },1500);
