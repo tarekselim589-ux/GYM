@@ -1549,8 +1549,11 @@ function planCalc(){
   else if(out.b<80){
     out.warn="carb";
     /* the fastest rate that still leaves him something to train on */
-    for(let i=0;i<PLRATES.length;i++){
-      const r=PLRATES[i], k=Math.round((B.v+dir*r*7700/7)/10)*10;
+    const RS=planRates().slice().sort((a,b)=>b-a);   /* fastest first */
+    for(let i=0;i<RS.length;i++){
+      const r=RS[i];
+      if(Math.abs(r-rate)<1e-9) continue;
+      const k=Math.round((B.v+dir*r*7700/7)/10)*10;
       if(Math.round((k-out.p*4-out.f*9)/4)>=80){ out.fix=r; break; }
     }
   }
@@ -1568,7 +1571,7 @@ function planEta(pc){
   if(pc.goal==="gain"&&diff<=0.2) return {done:true};
   if((pc.goal==="lose")!==(diff<0)) return {wrongway:true,kg:Math.abs(diff)};
   const wks=Math.abs(diff)/pc.rate;
-  return {kg:Math.abs(diff),wks:Math.round(wks),
+  return {kg:Math.abs(diff),wks:Math.max(1,Math.round(wks)),
     when:new Date(Date.now()+Math.round(wks*7)*864e5)};
 }
 /* What actually happened, which is the only question the rest of the screen
@@ -1633,6 +1636,10 @@ const perLab=u=>u==="pc"?"/piece":(u==="ml"?"/100ml":"/100g");
 let flash=null;
 function save(){
   fileSession();
+  /* the open food day starts with the first thing he logs: every add saves
+     straight after it, so this catches the first row at the moment it lands */
+  const en=store.eatNow;
+  if(en&&Array.isArray(en.rows)&&en.rows.length&&!en.start) en.start=Date.now();
   store.ts=Date.now();
   Store.write(JSON.stringify(store)).then(ok=>{
     if(!ok) return;
@@ -2805,8 +2812,12 @@ function planRealView(pc){
   let v;
   if(Math.abs(gap)<=75){
     v='إنت بتاكل اللي خططته. ';
+    /* how far the scale moved the way he asked for; against it comes out negative */
+    const prog=(pc.goal==="lose"?-1:1)*R.dkg;
     v+=(pc.goal==="hold")?'ثبّت كده.'
-      :(Math.abs(R.dkg)<Math.abs(want)*0.6
+      :(prog<=0
+        ? 'بس الميزان ماشي عكس اتجاه هدفك — استنى أسبوع كمان، ولو فضل كده يبقى رقم الحرق محتاج يتظبط.'
+        :prog<Math.abs(want)*0.6
         ? 'بس الميزان ماشي أبطأ من كده — استنى أسبوع كمان قبل ما تغيّر أي حاجة.'
         : 'والميزان موافق. سيبها زي ما هي.');
   }else if((gap>0)===(pc.goal!=="gain")){
@@ -3164,12 +3175,29 @@ async function dailySnap(){
   if(store.snapDay===t) return;
   try{
     await window.FB.snap(t,JSON.stringify(store),store.ts||Date.now());
-    store.snapDay=t; save();
   }catch(e){ return; }
-  try{
-    const l=await window.FB.snapList();
-    for(let i=SNAP_KEEP;i<l.length;i++) await window.FB.snapDel(l[i].d);
-  }catch(e){}
+  store.snapDay=t;
+  /* Which points exist is kept in the log itself, so trimming to the last 30
+     no longer downloads all 30 copies every morning. The list is read from the
+     account only once, to learn about points taken before this was kept. */
+  let idx=Array.isArray(store.snapIdx)?store.snapIdx.slice():null;
+  if(!idx){
+    let l=[];
+    try{ l=await window.FB.snapList(); }catch(e){}
+    /* today's point was just written, so a list without it is a failed read:
+       leave the index unset and try again next time */
+    if(l.some(x=>x.d===t)) idx=l.map(x=>x.d);
+  }
+  if(idx){
+    if(idx.indexOf(t)<0) idx.push(t);
+    idx=idx.filter((d,i)=>idx.indexOf(d)===i).sort((a,b)=>a<b?1:-1);
+    const keep=idx.slice(0,SNAP_KEEP);
+    for(let i=SNAP_KEEP;i<idx.length;i++){
+      try{ await window.FB.snapDel(idx[i]); }catch(e){ keep.push(idx[i]); }
+    }
+    store.snapIdx=keep;
+  }
+  save();
 }
 
 function measureReport(cur,ref,days){
@@ -3934,8 +3962,10 @@ const API={
        the page redraws */
     const lv=$("g4live");
     if(lv&&p) lv.innerHTML=liveBits(p,s);
-    const done=p.ex.filter(x=>(s.ex[x.id]||[]).some(filled)).length;
-    $("g4h2").textContent=fmt(iso())+" · "+done+" of "+p.ex.length+" exercises";
+    /* the same count and minutes render() writes, so the header does not jump */
+    const done=p.ex.filter(x=>exDone(s,x)).length, mins=sessMins(s);
+    $("g4h2").textContent=fmt(iso())+" · "+done+" of "+p.ex.length+" exercises"+
+      (mins?" · "+mins+" min":"");
   },
 
   set(i,key,val){
@@ -4518,7 +4548,6 @@ const API={
     save(); render();
   },
   plWeighBtn(){ const el=$("g4pw"); if(el) GYM4.plWeigh(el.value); },
-  plWeighBtn(){ const el=$("g4pw"); if(el) GYM4.plWeigh(el.value); },
   plApply(){
     const pc=planCalc();
     if(!pc.ok) return;
@@ -4603,7 +4632,7 @@ const API={
     const el=$("g4bc");
     const c=String(code||(el?el.value:"")||"").replace(/\D/g,"");
     const say=(t,bad)=>{ const m=$("g4scanmsg"); if(m){ m.innerHTML=t; m.className="scanmsg"+(bad?" bad":""); } };
-    if(c.length<6){ say("That is not a barcode \u2014 it should be 8 to 13 digits.",1); return; }
+    if(c.length<6){ say("That is not a barcode \u2014 it should be 6 to 13 digits.",1); return; }
     await stopScanner();
     say("Looking up <b>"+esc(c)+"</b>\u2026");
     const r=await offLookup(c);
@@ -4713,7 +4742,8 @@ const API={
     save(); render();
   },
 
-  async awake(){ try{ if("wakeLock" in navigator && !wake) wake=await navigator.wakeLock.request("screen"); }catch(e){} },
+  /* the browser drops the lock whenever the app is left, so a released one is asked for again */
+  async awake(){ try{ if("wakeLock" in navigator && (!wake||wake.released)) wake=await navigator.wakeLock.request("screen"); }catch(e){} },
 
   history(ei){
     const e=plan().ex[ei];
@@ -4844,7 +4874,10 @@ const API={
       return;
     }
     const o=await API._snapLoad(d,btn); if(!o) return;
+    /* the list of restore points describes the account now, not that day */
+    const idxNow=store.snapIdx;
     store=o;
+    if(Array.isArray(idxNow)) store.snapIdx=idxNow; else delete store.snapIdx;
     store.snapDay=iso();        /* keep today's point, do not overwrite it on next open */
     normalize();
     if(!plan()) day=store.program[0].id;
@@ -4897,7 +4930,32 @@ const API={
   },
   reset(btn){
     if(btn.dataset.armed==="1"){
-      store.program=seed(); editing=false; confirmId=null;
+      /* Sets are filed under the exercise id, and the original list's ids are
+         only its positions, which no longer match an older log. So an exercise
+         keeps the id it already has, found by name; a new one never borrows an
+         id that already carries numbers; and anything not in the original list
+         goes to the bench with its history instead of disappearing. */
+      const K=s=>String(s||"").toLowerCase().replace(/\s+/g," ").trim();
+      const fresh=seed();
+      fresh.forEach(np=>{
+        const op=(store.program||[]).find(p=>p.id===np.id);
+        const old=op?(op.ex||[]).concat(op.bench||[]):[];
+        const ss=((store.days||{})[np.id]||{}).sessions||[];
+        const hasHist=id=>ss.some(x=>x&&x.ex&&x.ex[id]);
+        const used={};
+        np.ex.forEach(ne=>{
+          const m=old.find(o=>o&&!used[o.id]&&K(o.n)===K(ne.n));
+          if(m){
+            ne.id=m.id; used[m.id]=1;
+            /* the plate numbers belong to the machine, not the program */
+            if(m.step) ne.step=m.step;
+            if(m.cap) ne.cap=m.cap;
+            if(m.rungs) ne.rungs=m.rungs;
+          }else if(old.some(o=>o&&o.id===ne.id)||hasHist(ne.id)) ne.id=uid();
+        });
+        np.bench=old.filter(o=>o&&!used[o.id]);
+      });
+      store.program=fresh; editing=false; confirmId=null;
       if(!plan()) day=store.program[0].id;
       save(); closeAll(); render(); return;
     }
@@ -4986,13 +5044,12 @@ const API={
       .replace(/\u066C/g,"");
   }
   function clean(v,dec){
-    let out=fold(v).replace(dec?/[^0-9.\-]/g:/[^0-9\-]/g,"");
-    /* one dot, one leading minus */
-    const neg=out.charAt(0)==="-";
-    out=out.replace(/-/g,"");
+    /* nothing he types here can be below zero, so a minus is dropped like any other stray */
+    let out=fold(v).replace(dec?/[^0-9.]/g:/[^0-9]/g,"");
+    /* one dot */
     const i=out.indexOf(".");
     if(i>=0) out=out.slice(0,i+1)+out.slice(i+1).replace(/\./g,"");
-    return (neg?"-":"")+out;
+    return out;
   }
   function tidy(ev){
     const el=ev.target;
@@ -5068,8 +5125,14 @@ const API={
   /* a panel on top of the day closes first, the day itself comes second */
   function back(){
     if(document.querySelector("#g4 .sheet, #g4 .fsheet")){
-      if(window.GYM4&&GYM4.closeSheet) closeAll();
-      else document.querySelectorAll("#g4 .sheet, #g4 .fsheet").forEach(s=>s.remove());
+      /* the same cancel the × button does: camera off, and forget a closed
+         food day or a half-built combo, so the next tap lands on the open day */
+      closeAll();
+      stopScanner();
+      let gone=false;
+      if(fdWhere!==null){ fdWhere=null; gone=true; }
+      if(cbBuild){ cbBuild=null; gone=true; }
+      if(gone) render();
       return;
     }
     if(window.GYM4&&GYM4.isHome&&GYM4.isHome()) return;
