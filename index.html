@@ -1161,7 +1161,7 @@ function seed(){
     ["One-Arm Cable Pushdown",3,"12-15",45,"Triceps isolation","triceps","short"],
     ["Shrugs",4,"12-15",60,"Traps - last, it burns your grip","traps","general"]]],
   ];
-  return D.map(d=>({id:d[0],day:d[1],short:d[2],label:d[3],
+  return D.map(d=>({id:d[0],day:d[1],short:d[2],label:d[3],wd:WD0[d[0]],
     ex:d[4].map((e,i)=>({id:d[0]+"-"+i,n:e[0],s:e[1],r:e[2],rest:e[3],why:e[4],m:e[5],h:e[6]}))}));
 }
 
@@ -1228,6 +1228,17 @@ const fmt=s=>{const p=s.split("-");return p[2]+"/"+p[1]+"/"+p[0].slice(2);};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid=()=>"x"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const plan=()=>store.program.find(p=>p.id===day);
+/* Weekday of each original day (0 = Sunday). Only a seed and a fallback for
+   old data: the real value lives on each day as p.wd and he can change it. */
+const WD0={sun:0,tue:2,wed:3,fri:5};
+const WEEK=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+/* Today's training day, read from the program itself. Two days on the same
+   weekday: the first one wins. No day on today's weekday: null, a rest day. */
+function todayDayId(){
+  const w=new Date().getDay();
+  const p=(store.program||[]).find(x=>x.wd===w);
+  return p?p.id:null;
+}
 const logs=id=>(store.days[id]=store.days[id]||{sessions:[]});
 const t0=s=>new Date(s+"T00:00:00").getTime();
 const filled=x=>x&&x[0]!==""&&x[0]!==undefined&&x[1]!==""&&x[1]!==undefined;
@@ -2131,7 +2142,9 @@ const daysAgo=d=>Math.floor((Date.now()-t0(d))/864e5);
 function weekSessions(back){
   const from=iso(weekStart(back)), to=iso(weekStart((back||0)-1));
   const out=[];
+  /* days in the program only; a day taken out does not count */
   Object.keys(store.days||{}).forEach(id=>{
+    if(!(store.program||[]).some(p=>p.id===id)) return;
     (((store.days[id]||{}).sessions)||[]).forEach(s=>{
       if(sessHas(s)&&s.date>=from&&s.date<to) out.push(s);
     });
@@ -2176,7 +2189,7 @@ function homeView(){
   const from=iso(weekStart());
   const prog=store.program||[];
   const doneWk=prog.filter(p=>{ const l=lastReal(p.id); return l&&l.date>=from; }).length;
-  const todayId={0:"sun",2:"tue",3:"wed",5:"fri"}[new Date().getDay()];
+  const todayId=todayDayId();
   const todayPlan=todayId?planOf(todayId):null;
 
   /* the hero: what today is, and the one thing to do about it */
@@ -2275,8 +2288,47 @@ function homeView(){
 
   return '<div class="hw">'+hero+
     '<h3 class="hh">Training</h3><div class="hgrid">'+prog.map(dayCard).join("")+'</div>'+
+    '<button class="addex" onclick="GYM4.dayNew()">+ Add a training day</button>'+dayArchView()+
     '<h3 class="hh">Today</h3><div class="hgrid">'+food+plan_+stats+body+'</div>'+
     wl+'</div>';
+}
+
+/* Days taken out of the program. Every session they ever had stays filed under
+   their id in store.days, so bringing one back brings its whole history. */
+function dayArchView(){
+  const A=store.archive||[];
+  if(!A.length) return "";
+  return '<h3 class="benchsec">Removed days, '+A.length+'</h3>'+
+    '<div class="hint">Out of the program but not gone. Bring one back and every session it had comes with it.</div>'+
+    A.map(p=>{
+      const l=lastReal(p.id), n=(((store.days||{})[p.id]||{}).sessions||[]).filter(sessHas).length;
+      return '<div class="benchrow plain">'+
+        '<span class="bq" style="background:'+(p.ex&&p.ex.length?mcol(p.ex[0]):"#A9C1CD")+'"></span>'+
+        '<span class="bt"><b>'+esc(p.day)+' · '+esc(p.label)+'</b><em>'+
+          (l?n+' session'+(n===1?"":"s")+' · last '+fmt(l.date):'never logged')+'</em></span>'+
+        '<button class="bgo" onclick="GYM4.dayBack(\''+p.id+'\')">Bring back</button></div>';
+    }).join("");
+}
+/* The day's own settings, at the bottom of Edit: its name, its weekday, and
+   taking it out. Taking it out is two taps and only moves it to the archive. */
+function dayEditView(p){
+  const opts='<option value=""'+(p.wd==null?' selected':'')+'>No fixed day</option>'+
+    WEEK.map((w,i)=>'<option value="'+i+'"'+(p.wd===i?' selected':'')+'>'+w+'</option>').join("");
+  const only=(store.program||[]).length<=1;
+  return '<h3 class="benchsec">This day</h3>'+
+    '<p class="clab">Name</p><input class="ftext" type="text" value="'+esc(p.label)+'" '+
+      'onchange="GYM4.daySet(\'label\',this.value)" aria-label="Day name">'+
+    '<p class="clab">Day of the week</p><select class="fsel" onchange="GYM4.daySet(\'wd\',this.value)" '+
+      'aria-label="Day of the week">'+opts+'</select>'+
+    (confirmId==="day:"+p.id
+      ? '<section class="ex"><div class="confirm">'+
+        '<p>Take <b>'+esc(p.day)+' · '+esc(p.label)+'</b> out of the program? Every session it has '+
+        'is kept, and it waits on the home screen in case you want it back.</p>'+
+        '<div class="row"><button class="yes" onclick="GYM4.dayRemove()">Take it out</button>'+
+        '<button onclick="GYM4.cancel()">Keep it</button></div></div></section>'
+      : only
+        ? '<div class="hint">This is the only day in the program, so it cannot be taken out.</div>'
+        : '<button class="addex" onclick="GYM4.dayAsk()">Take this day out of the program</button>');
 }
 
 /* ---------- the strip that moves while he trains ---------- */
@@ -2444,7 +2496,7 @@ function render(){
     m.innerHTML=warn+
       '<div class="hint">Rename, reorder, delete, or change sets and reps. Muscle and head feed the volume and balance stats, so set them on any exercise you add. History follows the exercise, not its name.</div>'+
       p.ex.map((e,i)=>editView(e,i,p.ex.length)).join("")+
-      '<button class="addex" onclick="GYM4.add()">+ Add exercise</button>'+benchView();
+      '<button class="addex" onclick="GYM4.add()">+ Add exercise</button>'+benchView()+dayEditView(p);
   }else{
     const s=todaySess(), pv=prevSess();
     if(s.closed){
@@ -3503,6 +3555,23 @@ let migWrote=false;
 function normalize(){
   if(!store.program||!store.program.length) store.program=seed();
   store.program.forEach(p=>{ if(!Array.isArray(p.bench)) p.bench=[]; });
+  /* days taken out of the program wait here with their exercises; a day can
+     only live in one of the two places */
+  if(!Array.isArray(store.archive)) store.archive=[];
+  store.archive=store.archive.filter(a=>a&&a.id&&!store.program.some(p=>p.id===a.id));
+  store.archive.forEach(p=>{ if(!Array.isArray(p.ex)) p.ex=[]; if(!Array.isArray(p.bench)) p.bench=[]; });
+  /* days1: every day carries its own weekday (0 = Sunday) instead of the old
+     fixed sun/tue/wed/fri table. Fills only what is missing, so a day he has
+     moved stays where he put it. */
+  store.mig=store.mig||{};
+  {
+    let filled=0;
+    store.program.concat(store.archive).forEach(p=>{
+      if(p.wd===undefined){ p.wd=WD0[p.id]!==undefined?WD0[p.id]:null; filled++; }
+    });
+    if(!store.mig.days1){ store.mig.days1=1; migWrote=true; }
+    else if(filled) migWrote=true;
+  }
   if(!store.days) store.days={};
   if(!store.weights) store.weights=[];
   if(!store.measures) store.measures=[];
@@ -3742,7 +3811,9 @@ function mergeIn(d){
     store.program=store.program||[];
     d.program.forEach(ip=>{
       if(!ip||!ip.id) return;
-      let cp=store.program.find(x=>x.id===ip.id);
+      /* a day he took out stays out: its exercises merge into the archived copy */
+      let cp=store.program.find(x=>x.id===ip.id)||
+             (Array.isArray(store.archive)?store.archive:[]).find(x=>x.id===ip.id);
       if(!cp){ store.program.push(clone(ip)); n.days++; n.ex+=(ip.ex||[]).length; return; }
       cp.ex=cp.ex||[];
       (ip.ex||[]).forEach(ie=>{
@@ -3757,6 +3828,23 @@ function mergeIn(d){
           cp.bench.push(clone(ie)); n.ex++;
         });
       }
+    });
+  }
+
+  /* days the backup had taken out: add the ones missing here, never pull one
+     back into the program, and fill in exercises a known day is missing */
+  if(Array.isArray(d.archive)){
+    store.archive=Array.isArray(store.archive)?store.archive:[];
+    d.archive.forEach(ip=>{
+      if(!ip||!ip.id) return;
+      const cp=store.program.find(x=>x.id===ip.id)||store.archive.find(x=>x.id===ip.id);
+      if(!cp){ store.archive.push(clone(ip)); n.days++; n.ex+=(ip.ex||[]).length; return; }
+      cp.ex=cp.ex||[]; cp.bench=Array.isArray(cp.bench)?cp.bench:[];
+      (ip.ex||[]).concat(ip.bench||[]).forEach(ie=>{
+        if(!ie||!ie.id) return;
+        if(cp.ex.some(e=>e.id===ie.id)||cp.bench.some(e=>e.id===ie.id)) return;
+        cp.bench.push(clone(ie)); n.ex++;
+      });
     });
   }
 
@@ -3853,8 +3941,7 @@ const API={
     const raw=await Store.readLocal();
     if(raw){ try{ store=JSON.parse(raw); }catch(e){ store={}; } }
     normalize();
-    const map={0:"sun",2:"tue",3:"wed",5:"fri"};
-    day=map[new Date().getDay()]||"sun";
+    day=todayDayId()||store.program[0].id;
     if(!plan()) day=store.program[0].id;
     home=true;
     render();
@@ -4073,6 +4160,54 @@ const API={
     p.ex.splice(i,1);
     benchOf(p).push(e);
     confirmId=null; save(); render();
+  },
+  /* ---- training days: add one, rename it, move its weekday, take it out ---- */
+  dayNew(){
+    closeAll();
+    fsheet("New training day",
+      "It starts empty. Add its exercises from Edit once it opens.",'',
+      '<p class="clab">Name</p><input class="ftext" type="text" id="g4dn" placeholder="e.g. Push, Legs, Upper">'+
+      '<p class="clab">Day of the week</p><select class="fsel" id="g4dw">'+
+        '<option value="">No fixed day</option>'+
+        WEEK.map((w,i)=>'<option value="'+i+'">'+w+'</option>').join("")+'</select>'+
+      '<p class="scanmsg" id="g4dmsg" style="text-align:left"></p>'+
+      '<button class="fgo" onclick="GYM4.daySaveNew()">Add the day</button>');
+    const f=$("g4dn"); if(f) f.focus();
+  },
+  daySaveNew(){
+    const name=(($("g4dn")||{}).value||"").trim();
+    const wv=(($("g4dw")||{}).value||"");
+    if(!name){ const m=$("g4dmsg"); if(m) m.textContent="Give the day a name first."; return; }
+    const wd=wv===""?null:+wv, id=uid();
+    store.program.push({id:id,day:wd===null?"Any day":WEEK[wd],short:wd===null?"Any":WEEK[wd].slice(0,3),
+      label:name,wd:wd,ex:[],bench:[]});
+    closeAll(); save();
+    home=false; day=id; editing=true; confirmId=null; openId=null; render();
+    ROOT().scrollIntoView({block:"start"});
+  },
+  daySet(k,v){
+    const p=plan(); if(!p) return;
+    if(k==="label"){ const s=String(v||"").trim(); if(s) p.label=s; }
+    if(k==="wd"){ const wd=v===""?null:+v;
+      p.wd=wd; p.day=wd===null?"Any day":WEEK[wd]; p.short=wd===null?"Any":WEEK[wd].slice(0,3); }
+    save(); render();
+  },
+  dayAsk(){ confirmId="day:"+day; render(); },
+  /* Out of the program, not out of the file: its sessions stay in store.days
+     under its id, and the day itself waits in store.archive. */
+  dayRemove(){
+    const i=store.program.findIndex(p=>p.id===day);
+    if(i<0||store.program.length<=1) return;
+    store.archive=Array.isArray(store.archive)?store.archive:[];
+    store.archive.push(store.program.splice(i,1)[0]);
+    confirmId=null; editing=false; save();
+    home=true; render(); ROOT().scrollIntoView({block:"start"});
+  },
+  dayBack(id){
+    const A=Array.isArray(store.archive)?store.archive:[];
+    const j=A.findIndex(p=>p.id===id); if(j<0) return;
+    store.program.push(A.splice(j,1)[0]);
+    save(); render();
   },
   add(){
     plan().ex.push({id:uid(),n:"New exercise",s:3,r:"8-12",rest:60,why:"",m:"other",h:"general"});
@@ -4950,8 +5085,9 @@ const API={
          goes to the bench with its history instead of disappearing. */
       const K=s=>String(s||"").toLowerCase().replace(/\s+/g," ").trim();
       const fresh=seed();
+      const arch=Array.isArray(store.archive)?store.archive:[];
       fresh.forEach(np=>{
-        const op=(store.program||[]).find(p=>p.id===np.id);
+        const op=(store.program||[]).find(p=>p.id===np.id)||arch.find(p=>p.id===np.id);
         const old=op?(op.ex||[]).concat(op.bench||[]):[];
         const ss=((store.days||{})[np.id]||{}).sessions||[];
         const hasHist=id=>ss.some(x=>x&&x.ex&&x.ex[id]);
@@ -4968,6 +5104,10 @@ const API={
         });
         np.bench=old.filter(o=>o&&!used[o.id]);
       });
+      /* days he added himself are not in the original, so they go to the
+         archive with their sessions instead of vanishing */
+      const own=(store.program||[]).filter(p=>!fresh.some(f=>f.id===p.id));
+      store.archive=arch.filter(a=>!fresh.some(f=>f.id===a.id)).concat(own);
       store.program=fresh; editing=false; confirmId=null;
       if(!plan()) day=store.program[0].id;
       save(); closeAll(); render(); return;
