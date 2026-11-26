@@ -6,12 +6,12 @@
 <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js" crossorigin>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Gym Log 4-Day</title>
+<title>Ventor</title>
 <meta name="theme-color" content="#1D3B4C">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Gym Log">
+<meta name="apple-mobile-web-app-title" content="Ventor">
 <meta name="description" content="Private training and nutrition log.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
@@ -30,30 +30,49 @@
 </style>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { initializeFirestore, persistentLocalCache, doc, getDocFromServer, getDoc, setDoc, collection, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, EmailAuthProvider, reauthenticateWithCredential, updatePassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { initializeFirestore, persistentLocalCache, doc, getDocFromServer, getDoc, setDoc, collection, getDocs, getDocsFromServer, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const app=initializeApp({apiKey:"AIzaSyCLxD-fduSa6kgqnk8pJj8HwtzY3AYfhIg",authDomain:"tarek-74842.firebaseapp.com",projectId:"tarek-74842",storageBucket:"tarek-74842.firebasestorage.app",messagingSenderId:"179196785540",appId:"1:179196785540:web:d4604f645dbbcc6e5f23d1"});
 const auth=getAuth(app);
 let fs; try{ fs=initializeFirestore(app,{localCache:persistentLocalCache()}); }catch(e){ fs=initializeFirestore(app,{}); }
-const ref=doc(fs,"gym/state");
+/* Where this account's log lives. The owner keeps the original place (gym/state,
+   restore points beside it in "gym"); a subscriber, or the owner opening one,
+   points it somewhere else with setPath before anything is read or written. */
+let P={doc:"gym/state", col:"gym"};
+const ref=()=>doc(fs,P.doc);
+const snapRef=k=>doc(fs,P.col,"snap_"+k);
 window.FB={
-  async read(){ let d; try{ d=await getDocFromServer(ref); }catch(e){ try{ d=await getDoc(ref); }catch(x){ return null; } } return d.exists()?d.data():null; },
-  write:(s,ts)=>setDoc(ref,{s:s,ts:ts}),
+  OWNER:"A4QrA1vaUuaF5CxPiGPkfXJPXbK2",
+  setPath(d,c){ P={doc:d,col:c}; },
+  async read(){ let d; try{ d=await getDocFromServer(ref()); }catch(e){ try{ d=await getDoc(ref()); }catch(x){ return null; } } return d.exists()?d.data():null; },
+  write:(s,ts)=>setDoc(ref(),{s:s,ts:ts}),
   /* Daily restore points. They live in the same collection as the live doc so the
      same security rule covers them, and nothing that writes the live doc touches them. */
-  snap:(k,s,ts)=>setDoc(doc(fs,"gym","snap_"+k),{s:s,ts:ts,d:k}),
+  snap:(k,s,ts)=>setDoc(snapRef(k),{s:s,ts:ts,d:k}),
   snapList:async()=>{
     const out=[];
     try{
-      const q=await getDocs(collection(fs,"gym"));
+      const q=await getDocs(collection(fs,P.col));
       q.forEach(x=>{ if(x.id.indexOf("snap_")===0){ const v=x.data()||{};
         out.push({d:v.d||x.id.slice(5), ts:v.ts||0, n:(v.s||"").length}); } });
     }catch(e){}
     return out.sort((a,b)=>a.d<b.d?1:-1);
   },
-  snapGet:async(k)=>{ try{ const x=await getDoc(doc(fs,"gym","snap_"+k)); return x.exists()?x.data():null; }catch(e){ return null; } },
-  snapDel:(k)=>deleteDoc(doc(fs,"gym","snap_"+k)),
-  signIn:(e,p)=>signInWithEmailAndPassword(auth,e,p), signOut:()=>signOut(auth)
+  snapGet:async(k)=>{ try{ const x=await getDoc(snapRef(k)); return x.exists()?x.data():null; }catch(e){ return null; } },
+  snapDel:(k)=>deleteDoc(snapRef(k)),
+  signIn:(e,p)=>signInWithEmailAndPassword(auth,e,p), signOut:()=>signOut(auth),
+  /* Server-only reads for the subscriber checks: a refusal must come back as an
+     error, never be papered over by this phone's cached copy. */
+  async getSrv(p){ const d=await getDocFromServer(doc(fs,p)); return d.exists()?d.data():null; },
+  async listSrv(p){ const q=await getDocsFromServer(collection(fs,p)); const o=[]; q.forEach(x=>o.push({id:x.id,data:x.data()})); return o; },
+  put:(p,v)=>setDoc(doc(fs,p),v),
+  del:(p)=>deleteDoc(doc(fs,p)),
+  now:()=>serverTimestamp(),
+  async changePass(oldp,newp){
+    const u=auth.currentUser;
+    await reauthenticateWithCredential(u,EmailAuthProvider.credential(u.email,oldp));
+    await updatePassword(u,newp);
+  }
 };
 onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEvent("fbauth",{detail:u})); });
 </script>
@@ -68,6 +87,27 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
 .lgf input{font:16px inherit;padding:11px 12px;border-radius:10px;border:1px solid #386E88;background:#1D3B4C;color:#F1F7F9}
 .lgbtn{font:600 16px inherit;padding:11px;border-radius:10px;border:0;background:#4CDCD6;color:#1D3B4C;cursor:pointer}
 .lgerr{margin:0;color:#EAAB9F;font-size:14px;text-align:center}
+/* Ventor: account screens, footer, small notes */
+.lgov{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif}
+.lgbox a.lgbtn{display:block;text-align:center;text-decoration:none}
+.lglink{display:block;margin:2px 0 0;text-align:center;color:#A9C1CD;font-size:13px;background:none;border:0;font-family:inherit;cursor:pointer;text-decoration:none}
+.lglink b{color:#4CDCD6;font-weight:600}
+.lgsteps{margin:0;padding-left:20px;color:#F1F7F9;font-size:14px;line-height:1.6}
+.lgghost{font-weight:600;font-size:15px;font-family:inherit;padding:10px;border-radius:10px;border:1px solid #386E88;background:none;color:#A9C1CD;cursor:pointer}
+.vfoot{margin:22px 0 6px;text-align:center;color:#A9C1CD;font-size:11.5px;line-height:1.6;opacity:.85}
+.vfoot b{color:#F1F7F9;font-weight:600}
+.lgbox .vfoot{margin:6px 0 0}
+#g4note{position:fixed;left:16px;right:16px;bottom:24px;z-index:95;background:#ECB053;color:#1D3B4C;padding:10px 14px;border-radius:10px;font-weight:600;text-align:center}
+#g4acct{padding:9px 14px;font-size:12.5px;line-height:1.45;display:flex;gap:10px;align-items:center}
+#g4acct.view{background:#ECB053;color:#2B1F05}
+#g4acct.ro{background:#EAAB9F;color:#2E1712}
+#g4acct span{flex:1;min-width:0}
+#g4acct button,#g4acct a{flex:0 0 auto;font-weight:600;font-size:12.5px;font-family:inherit;padding:7px 11px;border-radius:8px;border:0;background:#1D3B4C;color:#F1F7F9;cursor:pointer;text-decoration:none}
+#g4.ro main input,#g4.ro main textarea,#g4.ro main select{pointer-events:none;opacity:.55}
+#g4upd{position:fixed;left:16px;right:16px;top:calc(env(safe-area-inset-top) + 10px);z-index:96;display:flex;gap:10px;align-items:center;
+  background:#4CDCD6;color:#0A3B39;padding:10px 12px 10px 14px;border-radius:12px;font:600 14px -apple-system,system-ui,sans-serif;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+#g4upd span{flex:1}
+#g4upd button{font-weight:700;font-size:13.5px;font-family:inherit;padding:8px 14px;border-radius:9px;border:0;background:#1D3B4C;color:#F1F7F9;cursor:pointer}
 </style>
 </head>
 <body>
@@ -81,9 +121,14 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
       <label class="lgf">Password<input id="lgPass" type="password" autocomplete="current-password"></label>
       <button class="lgbtn" type="submit" id="lgBtn">Sign in</button>
       <p class="lgerr" id="lgErr" hidden></p>
+      <a class="lglink" href="https://wa.me/966557454709" target="_blank" rel="noopener">Forgot password? <b>Contact Coach</b></a>
     </div>
+    <p class="vfoot"><b>Ventor</b> by Tarek Selim<br>&copy; Tarek Selim. All rights reserved.</p>
   </form>
 </div>
+<!-- Ventor: install steps / account messages. Filled by the script. -->
+<div id="vgate" class="lgov" hidden><div class="lgbox" id="vgateBox"></div></div>
+<div id="g4note" hidden></div>
 <div id="g4">
   <header class="hdr">
     <button class="nav" id="g4nav" onclick="GYM4.home()" aria-label="Home">ta</button>
@@ -92,6 +137,7 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     <button class="gear" id="g4edit" onclick="GYM4.toggleEdit()">Edit</button>
     <button class="gear" onclick="GYM4.settings()" aria-label="Settings">⚙</button>
   </header>
+  <div id="g4acct" hidden></div>
   <main id="g4main"><p class="boot">Loading…</p></main>
 </div>
 
@@ -1014,8 +1060,18 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
 <script>
 window.GYM4 = (function(){
 "use strict";
-const KEY="gym4";
+/* The phone copy. The owner's stays under "gym4"; each subscriber gets its own
+   key (set in start) so two accounts on one phone never share a copy. */
+let KEY="gym4";
 const $=id=>document.getElementById(id);
+/* Ventor accounts. APP_V changes with every release so an open app can tell a
+   newer copy is waiting. ACC says who is using it: the owner, a subscriber
+   ("user"), or the owner looking at a subscriber ("view"). */
+const APP_V="2026.11.27-1";
+const WA="https://wa.me/966557454709";
+const FOOT='<p class="vfoot"><b>Ventor</b> by Tarek Selim<br>&copy; Tarek Selim. All rights reserved.</p>';
+let ACC={mode:"owner"};
+let RO_RAW=null;
 const ROOT=()=>document.getElementById("g4");
 
 /* ================= storage ================= */
@@ -1088,23 +1144,37 @@ const Store=(function(){
     /* hold: the app opened from this phone's copy and the account copy is still
        being checked, so nothing is read from or sent to the account until then */
     hold:false,
+    /* noLocal: the owner is looking at a subscriber, so nothing is read from or
+       written to this phone's copy - the account copy is the only one */
+    noLocal:false,
+    /* readonly: the subscription ended and the grace days are running */
+    readonly:false,
+    /* called when the account refuses a write (subscription or device changed) */
+    onDenied:null,
     tsOf:ts,
     async readLocal(){
       const found=[];
       if(this.cloud&&!this.hold){ const c=await window.FB.read(); if(c&&c.s) found.push(c.s); }
-      if(local){ try{ const v=localStorage.getItem(KEY); if(v) found.push(v); }catch(e){} }
-      if(idb){ const v=await IDB.get(KEY); if(v) found.push(v); }
+      if(!this.noLocal){
+        if(local){ try{ const v=localStorage.getItem(KEY); if(v) found.push(v); }catch(e){} }
+        if(idb){ const v=await IDB.get(KEY); if(v) found.push(v); }
+      }
       return newest(found)||mem;
     },
     async write(s){
+      if(this.readonly) return false;
       let ok=false;
-      if(local){ try{ localStorage.setItem(KEY,s); ok=true; }catch(e){} }
-      if(idb){ if(await IDB.set(KEY,s)) ok=true; }
+      if(!this.noLocal){
+        if(local){ try{ localStorage.setItem(KEY,s); ok=true; }catch(e){} }
+        if(idb){ if(await IDB.set(KEY,s)) ok=true; }
+      }
       if(!ok) mem=s;
       if(this.cloud&&!this.hold){ clearTimeout(this._t); const self=this; this._t=setTimeout(function(){
-        window.FB.write(s,ts(s)).catch(function(){ const b=document.getElementById("g4cloudErr"); if(b){ b.hidden=false; setTimeout(function(){b.hidden=true;},5000);} });
+        window.FB.write(s,ts(s)).catch(function(x){
+          if(x&&x.code==="permission-denied"&&self.onDenied){ self.onDenied(); return; }
+          const b=document.getElementById("g4cloudErr"); if(b){ b.hidden=false; setTimeout(function(){b.hidden=true;},5000);} });
       },800); }
-      return ok;
+      return ok||(this.noLocal&&this.cloud);
     }
   };
 })();
@@ -1650,6 +1720,8 @@ const perLab=u=>u==="pc"?"/piece":(u==="ml"?"/100ml":"/100g");
 
 let flash=null;
 function save(){
+  /* grace days after a subscription ends: nothing is kept, the screen goes back */
+  if(Store.readonly){ roRevert(); return; }
   fileSession();
   /* the open food day starts with the first thing he logs: every add saves
      straight after it, so this catches the first row at the moment it lands */
@@ -2440,11 +2512,11 @@ function render(){
   if(home){
     const hh=new Date().getHours();
     $("g4h1").removeAttribute("dir"); $("g4h2").removeAttribute("dir");
-    $("g4h1").textContent="TAREK";
+    $("g4h1").textContent=ACC.mode==="owner"?"TAREK":"VENTOR";
     $("g4h2").textContent=(hh<12?"Good morning":hh<18?"Good afternoon":"Good evening")+
       " \u00b7 "+fmt(iso());
     $("g4edit").style.display="none";
-    m.innerHTML=warn+backupBanner()+homeView();
+    m.innerHTML=warn+subBanner()+backupBanner()+homeView()+FOOT;
     return;
   }
   const eb=$("g4edit");
@@ -2739,7 +2811,8 @@ function foodView(){
     const wd=new Date().getDay();
     h+='<div class="fday'+(g.heavy?" on":"")+'">'+
        (g.heavy?"Heavy day \u00b7 carbs up":"Lighter day \u00b7 carbs down")+
-       '<em>'+DAYNAMES[wd]+' \u2014 '+DAYWHY[wd]+'</em></div>';
+       /* DAYWHY is the owner's own week; a subscriber sees just the weekday */
+       '<em>'+DAYNAMES[wd]+(ACC.mode==="owner"?' \u2014 '+DAYWHY[wd]:'')+'</em></div>';
   }
   const op=eatNow().start||0;
   if(op) h+='<div class="fopen"><span class="fdot2"></span>'+
@@ -4925,9 +4998,43 @@ const API={
       'Last backup: <b style="color:'+((store.bk&&Date.now()-store.bk<14*864e5)?'#4CDCD6':'#ECB053')+'">'+when+'</b></p>'+
       '<button class="btn go" onclick="GYM4.saveBackup(this)">Save backup file</button>'+
       '<button class="btn" onclick="GYM4.restoreSheet()">Restore from a file</button>'+
-      (Store.cloud?'<button class="btn" onclick="GYM4.snapSheet()">Restore from a day</button>':'')+
+      (Store.cloud&&ACC.mode!=="view"?'<button class="btn" onclick="GYM4.snapSheet()">Restore from a day</button>':'')+
       '<button class="btn danger" onclick="GYM4.reset(this)">Reset program to original</button>'+
-      (Store.cloud?'<button class="btn" onclick="GYM4.signOut(this)">Sign out</button>':''));
+      (ACC.mode==="user"?'<button class="btn" onclick="GYM4.passSheet()">Change password</button>'+
+        '<a class="btn" style="display:block;text-align:center;text-decoration:none" href="'+WA+'" target="_blank" rel="noopener">Contact Coach</a>':'')+
+      (ACC.mode==="view"?'<button class="btn" onclick="location.href=\'admin.html\'">Exit viewing</button>':'')+
+      (Store.cloud&&ACC.mode!=="view"?'<button class="btn" onclick="GYM4.signOut(this)">Sign out</button>':'')+
+      FOOT);
+  },
+  passSheet(){
+    closeAll();
+    sheet('<h2>Change password</h2><p class="sub">At least 6 characters.</p>'+
+      '<p class="clab">Current password</p><input class="ftext" type="password" id="g4pw0" autocomplete="current-password">'+
+      '<p class="clab">New password</p><input class="ftext" type="password" id="g4pw1" autocomplete="new-password">'+
+      '<p class="clab">New password again</p><input class="ftext" type="password" id="g4pw2" autocomplete="new-password">'+
+      '<p class="sub" id="g4pwm"></p>'+
+      '<button class="btn go" onclick="GYM4.passSave(this)">Change password</button>');
+  },
+  async passSave(btn){
+    const o=$("g4pw0").value, n=$("g4pw1").value, n2=$("g4pw2").value, m=$("g4pwm");
+    const say=t=>{ if(m) m.textContent=t; };
+    if(!o||!n){ say("Fill in all three boxes."); return; }
+    if(n.length<6){ say("The new password needs at least 6 characters."); return; }
+    if(n!==n2){ say("The two new passwords are not the same."); return; }
+    if(n===o){ say("The new password is the same as the current one."); return; }
+    btn.disabled=true; say("Changing…");
+    try{
+      await window.FB.changePass(o,n);
+      ["g4pw0","g4pw1","g4pw2"].forEach(id=>{ const e=$(id); if(e) e.value=""; });
+      say("Password changed ✓"); btn.textContent="Done";
+    }catch(x){
+      const c=(x&&x.code)||"";
+      say(c.indexOf("wrong-password")>=0||c.indexOf("invalid-credential")>=0?"The current password is wrong.":
+          c.indexOf("weak-password")>=0?"That password is too weak. Try a longer one.":
+          c.indexOf("too-many")>=0?"Too many tries. Wait a few minutes.":
+          c.indexOf("network")>=0?"No internet. Check your connection.":"Could not change it. Try again.");
+      btn.disabled=false;
+    }
   },
   async saveBackup(btn){
     const name="gym-backup-"+iso()+".json";
@@ -5293,11 +5400,248 @@ const API={
   }
 })();
 
-document.addEventListener("visibilitychange",()=>{ if(!document.hidden) API.awake(); });
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ API.awake(); recheck(); checkUpdate(); } });
 let started=false;
-function showLogin(){ $("lg").hidden=false; $("lgLoad").hidden=true; $("lgFields").hidden=false; }
+function showLogin(){
+  $("lg").hidden=false; $("lgLoad").hidden=true; $("lgFields").hidden=false;
+  /* on iPhone a subscriber may only use the home-screen icon: Safari and the
+     icon keep separate storage, and the device key lives in that storage */
+  if(isIOS()&&!isStandalone()) installGate();
+}
+
+/* ================= Ventor accounts ================= */
+const GRACE=3*864e5;
+const isIOS=()=>/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const isStandalone=()=>navigator.standalone===true||(window.matchMedia&&matchMedia("(display-mode: standalone)").matches);
+/* Full-screen message in the sign-in style: install steps, account off,
+   subscription ended, another device, no internet. */
+function gate(title,body,opt){
+  opt=opt||{};
+  $("vgateBox").innerHTML='<p class="lgt">'+esc(title)+'</p>'+body+
+    (opt.noCoach?'':'<a class="lgbtn" href="'+WA+'" target="_blank" rel="noopener">Contact Coach</a>')+
+    (opt.retry?'<button type="button" class="lgghost" onclick="location.reload()">Try again</button>':'')+
+    (opt.admin?'<button type="button" class="lgghost" onclick="location.href=\'admin.html\'">Back to admin</button>':'')+
+    (opt.out?'<button type="button" class="lgghost" id="vgOut">Sign out</button>':'')+
+    (opt.coach?'<button type="button" class="lglink" id="vgCoach">I\'m the coach — <b>sign in here</b></button>':'')+
+    FOOT;
+  $("lg").hidden=true; $("vgate").hidden=false;
+  const o=$("vgOut"); if(o) o.onclick=function(){ o.disabled=true; window.FB.signOut(); };
+  const c=$("vgCoach"); if(c) c.onclick=function(){ $("vgate").hidden=true; $("lg").hidden=false; };
+}
+const P_=t=>'<p class="lgl">'+t+'</p>';
+function installGate(){
+  gate("Install Ventor",P_("On iPhone, Ventor works from its own icon on your home screen.")+
+    '<ol class="lgsteps"><li>Open this page in <b>Safari</b>. From WhatsApp, open the link, then tap <b>Open in Safari</b>.</li>'+
+    '<li>Tap the <b>Share</b> button, then <b>Add to Home Screen</b>.</li>'+
+    '<li>Open <b>Ventor</b> from your home screen and sign in there.</li></ol>'+
+    '<p class="lgl" style="font-size:12.5px">If you delete the icon later, your coach will need to reset your device.</p>',{coach:true});
+}
+const gateNet=()=>gate("No internet",P_("Ventor needs the internet to check your account. Connect and try again."),{retry:true});
+const gateEnded=()=>gate("Subscription ended",P_("Your subscription has ended. Contact your coach to renew. Your data is safe and comes back as soon as you renew."),{out:true});
+
+/* The device key: made once on the first phone, kept in both stores like the log */
+const DKP="vdk.", ACP="vacc.";
+async function keyGet(uid){
+  let k=null;
+  try{ k=localStorage.getItem(DKP+uid); }catch(e){}
+  if(!k) k=await IDB.get(DKP+uid);
+  if(typeof k==="string"&&k.length>=32){ await keyPut(uid,k); return k; }
+  return null;
+}
+function keyPut(uid,k){ try{ localStorage.setItem(DKP+uid,k); }catch(e){} return IDB.set(DKP+uid,k); }
+function keyNew(){
+  const a=new Uint8Array(24); crypto.getRandomValues(a);
+  return Array.from(a,b=>("0"+b.toString(16)).slice(-2)).join("");
+}
+/* what the account looked like last time, so a gym with no signal still opens */
+function accSave(uid,o){ try{ localStorage.setItem(ACP+uid,JSON.stringify(o)); }catch(e){} }
+function accLoad(uid){ try{ return JSON.parse(localStorage.getItem(ACP+uid)||"null"); }catch(e){ return null; } }
+const untilOf=p=>(p&&p.until&&p.until.toMillis)?p.until.toMillis():0;
+
+/* Starter data (new account) or data moved off an old phone (device reset)
+   waits in hold/. The rules open it for 10 minutes after the phone is linked. */
+async function pullHold(uid,key){
+  const H="users/"+uid+"/hold", B="users/"+uid+"/v/"+key;
+  let hold=[];
+  try{ hold=await window.FB.listSrv(H); }catch(e){ return; }
+  if(!hold.length) return;
+  try{
+    const st=hold.find(x=>x.id==="state");
+    if(st&&st.data&&st.data.s){
+      let cur=null; try{ cur=await window.FB.getSrv(B); }catch(e){}
+      if(!cur||!cur.s||(+st.data.ts||0)>(+cur.ts||0)) await window.FB.put(B,{s:st.data.s,ts:+st.data.ts||Date.now()});
+    }
+    for(const x of hold) if(x.id.indexOf("snap_")===0) await window.FB.put(B+"/snap/"+x.id,x.data);
+    for(const x of hold) await window.FB.del(H+"/"+x.id);
+  }catch(e){}
+}
+
 async function start(){
-  if(started) return; started=true; Store.cloud=true; $("lg").hidden=true;
+  if(started) return; started=true;
+  const u=window.FB.user, me=u&&u.uid;
+  if(me===window.FB.OWNER){
+    const as=new URLSearchParams(location.search).get("as");
+    if(as&&as!==me) return startView(as);
+    return openLog();
+  }
+  return startUser(u);
+}
+
+async function startUser(u){
+  const uid=u.uid, U="users/"+uid;
+  if(isIOS()&&!isStandalone()){ window.FB.signOut(); return; }
+  $("lg").hidden=true;
+  let prof=null, offline=false;
+  try{ prof=await window.FB.getSrv(U); }
+  catch(e){ if(e&&e.code==="permission-denied") prof=null; else offline=true; }
+  const c=accLoad(uid);
+  if(offline){
+    if(!c||!c.key) return gateNet();
+    prof={active:true,name:c.name,free:c.free};
+  }
+  if(!prof||prof.active!==true)
+    return gate("Account not active",P_("Your account is not active right now. Contact your coach to turn it on."),{out:true});
+  const until=offline?(+c.until||0):untilOf(prof), now=Date.now();
+  if(now>=until+GRACE) return gateEnded();
+  const ro=now>=until;
+  let key=await keyGet(uid);
+  if(!offline){
+    let linked=false;
+    if(key){
+      try{ await window.FB.getSrv(U+"/v/"+key); linked=true; }
+      catch(e){ if(!e||e.code!=="permission-denied") return gateNet(); }
+    }
+    if(!linked){
+      /* a phone can only be linked while the subscription runs */
+      if(ro) return gateEnded();
+      if(!key){ key=keyNew(); await keyPut(uid,key); }
+      try{ await window.FB.put("devlock/"+uid,{k:key,t:window.FB.now()}); }
+      catch(e){
+        if(e&&e.code==="permission-denied")
+          return gate("Another device",P_("This account is linked to another device. If you changed your phone, ask your coach to reset your device."),{out:true});
+        return gateNet();
+      }
+    }
+    await pullHold(uid,key);
+    window.FB.put(U+"/meta/seen",{t:window.FB.now()}).catch(function(){});
+    accSave(uid,{name:prof.name||"",free:!!prof.free,until:until,key:key});
+  }else if(!key) return gateNet();
+  ACC={mode:"user",uid:uid,name:prof.name||"",until:until,free:!!prof.free,ro:ro,vpath:U+"/v/"+key};
+  KEY="gym4.u."+uid;
+  window.FB.setPath(U+"/v/"+key,U+"/v/"+key+"/snap");
+  Store.onDenied=function(){ recheck(true); };
+  paintAcct();
+  return openLog({ro:ro});
+}
+
+/* The owner opening a subscriber from admin.html (index.html?as=UID): their
+   account copy only, never this phone's copy, no restore points. */
+async function startView(uid){
+  Store.noLocal=true; KEY="gym4.view";
+  $("lg").hidden=true;
+  let prof=null, lock=null, cur=null;
+  try{ prof=await window.FB.getSrv("users/"+uid); }catch(e){}
+  if(!prof) return gate("Not found",P_("No subscriber with this UID, or no internet."),{admin:true,noCoach:true,retry:true});
+  try{ lock=await window.FB.getSrv("devlock/"+uid); }catch(e){}
+  const linked=!!(lock&&lock.k);
+  const B=linked?"users/"+uid+"/v/"+lock.k:"users/"+uid+"/hold/state";
+  window.FB.setPath(B,linked?B+"/snap":"users/"+uid+"/hold");
+  try{ cur=await window.FB.getSrv(B); }catch(e){}
+  ACC={mode:"view",uid:uid,name:prof.name||"",lastTs:(cur&&+cur.ts)||0};
+  document.title="Viewing "+(prof.name||"subscriber")+" · Ventor";
+  paintAcct();
+  return openLog({view:true});
+}
+
+/* The bar under the header: whose log the owner is looking at, or read-only */
+function paintAcct(){
+  const el=$("g4acct"); if(!el) return;
+  if(ACC.mode==="view"){
+    el.className="view"; el.hidden=false;
+    el.innerHTML='<span>Viewing: <b>'+esc(ACC.name||"subscriber")+'</b> · '+
+      (ACC.lastTs?'they last saved '+ago(ACC.lastTs):'nothing saved yet')+
+      '. Avoid editing while they are using the app.</span><button onclick="location.href=\'admin.html\'">Exit</button>';
+  }else if(ACC.mode==="user"&&ACC.ro){
+    el.className="ro"; el.hidden=false;
+    el.innerHTML='<span><b>Read only</b> – Subscription ended. Renew to keep logging.</span>'+
+      '<a href="'+WA+'" target="_blank" rel="noopener">Contact Coach</a>';
+  }else el.hidden=true;
+}
+function ago(t){
+  const m=Math.max(0,Math.round((Date.now()-t)/6e4));
+  return m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" days ago";
+}
+/* Home: the last three days of a paid subscription, counted in Riyadh days */
+function subBanner(){
+  if(ACC.mode!=="user"||ACC.free||ACC.ro||!ACC.until) return "";
+  const rd=t=>Math.floor((t+3*36e5)/864e5);
+  const d=rd(ACC.until)-rd(Date.now());
+  if(d>3) return "";
+  return '<div class="warn">'+(d<=0?"Your subscription ends today.":d===1?"Your subscription ends tomorrow.":"Your subscription ends in "+d+" days.")+
+    ' <a href="'+WA+'" target="_blank" rel="noopener" style="color:inherit;font-weight:700">Contact Coach</a></div>';
+}
+let noteT=null;
+function note(t){
+  const n=$("g4note"); if(!n) return;
+  n.textContent=t; n.hidden=false;
+  clearTimeout(noteT); noteT=setTimeout(function(){ n.hidden=true; },3500);
+}
+/* read-only: anything changed on screen goes back to how it was */
+function roRevert(){
+  if(!RO_RAW) return;
+  try{ store=JSON.parse(RO_RAW); }catch(e){ return; }
+  normalize(); migWrote=false;
+  render();
+  note("Read only – your subscription ended. Nothing was saved.");
+}
+/* A subscriber's account is looked at again when the app comes back (at most
+   once an hour), and at once if the account refuses a save. */
+let chkAt=0;
+async function recheck(force){
+  if(ACC.mode!=="user") return;
+  if(!force&&Date.now()-chkAt<36e5) return;
+  chkAt=Date.now();
+  let prof;
+  try{ prof=await window.FB.getSrv("users/"+ACC.uid); }catch(e){ return; }
+  if(!prof||prof.active!==true){ location.reload(); return; }
+  const until=untilOf(prof), now=Date.now();
+  /* the state changed (renewed, ended, grace over): open again from the top */
+  if((now>=until)!==!!ACC.ro||now>=until+GRACE){ location.reload(); return; }
+  ACC.until=until; ACC.free=!!prof.free; ACC.name=prof.name||"";
+  const c=accLoad(ACC.uid); if(c){ c.until=until; c.free=ACC.free; c.name=ACC.name; accSave(ACC.uid,c); }
+  if(force){
+    try{ await window.FB.getSrv(ACC.vpath); }
+    catch(e){
+      if(e&&e.code==="permission-denied"){
+        gate("Another device",P_("This account is linked to another device. If you changed your phone, ask your coach to reset your device."),{out:true});
+        return;
+      }
+    }
+    const b=$("g4cloudErr"); if(b){ b.hidden=false; setTimeout(function(){ b.hidden=true; },5000); }
+  }
+  if(home) render();
+}
+/* The service worker keeps the newest index.html it fetched; if its APP_V
+   differs from the one running, a newer version is one reload away. */
+async function checkUpdate(){
+  try{
+    if(!("caches" in window)) return;
+    const r=await caches.match("./index.html"); if(!r) return;
+    const m=(await r.text()).match(/const APP_V="([^"]+)"/);
+    if(m&&m[1]!==APP_V&&!$("g4upd")){
+      const d=document.createElement("div"); d.id="g4upd";
+      d.innerHTML='<span>New version available</span><button type="button">Update</button>';
+      d.querySelector("button").onclick=function(){ location.reload(); };
+      document.body.appendChild(d);
+    }
+  }catch(e){}
+}
+setTimeout(checkUpdate,6000);
+
+async function openLog(o){
+  o=o||{};
+  Store.cloud=true; $("lg").hidden=true;
+  if(o.ro){ Store.readonly=true; ROOT().classList.add("ro"); }
   /* Open straight away from this phone's copy, then check the account copy.
      If the phone has nothing saved, wait for the account like before, so an
      empty program is never shown or sent over the saved one. */
@@ -5313,6 +5657,9 @@ async function start(){
     }catch(e){}
     Store.hold=false;
   }
+  /* read-only keeps this copy to go back to; viewing sends nothing on open */
+  if(o.ro){ RO_RAW=JSON.stringify(store); return; }
+  if(o.view) return;
   const raw=JSON.stringify(store);
   window.FB.write(raw,store.ts||Date.now()).catch(function(){});
   setTimeout(function(){ dailySnap(); },1500);
@@ -5335,7 +5682,7 @@ $("lgForm").addEventListener("submit",async function(e){
   if(!window.FB){ er.textContent="No internet. Check your connection."; er.hidden=false; return; }
   btn.disabled=true; btn.textContent="Signing in…";
   try{ await window.FB.signIn(em,pw); $("lgPass").value=""; }
-  catch(x){ const c=x&&x.code||""; er.textContent=c.indexOf("too-many")>=0?"Too many tries. Wait a few minutes.":c.indexOf("network")>=0?"No internet. Check your connection.":"Wrong email or password."; er.hidden=false; }
+  catch(x){ const c=x&&x.code||""; er.textContent=c.indexOf("too-many")>=0?"Too many tries. Wait a few minutes.":c.indexOf("network")>=0?"No internet. Check your connection.":c.indexOf("user-disabled")>=0?"This account is turned off. Contact your coach.":"Wrong email or password."; er.hidden=false; }
   btn.disabled=false; btn.textContent="Sign in";
 });
 return API;
@@ -5343,6 +5690,14 @@ return API;
 </script>
 <script>
 if("serviceWorker" in navigator) addEventListener("load",function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+/* An older service worker answered admin.html with this page. Update it once and
+   load again, so the admin page comes from the network. */
+(function(){
+  if(!/\/admin\.html$/.test(location.pathname)||!("serviceWorker" in navigator)) return;
+  try{ if(sessionStorage.getItem("vAdminFix")) return; sessionStorage.setItem("vAdminFix","1"); }catch(e){ return; }
+  navigator.serviceWorker.getRegistration().then(function(r){ return r&&r.update(); })
+    .catch(function(){}).then(function(){ setTimeout(function(){ location.reload(); },800); });
+})();
 </script>
 </body>
 </html>

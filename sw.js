@@ -34,6 +34,9 @@ self.addEventListener("fetch", e => {
   if (req.method !== "GET") return;
   if (LIVE.test(req.url)) return;
 
+  // أي صفحة تانية (زي admin.html) تروح للنت على طول — مش بتتبدل بالتطبيق
+  if (req.mode === "navigate" && !/\/(index\.html)?$/.test(new URL(req.url).pathname)) return;
+
   // صفحة التطبيق: يفتح من الكاش على طول، ويجيب آخر نسخة من النت في الخلفية (تظهر المرة الجاية)
   if (req.mode === "navigate") {
     e.respondWith((async () => {

@@ -1,6 +1,6 @@
 {
-  "name": "Gym Log",
-  "short_name": "Gym",
+  "name": "Ventor",
+  "short_name": "Ventor",
   "description": "Private training and nutrition log.",
   "start_url": "./",
   "scope": "./",
