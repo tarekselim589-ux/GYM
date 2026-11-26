@@ -126,6 +126,7 @@
 
     <input id="search" type="search" placeholder="Search by name or email" autocomplete="off">
     <div id="list"><p class="empty">Loading…</p></div>
+    <div id="gone"></div>
   </main>
 
   <p class="foot"><b>Ventor</b> by Tarek Selim<br>&copy; Tarek Selim. All rights reserved.</p>
@@ -204,6 +205,8 @@ async function load(){
     return {uid:uid,p:r.data||{},lock:lock,seen:seen?ms(seen.t):0,hold:hold.length,notes:(note&&note.notes)||""};
   }));
   paint();
+  try{ GONE=(await list("admin")).filter(x=>x.data&&x.data.deleted===true); }catch(e){ GONE=[]; }
+  paintGone();
 }
 function paint(){
   const q=$("search").value.trim().toLowerCase();
@@ -233,6 +236,7 @@ function card(u){
       '<button data-act="pays">Payments</button>'+
       '<button data-act="export">Export</button>'+
       '<button class="warnb" data-act="reset">Reset device</button>'+
+      '<button class="danger" data-act="del">Delete user</button>'+
     '</div><div class="panel" hidden></div></div>';
 }
 
@@ -251,6 +255,26 @@ $("list").addEventListener("click",async e=>{
   if(act==="renew") renewPanel(u,pn);
   if(act==="notes") notesPanel(u,pn);
   if(act==="pays") paysPanel(u,pn);
+  if(act==="del") delPanel(u,pn);
+});
+
+/* ---------- deleted subscribers: only their payment log is left ---------- */
+let GONE=[];
+function paintGone(){
+  const g=$("gone");
+  if(!GONE.length){ g.innerHTML=""; return; }
+  g.innerHTML='<div class="card"><h2>Deleted subscribers <span style="color:var(--muted);font-weight:500">('+GONE.length+')</span></h2>'+
+    '<p class="msg" style="margin-top:0">Kept only for their payment log.</p>'+
+    GONE.sort((a,b)=>(b.data.deletedAt||0)-(a.data.deletedAt||0)).map(x=>
+      '<div class="user st-off" data-gone="'+esc(x.id)+'" style="margin:8px 0"><div class="uhead"><div class="uname"><b>'+esc(x.data.name||"(no name)")+'</b>'+
+      '<small>'+esc(x.data.email||"")+' · deleted '+nice(x.data.deletedAt||0)+'</small></div>'+
+      '<button data-gpay="1" style="flex:0 0 auto">Payments</button></div><div class="panel" hidden></div></div>').join("")+'</div>';
+}
+$("gone").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-gpay]"); if(!b) return;
+  const box=b.closest("[data-gone]"), pn=box.querySelector(".panel");
+  if(!pn.hidden){ pn.hidden=true; return; }
+  pn.hidden=false; paysPanel({uid:box.getAttribute("data-gone")},pn);
 });
 
 /* a button that needs a second tap */
@@ -368,19 +392,65 @@ async function whereIs(u){
 }
 
 /* ---------- export: the same file the app's own backup makes ---------- */
+/* "ok" when a file was handed to the browser, "none" when there is no log yet */
+async function download(u){
+  const w=await whereIs(u);
+  if(!w.data||!w.data.s) return "none";
+  const txt=JSON.stringify(JSON.parse(w.data.s),null,1);
+  const name="ventor-"+String(u.p.name||u.uid).replace(/[^\w؀-ۿ-]+/g,"_")+"-"+ymdOf(Date.now())+".json";
+  const url=URL.createObjectURL(new Blob([txt],{type:"application/json"}));
+  const a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),4000);
+  return "ok";
+}
 async function exportUser(u,b){
   const t=b.textContent; b.disabled=true; b.textContent="…";
-  try{
-    const w=await whereIs(u);
-    if(!w.data||!w.data.s){ b.textContent="No data yet"; setTimeout(()=>{ b.textContent=t; b.disabled=false; },2500); return; }
-    const txt=JSON.stringify(JSON.parse(w.data.s),null,1);
-    const name="ventor-"+String(u.p.name||u.uid).replace(/[^\w؀-ۿ-]+/g,"_")+"-"+ymdOf(Date.now())+".json";
-    const url=URL.createObjectURL(new Blob([txt],{type:"application/json"}));
-    const a=document.createElement("a"); a.href=url; a.download=name; document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url),4000);
-    b.textContent="Saved ✓";
-  }catch(e){ b.textContent="Failed"; }
+  try{ b.textContent=(await download(u))==="ok"?"Saved ✓":"No data yet"; }
+  catch(e){ b.textContent="Failed"; }
   setTimeout(()=>{ b.textContent=t; b.disabled=false; },2500);
+}
+
+/* ---------- delete user ----------
+   Takes a backup file first, then removes everything of theirs in the
+   database: log, restore points, starter data, phone link, last-seen, notes.
+   The payment log stays, under a "deleted" record, for the accounts. The
+   sign-in account itself is deleted in Firebase Console. */
+function delPanel(u,pn){
+  pn.innerHTML='<p class="msg err" style="margin-top:6px"><b>This cannot be undone.</b> A backup file downloads first. '+
+    'Their log, restore points and your notes are removed. The payment log is kept.</p>'+
+    '<label>Type <b>'+esc(u.p.name||"")+'</b> to confirm<input data-f="nm" autocomplete="off"></label>'+
+    '<div style="margin-top:12px"><button class="danger" data-save="1" style="width:100%">Delete forever</button></div><p class="msg"></p>';
+  pn.querySelector("[data-save]").onclick=async ev=>{
+    const btn=ev.target, m=pn.querySelector(".msg");
+    const say=(t,c)=>{ m.className="msg"+(c?" "+c:""); m.textContent=t; };
+    const typed=pn.querySelector('[data-f="nm"]').value.trim().toLowerCase();
+    if(!typed||typed!==String(u.p.name||"").trim().toLowerCase()) return say("The name does not match.","err");
+    btn.disabled=true; say("Saving a backup…");
+    try{ await download(u); }
+    catch(e){ btn.disabled=false; return say("Could not make the backup, so nothing was deleted. Check your internet.","err"); }
+    say("Deleting…");
+    try{
+      await deleteUser(u);
+      pn.innerHTML='<p class="msg ok">Deleted ✓ Now delete the sign-in account: Firebase Console → Authentication → Users → '+esc(u.p.email||u.uid)+' → ⋮ → Delete account.</p>';
+      setTimeout(load,5000);
+    }catch(e){ btn.disabled=false; say("Stopped part way. Tap again to finish. Check your internet.","err"); }
+  };
+}
+async function deleteUser(u){
+  const U="users/"+u.uid;
+  const lock=await get("devlock/"+u.uid);
+  const keys=(await list(U+"/v")).map(x=>x.id);
+  if(lock&&lock.k&&keys.indexOf(lock.k)<0) keys.push(lock.k);
+  for(const k of keys){
+    for(const s of await list(U+"/v/"+k+"/snap")) await deleteDoc(D(U+"/v/"+k+"/snap/"+s.id));
+    await deleteDoc(D(U+"/v/"+k));
+  }
+  for(const h of await list(U+"/hold")) await deleteDoc(D(U+"/hold/"+h.id));
+  await deleteDoc(D(U+"/meta/seen"));
+  await deleteDoc(D("devlock/"+u.uid));
+  /* notes go; the record that holds the payment log stays, marked deleted */
+  await setDoc(D("admin/"+u.uid),{deleted:true,name:u.p.name||"",email:u.p.email||"",deletedAt:Date.now()});
+  await deleteDoc(D(U));
 }
 
 /* ---------- reset device ----------
@@ -457,6 +527,9 @@ $("addForm").addEventListener("submit",async e=>{
     await setDoc(D("users/"+uid+"/hold/state"),{s:JSON.stringify(starter),ts:starter.ts});
     await setDoc(D("users/"+uid),{name:name,email:email,active:true,free:free,
       until:Timestamp.fromMillis(until),prog:copy?"copy":"empty",created:serverTimestamp(),resets:0});
+    /* the same UID deleted before and added again: off the deleted list */
+    const old=await get("admin/"+uid);
+    if(old&&old.deleted) await setDoc(D("admin/"+uid),{deleted:false},{merge:true});
     if(!free&&isFinite(amt)&&amt>0) await addPay(uid,{amount:amt,cur:cur,from:0,to:until,note:"First subscription"});
     say("Added ✓ Send them the app link with their email and password.","ok");
     ["aUid","aName","aEmail","aAmt"].forEach(id=>$(id).value="");
