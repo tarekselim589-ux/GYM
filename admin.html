@@ -85,7 +85,7 @@
   <p class="empty" id="boot">Loading…</p>
   <div class="card center" id="deny" hidden>
     <h2>Not allowed</h2>
-    <p class="msg">This page is for the coach only.</p>
+    <p class="msg">This page is for the owner only. Coaches use <a href="coach.html" style="color:var(--aqua)">the coach page</a>.</p>
     <div style="margin-top:12px"><button id="dOut" style="width:100%">Sign out</button></div>
   </div>
 
@@ -103,18 +103,32 @@
           <div><label>Name<input id="aName" autocomplete="off"></label></div>
           <div><label>Email<input id="aEmail" type="email" autocomplete="off"></label></div>
         </div>
-        <label>Subscription</label>
+        <label>Account type</label>
         <div class="radio">
-          <label><input type="radio" name="aPlan" value="date" checked> Until a date</label>
-          <label><input type="radio" name="aPlan" value="free"> Free</label>
+          <label><input type="radio" name="aType" value="sub" checked> Subscriber</label>
+          <label><input type="radio" name="aType" value="coach"> Coach</label>
         </div>
-        <div id="aDateBox"><label>Last day (ends 11:59 PM Riyadh)<input id="aUntil" type="date"></label></div>
-        <label>Exercises</label>
-        <div class="radio">
-          <label><input type="radio" name="aProg" value="copy" checked> Copy my program</label>
-          <label><input type="radio" name="aProg" value="empty"> Empty program</label>
+        <div id="aSubBox">
+          <label>Belongs to<select id="aCoach"></select></label>
+          <label>Subscription</label>
+          <div class="radio">
+            <label><input type="radio" name="aPlan" value="date" checked> Until a date</label>
+            <label><input type="radio" name="aPlan" value="free"> Free</label>
+          </div>
+          <div id="aDateBox"><label>Last day (ends 11:59 PM Riyadh)<input id="aUntil" type="date"></label></div>
         </div>
-        <p class="msg">Food: they always get your foods and meals. Weights, attendance and food logs are never copied.</p>
+        <div id="aCoachBox" hidden>
+          <p class="msg">A coach manages the exercises and food of the subscribers you put under them. The account stays on until you turn it off.</p>
+          <div class="radio"><label><input type="checkbox" id="aTrain"> The coach also trains in the app (own log)</label></div>
+        </div>
+        <div id="aProgBox">
+          <label>Exercises</label>
+          <div class="radio">
+            <label><input type="radio" name="aProg" value="copy" checked> Copy my program</label>
+            <label><input type="radio" name="aProg" value="empty"> Empty program</label>
+          </div>
+          <p class="msg">Food: they always get your foods and meals. Weights, attendance and food logs are never copied.</p>
+        </div>
         <div class="row" id="aPayBox">
           <div><label>Amount paid (optional)<input id="aAmt" inputmode="decimal" autocomplete="off"></label></div>
           <div><label>Currency<select id="aCur"><option value="SAR">SAR</option><option value="EGP">EGP</option></select></label></div>
@@ -124,8 +138,12 @@
       </form>
     </div>
 
-    <input id="search" type="search" placeholder="Search by name or email" autocomplete="off">
+    <div class="row">
+      <input id="search" type="search" placeholder="Search by name or email" autocomplete="off" style="flex:2 1 200px">
+      <select id="filter" style="flex:1 1 140px"><option value="all">Everyone</option><option value="me">My subscribers</option></select>
+    </div>
     <div id="list"><p class="empty">Loading…</p></div>
+    <div id="coaches"></div>
     <div id="gone"></div>
   </main>
 
@@ -158,8 +176,10 @@ const nice=t=>{ const d=new Date(t+3*36e5); return d.getUTCDate()+" "+["Jan","Fe
 const ago=t=>{ if(!t) return "never"; const m=Math.max(0,Math.round((Date.now()-t)/6e4));
   return m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" days ago"; };
 
+const isCoach=u=>u&&u.p&&u.p.role==="coach";
 function status(u){
   if(u.p.active!==true) return {cls:"off",chip:"",label:"Off",rank:4e15};
+  if(isCoach(u)) return {cls:"free",chip:"free",label:"Coach",rank:5e15};
   if(u.p.free) return {cls:"free",chip:"free",label:"Free",rank:3e15};
   const until=ms(u.p.until), now=Date.now();
   if(now>=until+GRACE) return {cls:"end",chip:"end",label:"Ended "+nice(until),rank:until};
@@ -182,7 +202,7 @@ $("login").addEventListener("submit",async e=>{
   e.preventDefault();
   const er=$("lErr"), b=$("lBtn"); er.hidden=true; b.disabled=true;
   try{ await signInWithEmailAndPassword(auth,$("lEmail").value.trim(),$("lPass").value); $("lPass").value=""; }
-  catch(x){ const c=(x&&x.code)||""; er.textContent=c.indexOf("too-many")>=0?"Too many tries. Wait a few minutes.":c.indexOf("network")>=0?"No internet.":"Wrong email or password."; er.hidden=false; }
+  catch(x){ const c=(x&&x.code)||""; er.textContent=c.indexOf("too-many")>=0?"Too many tries. Wait a few minutes.":c.indexOf("network")>=0?"No internet.":c.indexOf("referer")>=0||c.indexOf("api-key")>=0?"Sign-in is not allowed from this address.":"Wrong email or password."; er.hidden=false; }
   b.disabled=false;
 });
 $("hOut").onclick=()=>signOut(auth);
@@ -208,40 +228,63 @@ async function load(){
   try{ GONE=(await list("admin")).filter(x=>x.data&&x.data.deleted===true); }catch(e){ GONE=[]; }
   paintGone();
 }
+const COACHES=()=>USERS.filter(isCoach);
+const coachName=id=>{ const c=USERS.find(x=>x.uid===id); return c?(c.p.name||"(no name)"):"(removed coach)"; };
 function paint(){
-  const q=$("search").value.trim().toLowerCase();
+  const q=$("search").value.trim().toLowerCase(), f=$("filter").value;
+  const hit=u=>!q||String(u.p.name||"").toLowerCase().indexOf(q)>=0||String(u.p.email||"").toLowerCase().indexOf(q)>=0;
+  /* the filter: everyone, only mine, or one coach's people */
+  const keep=f;
+  const fs=$("filter");
+  fs.innerHTML='<option value="all">Everyone</option><option value="me">My subscribers</option>'+
+    COACHES().map(c=>'<option value="c:'+esc(c.uid)+'">Coach: '+esc(c.p.name||"(no name)")+'</option>').join("");
+  fs.value=Array.from(fs.options).some(o=>o.value===keep)?keep:"all";
   const all=USERS.map(u=>Object.assign(u,{st:status(u)})).sort((a,b)=>a.st.rank-b.st.rank);
-  const vis=all.filter(u=>!q||String(u.p.name||"").toLowerCase().indexOf(q)>=0||String(u.p.email||"").toLowerCase().indexOf(q)>=0);
-  $("count").textContent="("+USERS.length+")";
-  if(!vis.length){ $("list").innerHTML='<p class="empty">'+(USERS.length?"No match.":"No subscribers yet.")+'</p>'; return; }
-  $("list").innerHTML=vis.map(card).join("");
+  const subs=all.filter(u=>!isCoach(u)).filter(u=>fs.value==="all"||(fs.value==="me"&&!u.p.coach)||fs.value==="c:"+(u.p.coach||""));
+  const vis=subs.filter(hit);
+  $("count").textContent="("+all.filter(u=>!isCoach(u)).length+")";
+  $("list").innerHTML=vis.length?vis.map(card).join(""):'<p class="empty">'+(subs.length?"No match.":"No subscribers here yet.")+'</p>';
+  const cs=all.filter(isCoach).filter(hit);
+  $("coaches").innerHTML=COACHES().length?'<div class="card"><h2>Coaches <span style="color:var(--muted);font-weight:500">('+COACHES().length+')</span></h2>'+
+    (cs.length?cs.map(card).join(""):'<p class="msg">No match.</p>')+'</div>':'';
+  /* the add form's "Belongs to" list follows the coaches */
+  const ac=$("aCoach"), was=ac.value;
+  ac.innerHTML='<option value="">Me (Tarek)</option>'+COACHES().filter(c=>c.p.active===true).map(c=>'<option value="'+esc(c.uid)+'">Coach: '+esc(c.p.name||"(no name)")+'</option>').join("");
+  ac.value=Array.from(ac.options).some(o=>o.value===was)?was:"";
 }
 $("search").addEventListener("input",paint);
+$("filter").addEventListener("change",paint);
 
 function card(u){
-  const p=u.p, s=u.st, id=esc(u.uid);
+  const p=u.p, s=u.st, id=esc(u.uid), co=isCoach(u);
   const dev=u.lock?"Phone linked":"No phone linked yet";
+  const trains=!co||p.train===true;
+  const mine=co?USERS.filter(x=>!isCoach(x)&&x.p.coach===u.uid).length:0;
   return '<div class="user st-'+s.cls+'" data-uid="'+id+'">'+
     '<div class="uhead"><div class="uname"><b>'+esc(p.name||"(no name)")+'</b><small>'+esc(p.email||"")+'</small></div>'+
     '<span class="chip '+s.chip+'">'+esc(s.label)+'</span></div>'+
-    '<p class="meta">'+(p.free?"Free account":"Last day: "+nice(ms(p.until)))+
-      ' · Last opened: '+ago(u.seen)+'<br>'+dev+(p.resets?' · device resets: '+(+p.resets):'')+
-      (u.hold?' · <span style="color:var(--amber)">data waiting for the phone</span>':'')+
+    '<p class="meta">'+
+      (co?mine+' subscriber'+(mine===1?'':'s')+' · '+(trains?'trains in the app':'does not train in the app')
+         :(p.free?"Free account":"Last day: "+nice(ms(p.until)))+' · '+(p.coach?'Coach: <b>'+esc(coachName(p.coach))+'</b>':'Yours'))+
+      (trains?'<br>Last opened: '+ago(u.seen)+' · '+dev+(p.resets?' · device resets: '+(+p.resets):'')+
+        (u.hold?' · <span style="color:var(--amber)">data waiting for the phone</span>':''):'')+
       (u.notes?'<br>📝 '+esc(u.notes.length>80?u.notes.slice(0,80)+"…":u.notes):'')+'</p>'+
     '<div class="acts">'+
-      '<a class="btn go" href="index.html?as='+encodeURIComponent(u.uid)+'">Open</a>'+
-      '<button data-act="renew">Renew</button>'+
+      (trains?'<a class="btn go" href="index.html?as='+encodeURIComponent(u.uid)+'">Open</a>':'')+
+      (co?'':'<button data-act="renew">Renew</button>')+
       '<button data-act="edit">Edit</button>'+
       '<button data-act="notes">Notes</button>'+
-      '<button data-act="pays">Payments</button>'+
-      '<button data-act="export">Export</button>'+
-      '<button class="warnb" data-act="reset">Reset device</button>'+
-      '<button class="danger" data-act="del">Delete user</button>'+
+      (co?'':'<button data-act="pays">Payments</button>')+
+      (trains?'<button data-act="export">Export</button>':'')+
+      (trains?'<button class="warnb" data-act="reset">Reset device</button>':'')+
+      '<button class="danger" data-act="del">Delete '+(co?'coach':'user')+'</button>'+
     '</div><div class="panel" hidden></div></div>';
 }
 
 /* one handler for every button on every card */
-$("list").addEventListener("click",async e=>{
+$("coaches").addEventListener("click",e=>onCard(e));
+$("list").addEventListener("click",e=>onCard(e));
+async function onCard(e){
   const b=e.target.closest("button[data-act]"); if(!b) return;
   const box=b.closest(".user"), uid=box.getAttribute("data-uid");
   const u=USERS.find(x=>x.uid===uid); if(!u) return;
@@ -256,7 +299,7 @@ $("list").addEventListener("click",async e=>{
   if(act==="notes") notesPanel(u,pn);
   if(act==="pays") paysPanel(u,pn);
   if(act==="del") delPanel(u,pn);
-});
+}
 
 /* ---------- deleted subscribers: only their payment log is left ---------- */
 let GONE=[];
@@ -287,13 +330,17 @@ function armed(b,txt){
 
 /* ---------- edit ---------- */
 function editPanel(u,pn){
-  const p=u.p;
+  const p=u.p, co=isCoach(u);
+  const coachOpts='<option value="">Me (Tarek)</option>'+COACHES().map(c=>'<option value="'+esc(c.uid)+'"'+(p.coach===c.uid?' selected':'')+'>Coach: '+esc(c.p.name||"(no name)")+(c.p.active===true?'':' (off)')+'</option>').join("");
   pn.innerHTML='<label>Name<input data-f="name" value="'+esc(p.name||"")+'"></label>'+
     '<label>Email<input data-f="email" type="email" value="'+esc(p.email||"")+'"></label>'+
-    '<label>Subscription</label><div class="radio">'+
-      '<label><input type="radio" name="e'+esc(u.uid)+'" value="date"'+(p.free?'':' checked')+'> Until a date</label>'+
-      '<label><input type="radio" name="e'+esc(u.uid)+'" value="free"'+(p.free?' checked':'')+'> Free</label></div>'+
-    '<label>Last day (ends 11:59 PM Riyadh)<input data-f="until" type="date" value="'+(p.free?"":ymdOf(ms(p.until)))+'"></label>'+
+    (co
+      ? '<div class="radio" style="margin-top:12px"><label><input type="checkbox" data-f="train"'+(p.train===true?' checked':'')+'> Also trains in the app (own log)</label></div>'
+      : '<label>Belongs to<select data-f="coach">'+coachOpts+'</select></label>'+
+        '<label>Subscription</label><div class="radio">'+
+        '<label><input type="radio" name="e'+esc(u.uid)+'" value="date"'+(p.free?'':' checked')+'> Until a date</label>'+
+        '<label><input type="radio" name="e'+esc(u.uid)+'" value="free"'+(p.free?' checked':'')+'> Free</label></div>'+
+        '<label>Last day (ends 11:59 PM Riyadh)<input data-f="until" type="date" value="'+(p.free?"":ymdOf(ms(p.until)))+'"></label>')+
     '<label>Account</label><div class="radio">'+
       '<label><input type="radio" name="a'+esc(u.uid)+'" value="on"'+(p.active===true?' checked':'')+'> On</label>'+
       '<label><input type="radio" name="a'+esc(u.uid)+'" value="off"'+(p.active===true?'':' checked')+'> Off (data kept)</label></div>'+
@@ -303,15 +350,24 @@ function editPanel(u,pn){
     const btn=ev.target, m=pn.querySelector(".msg");
     const name=pn.querySelector('[data-f="name"]').value.trim();
     const email=pn.querySelector('[data-f="email"]').value.trim();
-    const free=pn.querySelector('input[name="e'+CSS.escape(u.uid)+'"]:checked').value==="free";
     const on=pn.querySelector('input[name="a'+CSS.escape(u.uid)+'"]:checked').value==="on";
-    const ud=pn.querySelector('[data-f="until"]').value;
     if(!name){ m.className="msg err"; m.textContent="Write a name."; return; }
-    if(!free&&!ud){ m.className="msg err"; m.textContent="Pick the last day, or choose Free."; return; }
+    let upd;
+    if(co){
+      const train=pn.querySelector('[data-f="train"]').checked;
+      upd={name:name,email:email,active:on,train:train,free:true,until:Timestamp.fromMillis(FREE_UNTIL)};
+      /* training switched on for a coach with no log yet: give them a starter */
+      if(train&&!u.lock&&!u.hold){ btn.disabled=true; try{ await writeStarter(u.uid,true); }catch(x){} }
+    }else{
+      const free=pn.querySelector('input[name="e'+CSS.escape(u.uid)+'"]:checked').value==="free";
+      const ud=pn.querySelector('[data-f="until"]').value;
+      if(!free&&!ud){ m.className="msg err"; m.textContent="Pick the last day, or choose Free."; return; }
+      upd={name:name,email:email,free:free,active:on,coach:pn.querySelector('[data-f="coach"]').value,
+        until:Timestamp.fromMillis(free?FREE_UNTIL:endOf(ud))};
+    }
     btn.disabled=true;
     try{
-      await setDoc(D("users/"+u.uid),{name:name,email:email,free:free,active:on,
-        until:Timestamp.fromMillis(free?FREE_UNTIL:endOf(ud))},{merge:true});
+      await setDoc(D("users/"+u.uid),upd,{merge:true});
       m.className="msg ok"; m.textContent="Saved ✓"; await load();
     }catch(x){ m.className="msg err"; m.textContent="Could not save. Check your internet."; btn.disabled=false; }
   };
@@ -417,7 +473,8 @@ async function exportUser(u,b){
    sign-in account itself is deleted in Firebase Console. */
 function delPanel(u,pn){
   pn.innerHTML='<p class="msg err" style="margin-top:6px"><b>This cannot be undone.</b> A backup file downloads first. '+
-    'Their log, restore points and your notes are removed. The payment log is kept.</p>'+
+    'Their log, restore points and your notes are removed. The payment log is kept.'+
+    (isCoach(u)?' Their subscribers move to you, and their ready programs are removed.':'')+'</p>'+
     '<label>Type <b>'+esc(u.p.name||"")+'</b> to confirm<input data-f="nm" autocomplete="off"></label>'+
     '<div style="margin-top:12px"><button class="danger" data-save="1" style="width:100%">Delete forever</button></div><p class="msg"></p>';
   pn.querySelector("[data-save]").onclick=async ev=>{
@@ -438,6 +495,11 @@ function delPanel(u,pn){
 }
 async function deleteUser(u){
   const U="users/"+u.uid;
+  /* a coach: their subscribers come back to you, their ready programs go */
+  if(isCoach(u)){
+    for(const c of USERS.filter(x=>!isCoach(x)&&x.p.coach===u.uid)) await setDoc(D("users/"+c.uid),{coach:""},{merge:true});
+    for(const t of await list("coachTpl/"+u.uid+"/t")) await deleteDoc(D("coachTpl/"+u.uid+"/t/"+t.id));
+  }
   const lock=await get("devlock/"+u.uid);
   const keys=(await list(U+"/v")).map(x=>x.id);
   if(lock&&lock.k&&keys.indexOf(lock.k)<0) keys.push(lock.k);
@@ -489,18 +551,40 @@ async function resetDevice(u,b){
 }
 
 /* ---------- add user ---------- */
+/* The starter log, made from yours: program (or just its days), foods, meals
+   and pinned foods. mig marks your one-off fixes as done so they do not run
+   again on a copy. Nothing you logged goes with it. */
+async function writeStarter(uid,copy){
+  const mine=await get("gym/state");
+  let o={}; try{ o=mine&&mine.s?JSON.parse(mine.s):{}; }catch(x){ o={}; }
+  const clone=v=>JSON.parse(JSON.stringify(v));
+  const prog=(o.program||[]).map(p=>copy
+    ? clone(p)
+    : {id:p.id,day:p.day,short:p.short,label:p.label,wd:p.wd,ex:[],bench:[]});
+  const starter={program:prog,archive:[],lib:clone(o.lib||[]),combo:clone(o.combo||[]),
+    pins:clone(o.pins||[]),mig:clone(o.mig||{}),ts:Date.now()};
+  await setDoc(D("users/"+uid+"/hold/state"),{s:JSON.stringify(starter),ts:starter.ts});
+}
 $("addToggle").onclick=()=>{ $("addForm").hidden=!$("addForm").hidden; };
-document.querySelectorAll('input[name="aPlan"]').forEach(r=>r.onchange=()=>{
+/* what the form asks depends on the account type, Free, and whether a coach trains */
+function addForm(){
+  const coach=document.querySelector('input[name="aType"]:checked').value==="coach";
   const free=document.querySelector('input[name="aPlan"]:checked').value==="free";
-  $("aDateBox").hidden=free; $("aPayBox").hidden=free;
-});
+  $("aSubBox").hidden=coach; $("aCoachBox").hidden=!coach;
+  $("aDateBox").hidden=free; $("aPayBox").hidden=coach||free;
+  $("aProgBox").hidden=coach&&!$("aTrain").checked;
+}
+document.querySelectorAll('input[name="aPlan"],input[name="aType"]').forEach(r=>r.onchange=addForm);
+$("aTrain").onchange=addForm;
 $("aUntil").value=ymdOf(Date.now()+30*DAY);
 $("addForm").addEventListener("submit",async e=>{
   e.preventDefault();
   const m=$("aMsg"), btn=$("aBtn");
   const say=(t,c)=>{ m.className="msg"+(c?" "+c:""); m.textContent=t; };
   const uid=$("aUid").value.trim(), name=$("aName").value.trim(), email=$("aEmail").value.trim();
-  const free=document.querySelector('input[name="aPlan"]:checked').value==="free";
+  const coach=document.querySelector('input[name="aType"]:checked').value==="coach";
+  const train=coach&&$("aTrain").checked;
+  const free=coach||document.querySelector('input[name="aPlan"]:checked').value==="free";
   const copy=document.querySelector('input[name="aProg"]:checked').value==="copy";
   const ud=$("aUntil").value;
   const amt=parseFloat(String($("aAmt").value).replace(",",".")), cur=$("aCur").value;
@@ -513,25 +597,18 @@ $("addForm").addEventListener("submit",async e=>{
   btn.disabled=true; say("Adding…");
   try{
     if(await get("users/"+uid)){ btn.disabled=false; return say("This UID is already added.","err"); }
-    /* the starter log, made from yours: program (or just its days), foods,
-       meals and pinned foods. mig marks your one-off fixes as done so they do
-       not run again on a copy. Nothing you logged goes with it. */
-    const mine=await get("gym/state");
-    let o={}; try{ o=mine&&mine.s?JSON.parse(mine.s):{}; }catch(x){ o={}; }
-    const clone=v=>JSON.parse(JSON.stringify(v));
-    const prog=(o.program||[]).map(p=>copy
-      ? clone(p)
-      : {id:p.id,day:p.day,short:p.short,label:p.label,wd:p.wd,ex:[],bench:[]});
-    const starter={program:prog,archive:[],lib:clone(o.lib||[]),combo:clone(o.combo||[]),
-      pins:clone(o.pins||[]),mig:clone(o.mig||{}),ts:Date.now()};
-    await setDoc(D("users/"+uid+"/hold/state"),{s:JSON.stringify(starter),ts:starter.ts});
-    await setDoc(D("users/"+uid),{name:name,email:email,active:true,free:free,
-      until:Timestamp.fromMillis(until),prog:copy?"copy":"empty",created:serverTimestamp(),resets:0});
+    if(!coach||train) await writeStarter(uid,copy);
+    await setDoc(D("users/"+uid),coach
+      ? {name:name,email:email,role:"coach",train:train,active:true,free:true,
+          until:Timestamp.fromMillis(FREE_UNTIL),prog:copy?"copy":"empty",created:serverTimestamp(),resets:0}
+      : {name:name,email:email,active:true,free:free,coach:$("aCoach").value,
+          until:Timestamp.fromMillis(until),prog:copy?"copy":"empty",created:serverTimestamp(),resets:0});
     /* the same UID deleted before and added again: off the deleted list */
     const old=await get("admin/"+uid);
     if(old&&old.deleted) await setDoc(D("admin/"+uid),{deleted:false},{merge:true});
-    if(!free&&isFinite(amt)&&amt>0) await addPay(uid,{amount:amt,cur:cur,from:0,to:until,note:"First subscription"});
-    say("Added ✓ Send them the app link with their email and password.","ok");
+    if(!coach&&!free&&isFinite(amt)&&amt>0) await addPay(uid,{amount:amt,cur:cur,from:0,to:until,note:"First subscription"});
+    say(coach?"Coach added ✓ Send them the coach page link: "+location.origin+location.pathname.replace(/admin\.html$/,"coach.html")
+      :"Added ✓ Send them the app link with their email and password.","ok");
     ["aUid","aName","aEmail","aAmt"].forEach(id=>$(id).value="");
     await load();
   }catch(x){ say("Could not add. Check your internet.","err"); }

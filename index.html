@@ -38,14 +38,15 @@ let fs; try{ fs=initializeFirestore(app,{localCache:persistentLocalCache()}); }c
 /* Where this account's log lives. The owner keeps the original place (gym/state,
    restore points beside it in "gym"); a subscriber, or the owner opening one,
    points it somewhere else with setPath before anything is read or written. */
-let P={doc:"gym/state", col:"gym"};
+let P={doc:"gym/state", col:"gym", merge:false};
 const ref=()=>doc(fs,P.doc);
 const snapRef=k=>doc(fs,P.col,"snap_"+k);
 window.FB={
   OWNER:"A4QrA1vaUuaF5CxPiGPkfXJPXbK2",
-  setPath(d,c){ P={doc:d,col:c}; },
+  /* merge: a coach's ready program keeps its name beside the log */
+  setPath(d,c,m){ P={doc:d,col:c,merge:!!m}; },
   async read(){ let d; try{ d=await getDocFromServer(ref()); }catch(e){ try{ d=await getDoc(ref()); }catch(x){ return null; } } return d.exists()?d.data():null; },
-  write:(s,ts)=>setDoc(ref(),{s:s,ts:ts}),
+  write:(s,ts)=>P.merge?setDoc(ref(),{s:s,ts:ts},{merge:true}):setDoc(ref(),{s:s,ts:ts}),
   /* Daily restore points. They live in the same collection as the live doc so the
      same security rule covers them, and nothing that writes the live doc touches them. */
   snap:(k,s,ts)=>setDoc(snapRef(k),{s:s,ts:ts,d:k}),
@@ -1067,7 +1068,7 @@ const $=id=>document.getElementById(id);
 /* Ventor accounts. APP_V changes with every release so an open app can tell a
    newer copy is waiting. ACC says who is using it: the owner, a subscriber
    ("user"), or the owner looking at a subscriber ("view"). */
-const APP_V="2026.11.27-1";
+const APP_V="2026.11.27-2";
 const WA="https://wa.me/966557454709";
 const FOOT='<p class="vfoot"><b>Ventor</b> by Tarek Selim<br>&copy; Tarek Selim. All rights reserved.</p>';
 let ACC={mode:"owner"};
@@ -5000,9 +5001,9 @@ const API={
       '<button class="btn" onclick="GYM4.restoreSheet()">Restore from a file</button>'+
       (Store.cloud&&ACC.mode!=="view"?'<button class="btn" onclick="GYM4.snapSheet()">Restore from a day</button>':'')+
       '<button class="btn danger" onclick="GYM4.reset(this)">Reset program to original</button>'+
-      (ACC.mode==="user"?'<button class="btn" onclick="GYM4.passSheet()">Change password</button>'+
-        '<a class="btn" style="display:block;text-align:center;text-decoration:none" href="'+WA+'" target="_blank" rel="noopener">Contact Coach</a>':'')+
-      (ACC.mode==="view"?'<button class="btn" onclick="location.href=\'admin.html\'">Exit viewing</button>':'')+
+      (ACC.mode==="user"?'<button class="btn" onclick="GYM4.passSheet()">Change password</button>':'')+
+      (ACC.mode==="user"&&ACC.coachRole?'<a class="btn" style="display:block;text-align:center;text-decoration:none" href="coach.html">Coach page</a>':'')+
+      (ACC.mode==="view"?'<button class="btn" onclick="location.href=\''+(ACC.back||"admin.html")+'\'">Exit viewing</button>':'')+
       (Store.cloud&&ACC.mode!=="view"?'<button class="btn" onclick="GYM4.signOut(this)">Sign out</button>':'')+
       FOOT);
   },
@@ -5400,7 +5401,7 @@ const API={
   }
 })();
 
-document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ API.awake(); recheck(); checkUpdate(); } });
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ API.awake(); recheck(); checkUpdate(); syncCloud(); } });
 let started=false;
 function showLogin(){
   $("lg").hidden=false; $("lgLoad").hidden=true; $("lgFields").hidden=false;
@@ -5479,12 +5480,44 @@ async function pullHold(uid,key){
 async function start(){
   if(started) return; started=true;
   const u=window.FB.user, me=u&&u.uid;
+  const as=new URLSearchParams(location.search).get("as");
   if(me===window.FB.OWNER){
-    const as=new URLSearchParams(location.search).get("as");
-    if(as&&as!==me) return startView(as);
+    if(as&&as!==me) return startView(as,"admin.html");
     return openLog();
   }
+  /* a coach opening one of their subscribers, or one of their ready programs */
+  const tpl=new URLSearchParams(location.search).get("tpl");
+  if((as&&as!==me)||tpl){
+    let mine=null; try{ mine=await window.FB.getSrv("users/"+me); }catch(e){}
+    if(mine&&mine.role==="coach"&&mine.active===true) return tpl?startTpl(me,tpl):startView(as,"coach.html");
+  }
   return startUser(u);
+}
+
+/* A coach's ready program opened in the app's own editor (index.html?tpl=ID).
+   It is a log of its own with nothing logged; only its training days are
+   ever given to subscribers. No phone copy, no restore points. */
+const MIG_ALL=()=>({days1:1,food1:1,food2:1,food3:1,food4:1,food5:1,food6:1,food7:1,food8:1,sess1:1,eat1:1,arm1:1,order1:1});
+async function startTpl(me,id){
+  Store.noLocal=true; KEY="gym4.tpl";
+  $("lg").hidden=true;
+  const T="coachTpl/"+me+"/t/"+id;
+  let t=null;
+  try{ t=await window.FB.getSrv(T); }catch(e){}
+  if(!t) return gate("Not found",P_("This ready program was not found, or no internet.")+
+    '<a class="lgbtn" href="coach.html">Back</a>',{noCoach:true,retry:true});
+  window.FB.setPath(T,T+"/snap",true);
+  /* a ready program saved before it could be edited here holds only its days */
+  if(!t.s&&t.prog){
+    let days=[]; try{ days=JSON.parse(t.prog); }catch(e){}
+    const st={program:days.map(d=>({id:uid(),day:d.day,short:d.short,label:d.label,wd:d.wd===undefined?null:d.wd,bench:[],
+      ex:(d.ex||[]).map(e=>Object.assign({},e,{id:uid()}))})),archive:[],mig:MIG_ALL(),ts:Date.now()};
+    try{ await window.FB.write(JSON.stringify(st),st.ts); }catch(e){ return gateNet(); }
+  }
+  ACC={mode:"view",tpl:true,uid:me,name:t.name||"",lastTs:0,back:"coach.html"};
+  document.title="Editing "+(t.name||"program")+" · Ventor";
+  paintAcct();
+  return openLog({view:true});
 }
 
 async function startUser(u){
@@ -5497,10 +5530,14 @@ async function startUser(u){
   const c=accLoad(uid);
   if(offline){
     if(!c||!c.key) return gateNet();
-    prof={active:true,name:c.name,free:c.free};
+    prof={active:true,name:c.name,free:c.free,role:c.role,train:c.train};
   }
   if(!prof||prof.active!==true)
     return gate("Account not active",P_("Your account is not active right now. Contact your coach to turn it on."),{out:true});
+  /* a coach without a training log of their own only has the coach page */
+  if(prof.role==="coach"&&prof.train!==true)
+    return gate("Coach account",P_("This account manages your subscribers. Open the coach page to see them.")+
+      '<a class="lgbtn" href="coach.html">Open coach page</a>',{out:true,noCoach:true});
   const until=offline?(+c.until||0):untilOf(prof), now=Date.now();
   if(now>=until+GRACE) return gateEnded();
   const ro=now>=until;
@@ -5524,9 +5561,9 @@ async function startUser(u){
     }
     await pullHold(uid,key);
     window.FB.put(U+"/meta/seen",{t:window.FB.now()}).catch(function(){});
-    accSave(uid,{name:prof.name||"",free:!!prof.free,until:until,key:key});
+    accSave(uid,{name:prof.name||"",free:!!prof.free,until:until,key:key,role:prof.role||"",train:prof.train===true});
   }else if(!key) return gateNet();
-  ACC={mode:"user",uid:uid,name:prof.name||"",until:until,free:!!prof.free,ro:ro,vpath:U+"/v/"+key};
+  ACC={mode:"user",uid:uid,name:prof.name||"",until:until,free:!!prof.free,ro:ro,vpath:U+"/v/"+key,coachRole:prof.role==="coach"};
   KEY="gym4.u."+uid;
   window.FB.setPath(U+"/v/"+key,U+"/v/"+key+"/snap");
   Store.onDenied=function(){ recheck(true); };
@@ -5534,20 +5571,22 @@ async function startUser(u){
   return openLog({ro:ro});
 }
 
-/* The owner opening a subscriber from admin.html (index.html?as=UID): their
-   account copy only, never this phone's copy, no restore points. */
-async function startView(uid){
+/* The owner (from admin.html) or their coach (from coach.html) opening a
+   subscriber: index.html?as=UID. Their account copy only, never this phone's
+   copy, no restore points. back = the page Exit returns to. */
+async function startView(uid,back){
   Store.noLocal=true; KEY="gym4.view";
   $("lg").hidden=true;
   let prof=null, lock=null, cur=null;
   try{ prof=await window.FB.getSrv("users/"+uid); }catch(e){}
-  if(!prof) return gate("Not found",P_("No subscriber with this UID, or no internet."),{admin:true,noCoach:true,retry:true});
+  if(!prof) return gate("Not found",P_("No subscriber with this UID that you can open, or no internet.")+
+    '<a class="lgbtn" href="'+back+'">Back</a>',{noCoach:true,retry:true});
   try{ lock=await window.FB.getSrv("devlock/"+uid); }catch(e){}
   const linked=!!(lock&&lock.k);
   const B=linked?"users/"+uid+"/v/"+lock.k:"users/"+uid+"/hold/state";
   window.FB.setPath(B,linked?B+"/snap":"users/"+uid+"/hold");
   try{ cur=await window.FB.getSrv(B); }catch(e){}
-  ACC={mode:"view",uid:uid,name:prof.name||"",lastTs:(cur&&+cur.ts)||0};
+  ACC={mode:"view",uid:uid,name:prof.name||"",lastTs:(cur&&+cur.ts)||0,back:back};
   document.title="Viewing "+(prof.name||"subscriber")+" · Ventor";
   paintAcct();
   return openLog({view:true});
@@ -5556,11 +5595,15 @@ async function startView(uid){
 /* The bar under the header: whose log the owner is looking at, or read-only */
 function paintAcct(){
   const el=$("g4acct"); if(!el) return;
-  if(ACC.mode==="view"){
+  if(ACC.mode==="view"&&ACC.tpl){
+    el.className="view"; el.hidden=false;
+    el.innerHTML='<span>Ready program: <b>'+esc(ACC.name||"program")+'</b> · edit the training days. Changes save by themselves.</span>'+
+      '<button onclick="location.href=\'coach.html\'">Done</button>';
+  }else if(ACC.mode==="view"){
     el.className="view"; el.hidden=false;
     el.innerHTML='<span>Viewing: <b>'+esc(ACC.name||"subscriber")+'</b> · '+
       (ACC.lastTs?'they last saved '+ago(ACC.lastTs):'nothing saved yet')+
-      '. Avoid editing while they are using the app.</span><button onclick="location.href=\'admin.html\'">Exit</button>';
+      '. Avoid editing while they are using the app.</span><button onclick="location.href=\''+(ACC.back||"admin.html")+'\'">Exit</button>';
   }else if(ACC.mode==="user"&&ACC.ro){
     el.className="ro"; el.hidden=false;
     el.innerHTML='<span><b>Read only</b> – Subscription ended. Renew to keep logging.</span>'+
@@ -5620,6 +5663,21 @@ async function recheck(force){
     const b=$("g4cloudErr"); if(b){ b.hidden=false; setTimeout(function(){ b.hidden=true; },5000); }
   }
   if(home) render();
+}
+/* A subscriber coming back to the app picks up anything their coach or the
+   owner changed meanwhile, before they log over it. At most once a minute. */
+let syncAt=0;
+async function syncCloud(){
+  if(ACC.mode!=="user"||!Store.cloud||Store.hold) return;
+  if(Date.now()-syncAt<6e4) return;
+  syncAt=Date.now();
+  try{
+    const c=await window.FB.read();
+    if(c&&c.s&&Store.tsOf(c.s)>(store.ts||0)){
+      await API.load(c.s);
+      if(Store.readonly) RO_RAW=JSON.stringify(store);
+    }
+  }catch(e){}
 }
 /* The service worker keeps the newest index.html it fetched; if its APP_V
    differs from the one running, a newer version is one reload away. */
@@ -5682,7 +5740,7 @@ $("lgForm").addEventListener("submit",async function(e){
   if(!window.FB){ er.textContent="No internet. Check your connection."; er.hidden=false; return; }
   btn.disabled=true; btn.textContent="Signing in…";
   try{ await window.FB.signIn(em,pw); $("lgPass").value=""; }
-  catch(x){ const c=x&&x.code||""; er.textContent=c.indexOf("too-many")>=0?"Too many tries. Wait a few minutes.":c.indexOf("network")>=0?"No internet. Check your connection.":c.indexOf("user-disabled")>=0?"This account is turned off. Contact your coach.":"Wrong email or password."; er.hidden=false; }
+  catch(x){ const c=x&&x.code||""; er.textContent=c.indexOf("too-many")>=0?"Too many tries. Wait a few minutes.":c.indexOf("network")>=0?"No internet. Check your connection.":c.indexOf("referer")>=0||c.indexOf("api-key")>=0?"Sign-in is not allowed from this address.":c.indexOf("user-disabled")>=0?"This account is turned off. Contact your coach.":"Wrong email or password."; er.hidden=false; }
   btn.disabled=false; btn.textContent="Sign in";
 });
 return API;
@@ -5690,10 +5748,10 @@ return API;
 </script>
 <script>
 if("serviceWorker" in navigator) addEventListener("load",function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
-/* An older service worker answered admin.html with this page. Update it once and
-   load again, so the admin page comes from the network. */
+/* An older service worker answered admin.html or coach.html with this page.
+   Update it once and load again, so that page comes from the network. */
 (function(){
-  if(!/\/admin\.html$/.test(location.pathname)||!("serviceWorker" in navigator)) return;
+  if(!/\/(admin|coach)\.html$/.test(location.pathname)||!("serviceWorker" in navigator)) return;
   try{ if(sessionStorage.getItem("vAdminFix")) return; sessionStorage.setItem("vAdminFix","1"); }catch(e){ return; }
   navigator.serviceWorker.getRegistration().then(function(r){ return r&&r.update(); })
     .catch(function(){}).then(function(){ setTimeout(function(){ location.reload(); },800); });

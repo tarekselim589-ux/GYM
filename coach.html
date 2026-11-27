@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1D3B4C">
+<title>Ventor Coach</title>
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<!-- © Tarek Selim. All rights reserved. -->
+<style>
+  :root{--deep:#1D3B4C;--surface:#274C61;--surface-2:#234458;--line:#386E88;--chalk:#F1F7F9;--muted:#A9C1CD;
+    --aqua:#4CDCD6;--amber:#ECB053;--rose:#EAAB9F}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--deep);color:var(--chalk);
+    font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;-webkit-text-size-adjust:100%}
+  body{min-height:100vh;padding:env(safe-area-inset-top) 0 calc(30px + env(safe-area-inset-bottom))}
+  [hidden]{display:none!important}
+  .wrap{max-width:720px;margin:0 auto;padding:0 16px}
+  header{position:sticky;top:0;z-index:5;background:rgba(29,59,76,.95);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line)}
+  header .wrap{display:flex;align-items:center;gap:8px;padding-top:12px;padding-bottom:10px}
+  header h1{flex:1;margin:0;font-size:18px;letter-spacing:-.2px}
+  header h1 em{font-style:normal;color:var(--aqua);font-size:13px;font-weight:500;margin-left:6px}
+  button,.btn{font-weight:600;font-size:13.5px;font-family:inherit;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--chalk);
+    padding:9px 12px;cursor:pointer;text-decoration:none;display:inline-block;text-align:center}
+  button:disabled{opacity:.55;cursor:default}
+  .go{background:var(--aqua);border-color:var(--aqua);color:#0A3B39}
+  .danger{color:var(--rose);border-color:rgba(234,171,159,.5)}
+  .ghost{background:none}
+  .card{background:var(--surface-2);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 0}
+  h2{margin:0 0 8px;font-size:15px}
+  label{display:block;font-size:12.5px;color:var(--muted);margin:10px 0 4px}
+  input,select{width:100%;font-size:16px;font-family:inherit;padding:10px 11px;border-radius:10px;border:1px solid var(--line);
+    background:var(--deep);color:var(--chalk)}
+  input:focus,select:focus{outline:none;border-color:var(--aqua)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .row>*{flex:1 1 140px}
+  .checks{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+  .checks label{display:flex;align-items:center;gap:8px;margin:0;color:var(--chalk);font-size:14.5px}
+  .checks input{width:auto}
+  .msg{margin:10px 0 0;font-size:13.5px;color:var(--muted)}
+  .msg.err{color:var(--rose)} .msg.ok{color:var(--aqua)}
+  .user{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:12px;padding:12px 13px;margin:10px 0}
+  .user.st-soon{border-left-color:var(--amber)} .user.st-end{border-left-color:var(--rose)}
+  .user.st-free{border-left-color:var(--aqua)} .user.st-off{opacity:.7}
+  .uhead{display:flex;gap:10px;align-items:flex-start}
+  .uname{flex:1;min-width:0}
+  .uname b{font-size:16px} .uname small{display:block;color:var(--muted);font-size:12.5px;overflow-wrap:anywhere}
+  .chip{font-size:12px;font-weight:700;border-radius:20px;padding:3px 9px;white-space:nowrap;border:1px solid var(--line);color:var(--muted)}
+  .chip.soon{color:var(--amber);border-color:rgba(236,176,83,.5)} .chip.end{color:var(--rose);border-color:rgba(234,171,159,.5)}
+  .chip.free{color:var(--aqua);border-color:rgba(76,220,214,.5)} .chip.ok{color:var(--chalk)}
+  .meta{color:var(--muted);font-size:12.5px;margin:6px 0 0;line-height:1.6}
+  .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .acts button,.acts .btn{flex:1 1 auto;padding:8px 10px;font-size:13px}
+  .panel{border-top:1px solid var(--line);margin-top:12px;padding-top:4px}
+  .empty{color:var(--muted);text-align:center;padding:24px 0}
+  .foot{margin:26px 0 0;text-align:center;color:var(--muted);font-size:11.5px;line-height:1.6}
+  .foot b{color:var(--chalk)}
+  .center{max-width:360px;margin:12vh auto 0}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>Ventor <em>Coach</em></h1>
+  <a class="btn ghost" href="index.html" id="hApp" hidden>My app</a>
+  <button class="ghost" id="hOut" hidden>Sign out</button>
+</div></header>
+
+<div class="wrap">
+  <form id="login" class="card center" hidden novalidate>
+    <h2>Coach sign in</h2>
+    <label>Email<input id="lEmail" type="email" autocomplete="username" inputmode="email"></label>
+    <label>Password<input id="lPass" type="password" autocomplete="current-password"></label>
+    <div style="margin-top:14px"><button class="go" type="submit" id="lBtn" style="width:100%">Sign in</button></div>
+    <p class="msg err" id="lErr" hidden></p>
+  </form>
+  <p class="empty" id="boot">Loading…</p>
+  <div class="card center" id="deny" hidden>
+    <h2 id="dTitle">Not a coach account</h2>
+    <p class="msg" id="dMsg">This page is for coaches.</p>
+    <div style="margin-top:12px"><button id="dOut" style="width:100%">Sign out</button></div>
+  </div>
+
+  <main id="app" hidden>
+    <div class="card">
+      <h2>My subscribers <span id="count" style="color:var(--muted);font-weight:500"></span></h2>
+      <p class="msg" style="margin-top:0">Tap <b>Open</b> to set their exercises and food. Edit when they are not using the app.</p>
+      <input id="search" type="search" placeholder="Search by name" autocomplete="off" style="margin-top:10px">
+      <div id="list"><p class="empty">Loading…</p></div>
+    </div>
+
+    <div class="card">
+      <h2>Ready programs</h2>
+      <p class="msg" style="margin-top:0">Make a program once, edit it in the app with <b>Edit</b>, then give it to your subscribers in one tap.</p>
+      <div id="tpls"></div>
+      <div class="row" style="margin-top:12px">
+        <button id="newTpl" class="go">+ New ready program</button>
+      </div>
+      <div class="panel" id="newBox" hidden>
+        <label>Name<input id="tName" placeholder="Beginner fat loss" autocomplete="off"></label>
+        <label>Start from<select id="tSrc"></select></label>
+        <div style="margin-top:12px"><button class="go" id="tSave" style="width:100%">Create</button></div>
+        <p class="msg" id="tMsg"></p>
+      </div>
+    </div>
+  </main>
+
+  <p class="foot"><b>Ventor</b> by Tarek Selim<br>&copy; Tarek Selim. All rights reserved.</p>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const app=initializeApp({apiKey:"AIzaSyCLxD-fduSa6kgqnk8pJj8HwtzY3AYfhIg",authDomain:"tarek-74842.firebaseapp.com",projectId:"tarek-74842",storageBucket:"tarek-74842.firebasestorage.app",messagingSenderId:"179196785540",appId:"1:179196785540:web:d4604f645dbbcc6e5f23d1"});
+const auth=getAuth(app);
+const db=getFirestore(app);
+const GRACE=3*864e5, DAY=864e5;
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const D=p=>doc(db,p);
+const get=async p=>{ const x=await getDoc(D(p)); return x.exists()?x.data():null; };
+const list=async p=>{ const q=await getDocs(collection(db,p)); const o=[]; q.forEach(x=>o.push({id:x.id,data:x.data()})); return o; };
+const ms=t=>(t&&t.toMillis)?t.toMillis():(+t||0);
+const rday=t=>Math.floor((t+3*36e5)/DAY);
+const nice=t=>{ const d=new Date(t+3*36e5); return d.getUTCDate()+" "+["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getUTCMonth()]+" "+d.getUTCFullYear(); };
+const ago=t=>{ if(!t) return "never"; const m=Math.max(0,Math.round((Date.now()-t)/6e4));
+  return m<1?"just now":m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" days ago"; };
+/* the same ids the app makes */
+let idN=0;
+const newId=()=>"x"+Date.now().toString(36)+(idN++).toString(36)+Math.random().toString(36).slice(2,6);
+
+function status(p){
+  if(p.active!==true) return {cls:"off",chip:"",label:"Off",rank:4e15};
+  if(p.free) return {cls:"free",chip:"free",label:"Free",rank:3e15};
+  const until=ms(p.until), now=Date.now();
+  if(now>=until+GRACE) return {cls:"end",chip:"end",label:"Ended "+nice(until),rank:until};
+  if(now>=until) return {cls:"end",chip:"end",label:"Ended · read only",rank:until};
+  const d=rday(until)-rday(now);
+  return {cls:d<7?"soon":"ok",chip:d<7?"soon":"ok",label:d<=0?"Ends today":d===1?"Ends tomorrow":d+" days left",rank:until};
+}
+
+/* ---------- sign in: coaches only ---------- */
+let ME=null, MYP=null;
+onAuthStateChanged(auth,async u=>{
+  $("boot").hidden=true; $("login").hidden=!!u; $("deny").hidden=true; $("app").hidden=true;
+  $("hOut").hidden=!u; $("hApp").hidden=true;
+  if(!u) return;
+  let p=null; try{ p=await get("users/"+u.uid); }catch(e){}
+  if(!p||p.role!=="coach"||p.active!==true){
+    $("dTitle").textContent=p&&p.role==="coach"?"Coach account is off":"Not a coach account";
+    $("dMsg").textContent=p&&p.role==="coach"?"Your coach account is turned off. Contact Tarek.":"This page is for coaches.";
+    $("deny").hidden=false; return;
+  }
+  ME=u.uid; MYP=p;
+  $("app").hidden=false; $("hApp").hidden=p.train!==true;
+  load();
+});
+$("login").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const er=$("lErr"), b=$("lBtn"); er.hidden=true; b.disabled=true;
+  try{ await signInWithEmailAndPassword(auth,$("lEmail").value.trim(),$("lPass").value); $("lPass").value=""; }
+  catch(x){ const c=(x&&x.code)||""; er.textContent=c.indexOf("too-many")>=0?"Too many tries. Wait a few minutes.":c.indexOf("network")>=0?"No internet.":c.indexOf("referer")>=0||c.indexOf("api-key")>=0?"Sign-in is not allowed from this address.":c.indexOf("user-disabled")>=0?"This account is turned off.":"Wrong email or password."; er.hidden=false; }
+  b.disabled=false;
+});
+$("hOut").onclick=()=>signOut(auth);
+$("dOut").onclick=()=>signOut(auth);
+
+/* ---------- my subscribers ---------- */
+let SUBS=[], TPLS=[];
+async function load(){
+  $("list").innerHTML='<p class="empty">Loading…</p>';
+  try{
+    const q=await getDocs(query(collection(db,"users"),where("coach","==",ME)));
+    const rows=[]; q.forEach(x=>rows.push({uid:x.id,p:x.data()}));
+    SUBS=await Promise.all(rows.map(async r=>{
+      const seen=await get("users/"+r.uid+"/meta/seen").catch(()=>null);
+      return Object.assign(r,{seen:seen?ms(seen.t):0,st:status(r.p)});
+    }));
+  }catch(e){ $("list").innerHTML='<p class="empty">Could not load. Check your internet.</p>'; return; }
+  paint();
+  await loadTpls();
+}
+function paint(){
+  const q=$("search").value.trim().toLowerCase();
+  const all=SUBS.slice().sort((a,b)=>a.st.rank-b.st.rank);
+  const vis=all.filter(u=>!q||String(u.p.name||"").toLowerCase().indexOf(q)>=0);
+  $("count").textContent="("+SUBS.length+")";
+  $("list").innerHTML=vis.length?vis.map(u=>
+    '<div class="user st-'+u.st.cls+'"><div class="uhead"><div class="uname"><b>'+esc(u.p.name||"(no name)")+'</b>'+
+    '<small>'+(u.p.free?"Free":"Last day: "+nice(ms(u.p.until)))+' · Last opened: '+ago(u.seen)+'</small></div>'+
+    '<span class="chip '+u.st.chip+'">'+esc(u.st.label)+'</span></div>'+
+    '<div class="acts"><a class="btn go" href="index.html?as='+encodeURIComponent(u.uid)+'">Open</a></div></div>').join("")
+    :'<p class="empty">'+(SUBS.length?"No match.":"No subscribers yet. Tarek adds them for you.")+'</p>';
+  paintSrc();
+}
+/* where a new ready program can start from */
+function paintSrc(){
+  const src=$("tSrc"), was=src.value;
+  src.innerHTML='<option value="empty">Empty (one day, add the rest in the app)</option>'+
+    TPLS.map(t=>'<option value="t:'+esc(t.id)+'">Copy of: '+esc(t.data.name||"(no name)")+'</option>').join("")+
+    SUBS.slice().sort((a,b)=>String(a.p.name||"").localeCompare(String(b.p.name||""))).map(u=>'<option value="'+esc(u.uid)+'">Program of: '+esc(u.p.name||"(no name)")+'</option>').join("")+
+    (myKey()?'<option value="me">Program of: my own log (this phone)</option>':'');
+  if(Array.from(src.options).some(o=>o.value===was)) src.value=was;
+}
+$("search").addEventListener("input",paint);
+
+/* ---------- where a log lives right now ---------- */
+function myKey(){ try{ return MYP&&MYP.train===true?localStorage.getItem("vdk."+ME):null; }catch(e){ return null; } }
+async function whereIs(uid){
+  if(uid==="me"){ const k=myKey(); return {path:"users/"+ME+"/v/"+k,data:k?await get("users/"+ME+"/v/"+k):null}; }
+  const lock=await get("devlock/"+uid);
+  if(lock&&lock.k){
+    const B="users/"+uid+"/v/"+lock.k, cur=await get(B);
+    if(cur&&cur.s) return {path:B,data:cur};
+  }
+  return {path:"users/"+uid+"/hold/state",data:await get("users/"+uid+"/hold/state")};
+}
+
+/* ---------- ready programs ----------
+   Each one is a small log of its own (s), so the app's own editor can open it
+   (index.html?tpl=ID). Only its training days are ever used. Programs saved
+   before that hold just their days (prog); the app turns them into a log the
+   first time they are edited. */
+const MIG_ALL=()=>({days1:1,food1:1,food2:1,food3:1,food4:1,food5:1,food6:1,food7:1,food8:1,sess1:1,eat1:1,arm1:1,order1:1});
+function daysOf(t){
+  try{ if(t.data.s){ const o=JSON.parse(t.data.s); return Array.isArray(o.program)?o.program:[]; } }catch(e){}
+  try{ return JSON.parse(t.data.prog||"[]"); }catch(e){ return []; }
+}
+/* days with fresh ids and nothing logged: safe to put anywhere */
+const freshDays=days=>days.map(d=>({id:newId(),day:d.day||"Any day",short:d.short||"Any",label:d.label||"Day",
+  wd:d.wd===undefined?null:d.wd,bench:[],ex:(d.ex||[]).map(e=>Object.assign(JSON.parse(JSON.stringify(e)),{id:newId()}))}));
+async function loadTpls(){
+  try{ TPLS=await list("coachTpl/"+ME+"/t"); }catch(e){ TPLS=[]; }
+  TPLS.sort((a,b)=>String(a.data.name||"").localeCompare(String(b.data.name||"")));
+  $("tpls").innerHTML=TPLS.length?TPLS.map(t=>{
+    const days=daysOf(t);
+    const ex=days.reduce((a,d)=>a+((d.ex||[]).length),0);
+    return '<div class="user" data-t="'+esc(t.id)+'"><div class="uhead"><div class="uname"><b>'+esc(t.data.name||"(no name)")+'</b>'+
+      '<small>'+days.length+' day'+(days.length===1?'':'s')+' · '+ex+' exercises · saved '+nice(t.data.ts||0)+'</small></div></div>'+
+      '<div class="acts"><a class="btn" href="index.html?tpl='+encodeURIComponent(t.id)+'">Edit</a>'+
+      '<button data-give="1" class="go">Give to subscribers</button><button data-del="1" class="danger">Delete</button></div>'+
+      '<div class="panel" hidden></div></div>';
+  }).join(""):'<p class="msg">No ready programs yet.</p>';
+  paintSrc();
+}
+$("newTpl").onclick=()=>{ $("newBox").hidden=!$("newBox").hidden; };
+$("tSave").onclick=async()=>{
+  const m=$("tMsg"), b=$("tSave"), say=(t,c)=>{ m.className="msg"+(c?" "+c:""); m.textContent=t; };
+  const name=$("tName").value.trim(), src=$("tSrc").value;
+  if(!name) return say("Give the program a name.","err");
+  if(TPLS.some(t=>String(t.data.name||"").trim().toLowerCase()===name.toLowerCase())) return say("You already have a program with this name.","err");
+  b.disabled=true; say("Creating…");
+  try{
+    let days;
+    if(src==="empty") days=[{day:"Any day",short:"Any",label:"Day 1",wd:null,ex:[]}];
+    else if(src.indexOf("t:")===0){ const t=TPLS.find(x=>"t:"+x.id===src); days=t?daysOf(t):[]; }
+    else{
+      const w=await whereIs(src);
+      let o=null; try{ o=w.data&&w.data.s?JSON.parse(w.data.s):null; }catch(e){}
+      days=o&&Array.isArray(o.program)?o.program:[];
+    }
+    if(!days.length){ b.disabled=false; return say("That has no training days yet.","err"); }
+    const st={program:freshDays(days),archive:[],mig:MIG_ALL(),ts:Date.now()};
+    const id=newId();
+    await setDoc(D("coachTpl/"+ME+"/t/"+id),{name:name,s:JSON.stringify(st),ts:st.ts});
+    $("tName").value="";
+    m.className="msg ok";
+    m.innerHTML='Created ✓ <a href="index.html?tpl='+encodeURIComponent(id)+'" style="color:var(--aqua);font-weight:700">Edit it now</a>';
+    await loadTpls();
+  }catch(e){ say("Could not create. Check your internet.","err"); }
+  b.disabled=false;
+};
+$("tpls").addEventListener("click",async e=>{
+  const box=e.target.closest("[data-t]"); if(!box) return;
+  const t=TPLS.find(x=>x.id===box.getAttribute("data-t")); if(!t) return;
+  const pn=box.querySelector(".panel");
+  if(e.target.closest("[data-del]")){
+    const b=e.target.closest("[data-del]");
+    if(b.getAttribute("data-arm")!=="1"){ b.setAttribute("data-arm","1"); b.textContent="Sure? Tap again"; setTimeout(()=>{ b.removeAttribute("data-arm"); b.textContent="Delete"; },3500); return; }
+    b.disabled=true;
+    try{ await deleteDoc(D("coachTpl/"+ME+"/t/"+t.id)); await loadTpls(); }catch(x){ b.disabled=false; b.textContent="Failed"; }
+    return;
+  }
+  if(e.target.closest("[data-give]")){
+    if(!pn.hidden){ pn.hidden=true; return; }
+    pn.hidden=false;
+    pn.innerHTML=SUBS.length?
+      '<p class="msg">Their current program moves to <b>Archived days</b> in the app, with all its history. Do this when they are not using the app.</p>'+
+      '<div class="checks">'+SUBS.map(u=>'<label><input type="checkbox" value="'+esc(u.uid)+'"> '+esc(u.p.name||"(no name)")+'</label>').join("")+'</div>'+
+      '<div style="margin-top:12px"><button class="go" data-apply="1" style="width:100%">Give "'+esc(t.data.name||"")+'"</button></div><p class="msg"></p>'
+      :'<p class="msg">No subscribers yet.</p>';
+    return;
+  }
+  if(e.target.closest("[data-apply]")){
+    const b=e.target.closest("[data-apply]"), m=pn.querySelector("p.msg:last-child");
+    const ids=Array.from(pn.querySelectorAll('input[type="checkbox"]:checked')).map(x=>x.value);
+    if(!ids.length){ m.className="msg err"; m.textContent="Tick at least one subscriber."; return; }
+    b.disabled=true; m.className="msg"; m.textContent="Giving…";
+    let ok=0, bad=[];
+    for(const uid of ids){
+      try{ await applyTpl(uid,t); ok++; }
+      catch(x){ bad.push((SUBS.find(u=>u.uid===uid)||{p:{}}).p.name||uid); }
+    }
+    m.className="msg "+(bad.length?"err":"ok");
+    m.textContent=(ok?"Given to "+ok+" ✓ ":"")+(bad.length?"Failed for: "+bad.join(", ")+". Try again.":"");
+    b.disabled=false;
+  }
+});
+/* A ready program goes in with new ids, so no old log is ever read as the new
+   exercises' history; the days it replaces wait in the archive with theirs. */
+async function applyTpl(uid,t){
+  const w=await whereIs(uid);
+  let o={}; try{ o=w.data&&w.data.s?JSON.parse(w.data.s):{}; }catch(e){ o={}; }
+  const days=daysOf(t);
+  if(!days.length) throw new Error("empty program");
+  const old=(o.program||[]).filter(d=>d&&((d.ex||[]).length||(d.bench||[]).length));
+  o.archive=(Array.isArray(o.archive)?o.archive:[]).concat(old);
+  o.program=freshDays(days);
+  o.ts=Date.now();
+  await setDoc(D(w.path),{s:JSON.stringify(o),ts:o.ts});
+}
+</script>
+</body>
+</html>
