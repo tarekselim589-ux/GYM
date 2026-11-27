@@ -1068,7 +1068,7 @@ const $=id=>document.getElementById(id);
 /* Ventor accounts. APP_V changes with every release so an open app can tell a
    newer copy is waiting. ACC says who is using it: the owner, a subscriber
    ("user"), or the owner looking at a subscriber ("view"). */
-const APP_V="2026.11.27-2";
+const APP_V="2026.11.27-3";
 const WA="https://wa.me/966557454709";
 const FOOT='<p class="vfoot"><b>Ventor</b> by Tarek Selim<br>&copy; Tarek Selim. All rights reserved.</p>';
 let ACC={mode:"owner"};
@@ -2183,6 +2183,9 @@ function dayGaps(){
 
 
 function backupBanner(){
+  /* only the owner: a subscriber's log is kept in their account, so "this
+     browser only" would be wrong and alarming */
+  if(ACC.mode!=="owner") return "";
   if(!hasLogs()) return "";
   const last=store.bk||0;
   const age=last?Math.floor((Date.now()-last)/864e5):null;
@@ -4995,12 +4998,14 @@ const API={
       : "never";
     sheet('<h2>Settings</h2><p class="sub">Numbers save automatically as you type, there is no save button.<br>'+
       'Saving to: <b style="color:#4CDCD6">'+Store.label+'</b><br>'+
-      (Store.cloud?'Saved to your account and on this phone. Open it from any device.<br>':'Everything stays on this device. Nothing is sent anywhere.<br>')+
+      (ACC.mode==="user"?'Saved to your account. It works on this phone only.<br>'
+        :Store.cloud?'Saved to your account and on this phone. Open it from any device.<br>':'Everything stays on this device. Nothing is sent anywhere.<br>')+
       'Last backup: <b style="color:'+((store.bk&&Date.now()-store.bk<14*864e5)?'#4CDCD6':'#ECB053')+'">'+when+'</b></p>'+
       '<button class="btn go" onclick="GYM4.saveBackup(this)">Save backup file</button>'+
       '<button class="btn" onclick="GYM4.restoreSheet()">Restore from a file</button>'+
       (Store.cloud&&ACC.mode!=="view"?'<button class="btn" onclick="GYM4.snapSheet()">Restore from a day</button>':'')+
-      '<button class="btn danger" onclick="GYM4.reset(this)">Reset program to original</button>'+
+      /* the original program is the owner's own; a subscriber's or a coach's would be replaced by it */
+      (ACC.mode==="owner"?'<button class="btn danger" onclick="GYM4.reset(this)">Reset program to original</button>':'')+
       (ACC.mode==="user"?'<button class="btn" onclick="GYM4.passSheet()">Change password</button>':'')+
       (ACC.mode==="user"&&ACC.coachRole?'<a class="btn" style="display:block;text-align:center;text-decoration:none" href="coach.html">Coach page</a>':'')+
       (ACC.mode==="view"?'<button class="btn" onclick="location.href=\''+(ACC.back||"admin.html")+'\'">Exit viewing</button>':'')+
@@ -5423,7 +5428,7 @@ function gate(title,body,opt){
     (opt.retry?'<button type="button" class="lgghost" onclick="location.reload()">Try again</button>':'')+
     (opt.admin?'<button type="button" class="lgghost" onclick="location.href=\'admin.html\'">Back to admin</button>':'')+
     (opt.out?'<button type="button" class="lgghost" id="vgOut">Sign out</button>':'')+
-    (opt.coach?'<button type="button" class="lglink" id="vgCoach">I\'m the coach — <b>sign in here</b></button>':'')+
+    (opt.coach?'<button type="button" class="lglink" id="vgCoach">Owner — <b>sign in here</b></button>':'')+
     FOOT;
   $("lg").hidden=true; $("vgate").hidden=false;
   const o=$("vgOut"); if(o) o.onclick=function(){ o.disabled=true; window.FB.signOut(); };

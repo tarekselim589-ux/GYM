@@ -213,11 +213,14 @@ function myKey(){ try{ return MYP&&MYP.train===true?localStorage.getItem("vdk."+
 async function whereIs(uid){
   if(uid==="me"){ const k=myKey(); return {path:"users/"+ME+"/v/"+k,data:k?await get("users/"+ME+"/v/"+k):null}; }
   const lock=await get("devlock/"+uid);
+  const held=()=>get("users/"+uid+"/hold/state");
   if(lock&&lock.k){
+    /* a linked phone: always write where that phone reads, even if its log
+       has not been moved there yet (then the starter data is the base) */
     const B="users/"+uid+"/v/"+lock.k, cur=await get(B);
-    if(cur&&cur.s) return {path:B,data:cur};
+    return {path:B,data:(cur&&cur.s)?cur:await held()};
   }
-  return {path:"users/"+uid+"/hold/state",data:await get("users/"+uid+"/hold/state")};
+  return {path:"users/"+uid+"/hold/state",data:await held()};
 }
 
 /* ---------- ready programs ----------
