@@ -1070,7 +1070,7 @@ const $=id=>document.getElementById(id);
 /* Ventor accounts. APP_V changes with every release so an open app can tell a
    newer copy is waiting. ACC says who is using it: the owner, a subscriber
    ("user"), or the owner looking at a subscriber ("view"). */
-const APP_V="2026.11.28-3";
+const APP_V="2026.11.28-4";
 const WA="https://wa.me/966557454709";
 const FOOT='<p class="vfoot"><b>Ventor</b> by Tarek Selim<br>&copy; Tarek Selim. All rights reserved.</p>';
 let ACC={mode:"owner"};
@@ -5645,7 +5645,7 @@ async function start(){
 /* A coach's ready program opened in the app's own editor (index.html?tpl=ID).
    It is a log of its own with nothing logged; only its training days are
    ever given to subscribers. No phone copy, no restore points. */
-const MIG_ALL=()=>({days1:1,food1:1,food2:1,food3:1,food4:1,food5:1,food6:1,food7:1,food8:1,sess1:1,eat1:1,arm1:1,order1:1});
+const MIG_ALL=()=>({days1:1,food1:1,food2:1,food3:1,food4:1,food5:1,food6:1,food7:1,food8:1,sess1:1,eat1:1,arm1:1,order1:1,reps1:1,split1:1,split2:1});
 async function startTpl(me,id){
   Store.noLocal=true; KEY="gym4.tpl";
   $("lg").hidden=true;

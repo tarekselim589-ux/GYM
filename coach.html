@@ -228,7 +228,7 @@ async function whereIs(uid){
    (index.html?tpl=ID). Only its training days are ever used. Programs saved
    before that hold just their days (prog); the app turns them into a log the
    first time they are edited. */
-const MIG_ALL=()=>({days1:1,food1:1,food2:1,food3:1,food4:1,food5:1,food6:1,food7:1,food8:1,sess1:1,eat1:1,arm1:1,order1:1});
+const MIG_ALL=()=>({days1:1,food1:1,food2:1,food3:1,food4:1,food5:1,food6:1,food7:1,food8:1,sess1:1,eat1:1,arm1:1,order1:1,reps1:1,split1:1,split2:1});
 function daysOf(t){
   try{ if(t.data.s){ const o=JSON.parse(t.data.s); return Array.isArray(o.program)?o.program:[]; } }catch(e){}
   try{ return JSON.parse(t.data.prog||"[]"); }catch(e){ return []; }
