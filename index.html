@@ -332,6 +332,8 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
     border:1px solid rgba(76,220,214,.45)}
   #g4 .tile .badge.due{background:rgba(236,176,83,.14);color:#F4CE92;
     border:1px solid rgba(236,176,83,.45)}
+  #g4 .tile .badge.inprog{background:rgba(0,0,0,.22);color:#9BE9E4;
+    border:1px solid rgba(76,220,214,.5)}
   #g4 .tile .badge.late{background:rgba(0,0,0,.22);color:#F0A090;
     border:1px solid rgba(234,171,159,.55)}
   #g4 .tile.flag{border-color:rgba(234,171,159,.45);box-shadow:0 0 0 1px rgba(234,171,159,.12)}
@@ -1295,6 +1297,15 @@ let store={}, day="sun", editing=false, confirmId=null, wake=null, openId=null, 
 
 const iso=d=>{const x=d||new Date();
   return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0");};
+/* A training day runs 5am to 5am. He lifts late, sometimes past midnight, and
+   keying the session on the calendar date let the clock close the day under
+   him: the sets he had just finished became "the previous session", Next
+   recalculated from them while he was still on the machine, and Friday turned
+   into a rest day because the weekday had moved on. The food side already
+   works this way - the day ends when he ends it, not when the clock does. */
+const GYMH=5;
+const gymNow=()=>new Date(Date.now()-GYMH*3600*1000);
+const gymIso=()=>iso(gymNow());
 const fmt=s=>{const p=s.split("-");return p[2]+"/"+p[1]+"/"+p[0].slice(2);};
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const uid=()=>"x"+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
@@ -1306,7 +1317,7 @@ const WEEK=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturda
 /* Today's training day, read from the program itself. Two days on the same
    weekday: the first one wins. No day on today's weekday: null, a rest day. */
 function todayDayId(){
-  const w=new Date().getDay();
+  const w=gymNow().getDay();
   const p=(store.program||[]).find(x=>x.wd===w);
   return p?p.id:null;
 }
@@ -1334,7 +1345,7 @@ function sessAny(s){
    save() sees something in it. */
 let waiting=null;
 function todaySess(){
-  const d=logs(day), t=iso();
+  const d=logs(day), t=gymIso();
   const found=d.sessions.find(x=>x.date===t);
   if(found) return found;
   if(waiting&&waiting.date===t&&waiting.day===day) return waiting.s;
@@ -1349,7 +1360,7 @@ function fileSession(){
   waiting=null;
 }
 function prevSess(){
-  const t=iso();
+  const t=gymIso();
   const l=logs(day).sessions.filter(s=>s.date<t&&s.ex&&Object.keys(s.ex).length);
   return l.length?l[l.length-1]:null;
 }
@@ -1357,7 +1368,7 @@ function prevSess(){
    the whole day was wrong: log a single exercise on a day and every other one
    reads back as "no previous log" while its history is still sitting there. */
 function prevFor(exId){
-  const t=iso(), ss=logs(day).sessions;
+  const t=gymIso(), ss=logs(day).sessions;
   for(let i=ss.length-1;i>=0;i--){
     const x=ss[i];
     if(!x||x.date>=t) continue;
@@ -2098,12 +2109,23 @@ function exTouched(s,e){
 }
 const isSkipped=(s,e)=>Array.isArray(s.skip)&&s.skip.indexOf(e.id)>=0;
 
+/* Finished, not merely started. He closed the day himself, or every exercise he
+   did not skip has all its sets filled. The card used to flip to DONE on the
+   first set he logged, which told him a day was behind him while he was still
+   standing in it. */
+function sessFinished(s,p){
+  if(!s||!p) return false;
+  if(s.closed) return true;
+  const live=(p.ex||[]).filter(e=>!isSkipped(s,e));
+  return live.length>0 && live.every(e=>exDone(s,e));
+}
+
 /* kilos actually moved today: weight × reps over every finished set */
 /* The last session on this day that actually holds numbers. prevSess() accepts a
    session that only has an exercise key, and his log has several of those — opening
    the app on a day is enough to make one. They are not sessions to measure against. */
 function prevReal(){
-  const t=iso(), ss=logs(day).sessions;
+  const t=gymIso(), ss=logs(day).sessions;
   for(let i=ss.length-1;i>=0;i--){
     const x=ss[i];
     if(!x||x.date>=t||!x.ex) continue;
@@ -2245,10 +2267,17 @@ function weekPRs(){
 /* where each training day stands */
 function dayCard(p){
   const last=lastReal(p.id), from=iso(weekStart());
-  const done=last&&last.date>=from;
+  const thisWeek=!!last&&last.date>=from;
+  const done=thisWeek&&sessFinished(last,p);
   const ago=last?daysAgo(last.date):null;
   let badge="", flag="";
   if(done) badge='<span class="badge ok">DONE</span>';
+  else if(thisWeek){
+    /* mid-day: the count says where he stopped, so the tile is worth reading.
+       Not "live": #g4 .live is the stats strip and would leak grid and margin in. */
+    const did=(p.ex||[]).filter(e=>exDone(last,e)).length;
+    badge='<span class="badge inprog">'+did+'/'+(p.ex||[]).length+'</span>';
+  }
   else if(ago===null) badge='<span class="badge due">NEW</span>';
   else if(ago>10){ badge='<span class="badge late">'+ago+' DAYS</span>'; flag=" flag"; }
   else badge='<span class="badge due">DUE</span>';
@@ -2264,14 +2293,15 @@ function dayCard(p){
 function homeView(){
   const from=iso(weekStart());
   const prog=store.program||[];
-  const doneWk=prog.filter(p=>{ const l=lastReal(p.id); return l&&l.date>=from; }).length;
+  const doneWk=prog.filter(p=>{ const l=lastReal(p.id);
+    return l&&l.date>=from&&sessFinished(l,p); }).length;
   const todayId=todayDayId();
   const todayPlan=todayId?planOf(todayId):null;
 
   /* the hero: what today is, and the one thing to do about it */
   let k,h2,sub,cta,ctaId,rest="";
   if(todayPlan){
-    const s=(((store.days||{})[todayId]||{}).sessions||[]).find(x=>x.date===iso());
+    const s=(((store.days||{})[todayId]||{}).sessions||[]).find(x=>x.date===gymIso());
     const did=s?prog.find(p=>p.id===todayId).ex.filter(e=>exDone(s,e)).length:0;
     const tot=todayPlan.ex.length;
     k="Today · "+esc(todayPlan.day);
@@ -2286,7 +2316,7 @@ function homeView(){
     let worst=null, wa=-1;
     prog.forEach(p=>{ const l=lastReal(p.id); const a=l?daysAgo(l.date):999;
       if(a>wa){ wa=a; worst=p; } });
-    k="Today · "+["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][new Date().getDay()];
+    k="Today · "+["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][gymNow().getDay()];
     h2="Rest day"; rest=" rest";
     sub=worst?("Next up is <b>"+esc(worst.day)+" · "+esc(worst.label)+"</b>"+
         (wa<900?" — "+wa+" days since the last one.":".")):"Nothing scheduled.";
@@ -2585,13 +2615,13 @@ function render(){
   }else{
     const s=todaySess(), pv=prevSess();
     if(s.closed){
-      $("g4h2").textContent=fmt(iso())+" · closed";
+      $("g4h2").textContent=fmt(gymIso())+" · closed";
       m.innerHTML=warn+closedView(p,s);
       return;
     }
     const done=p.ex.filter(e=>exDone(s,e)).length;
     const mins=sessMins(s);
-    $("g4h2").textContent=fmt(iso())+" · "+done+" of "+p.ex.length+" exercises"+
+    $("g4h2").textContent=fmt(gymIso())+" · "+done+" of "+p.ex.length+" exercises"+
       (mins?" · "+mins+" min":"");
     if(!p.ex.length){
       m.innerHTML=warn+'<div class="hint">No exercises for this day. Tap Edit to add some.</div>';
@@ -2621,7 +2651,7 @@ function logView(e,ei,pv,s){
 
   // series excluding today, for suggestions
   const allS=exSeries(day,e.id);
-  const past=allS.filter(p=>p.date!==iso());
+  const past=allS.filter(p=>p.date!==gymIso());
   let cue="";
   const LT=latOf(e,day);
   const L=ps?nextLadder(ps,e.r,e.s,LT):null;
@@ -3885,6 +3915,27 @@ function normalize(){
                  "Overhead Cable Triceps","DB Side Laterals","Rear Delt Fly","One-Arm Cable Pushdown","Shrugs"]);
     store.mig.order1=1;
   }
+  /* One sweep to 8-13. A narrow range leaves the ladder nowhere to go on a stack
+     whose plates are 4.5 or 6.8 kg apart: it can only shave reps off the pin he
+     is already on, so the suggestion walks backwards - 27x13 last week becomes
+     27x10 this week - while the weight never moves. A wider range lets it trade
+     reps for the next pin up, and 32x8 appears on its own.
+     Side and rear delts, calves and abs keep the reps they have: a small muscle
+     under a heavy low-rep load loses its form before it gains anything. */
+  if(!store.mig.reps1){
+    const keepReps=e=>{
+      const m=String(e.m||"").toLowerCase(), h=String(e.h||"").toLowerCase();
+      return m==="abs"||m==="calves"||(m==="delts"&&(h==="side"||h==="rear"));
+    };
+    let n=0;
+    (store.program||[]).forEach(p=>{
+      (p.ex||[]).concat(p.bench||[]).forEach(e=>{
+        if(e&&!keepReps(e)&&e.r!=="8-13"){ e.r="8-13"; n++; }
+      });
+    });
+    store.mig.reps1=1;
+    if(n) migWrote=true;
+  }
 }
 
 /* Merge a backup into what is already here: add what is missing, never
@@ -4150,7 +4201,7 @@ const API={
     if(lv&&p) lv.innerHTML=liveBits(p,s);
     /* the same count and minutes render() writes, so the header does not jump */
     const done=p.ex.filter(x=>exDone(s,x)).length, mins=sessMins(s);
-    $("g4h2").textContent=fmt(iso())+" · "+done+" of "+p.ex.length+" exercises"+
+    $("g4h2").textContent=fmt(gymIso())+" · "+done+" of "+p.ex.length+" exercises"+
       (mins?" · "+mins+" min":"");
   },
 
