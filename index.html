@@ -1070,7 +1070,7 @@ const $=id=>document.getElementById(id);
 /* Ventor accounts. APP_V changes with every release so an open app can tell a
    newer copy is waiting. ACC says who is using it: the owner, a subscriber
    ("user"), or the owner looking at a subscriber ("view"). */
-const APP_V="2026.11.28-2";
+const APP_V="2026.11.28-3";
 const WA="https://wa.me/966557454709";
 const FOOT='<p class="vfoot"><b>Ventor</b> by Tarek Selim<br>&copy; Tarek Selim. All rights reserved.</p>';
 let ACC={mode:"owner"};
@@ -3980,6 +3980,43 @@ function normalize(){
       }
     });
     store.mig.split1=1;
+    if(n) migWrote=true;
+  }
+  /* One-off, after split1: where the update landed mid-workout he typed the
+     after-midnight sets a second time into the day before, so split1 found the
+     same slots used in both and rightly left the pair alone. The after-midnight
+     session goes only when it is a pure copy - every slot it uses holds the very
+     same numbers in the same slot the day before. One differing value and it
+     stays, to be decided by hand. */
+  if(!store.mig.split2){
+    const used=v=>!!v&&(half(v[0])||half(v[1])||half(v[2]));
+    const norm=a=>{ const s=String(a==null?"":a).trim(), n=Number(s); return s!==""&&isFinite(n)?String(n):s; };
+    const same=(a,b)=>!!a&&!!b&&[0,1,2].every(k=>norm(a[k])===norm(b[k]));
+    const dayBefore=d=>{ const x=new Date(d+"T12:00:00"); x.setDate(x.getDate()-1); return iso(x); };
+    let n=0;
+    Object.keys(store.days||{}).forEach(id=>{
+      const ss=(store.days[id]||{}).sessions;
+      if(!Array.isArray(ss)) return;
+      for(let i=ss.length-1;i>=0;i--){
+        const x=ss[i];
+        if(!x||!x.t0||!x.date) continue;
+        const t=new Date(x.t0);
+        if(t.getHours()>=GYMH||iso(t)!==x.date) continue;
+        const y=ss.find(s=>s&&s!==x&&s.date===dayBefore(x.date));
+        if(!y||!y.ex) continue;
+        const xe=x.ex||{};
+        let any=false, copy=true;
+        Object.keys(xe).forEach(k=>(xe[k]||[]).forEach((v,j)=>{
+          if(!used(v)) return;
+          any=true;
+          if(!(y.ex[k]&&same(v,y.ex[k][j]))) copy=false;
+        }));
+        if(!any||!copy) continue;
+        ss.splice(i,1);
+        n++;
+      }
+    });
+    store.mig.split2=1;
     if(n) migWrote=true;
   }
 }
