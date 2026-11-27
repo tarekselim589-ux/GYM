@@ -132,7 +132,7 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
 <div id="g4note" hidden></div>
 <div id="g4">
   <header class="hdr">
-    <button class="nav" id="g4nav" onclick="GYM4.home()" aria-label="Home">ta</button>
+    <button class="nav" id="g4nav" onclick="GYM4.home()" aria-label="Home"></button>
     <div class="id"><div class="d1" id="g4h1"></div><div class="d2" id="g4h2"></div></div>
     <span class="saved" id="g4saved">Saved</span>
     <button class="gear" id="g4edit" onclick="GYM4.toggleEdit()">Edit</button>
@@ -1068,7 +1068,7 @@ const $=id=>document.getElementById(id);
 /* Ventor accounts. APP_V changes with every release so an open app can tell a
    newer copy is waiting. ACC says who is using it: the owner, a subscriber
    ("user"), or the owner looking at a subscriber ("view"). */
-const APP_V="2026.11.27-3";
+const APP_V="2026.11.27-4";
 const WA="https://wa.me/966557454709";
 const FOOT='<p class="vfoot"><b>Ventor</b> by Tarek Selim<br>&copy; Tarek Selim. All rights reserved.</p>';
 let ACC={mode:"owner"};
@@ -2503,13 +2503,22 @@ function closedView(p,s){
     '<div class="hint">This day opens as normal next week — closing locks this date only.</div>';
 }
 
+/* The round mark top-left: the owner's "ta"; anyone else, the first two letters
+   of whose log it is (a subscriber, or the one the owner or coach opened); a
+   coach's ready program belongs to nobody, so it shows V for Ventor. */
+function navMark(){
+  if(ACC.mode==="owner") return "ta";
+  if(ACC.tpl) return "V";
+  const n=String(ACC.name||"").trim();
+  return n?Array.from(n).slice(0,2).join("").toLowerCase():"V";
+}
 function render(){
   const m=$("g4main");
   latCache={};
   const warn=Store.ok?"":'<div class="warn">Saving is not available here. Open this in Safari so your logs persist.</div>';
   const nav=$("g4nav");
   if(nav){
-    nav.textContent=home?"ta":"\u2039";
+    nav.textContent=home?navMark():"\u2039";
     nav.className="nav"+(home?" logo":"");
     nav.setAttribute("aria-label",home?"Home":"Back to home");
   }
