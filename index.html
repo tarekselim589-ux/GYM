@@ -1070,7 +1070,7 @@ const $=id=>document.getElementById(id);
 /* Ventor accounts. APP_V changes with every release so an open app can tell a
    newer copy is waiting. ACC says who is using it: the owner, a subscriber
    ("user"), or the owner looking at a subscriber ("view"). */
-const APP_V="2026.11.28-1";
+const APP_V="2026.11.28-2";
 const WA="https://wa.me/966557454709";
 const FOOT='<p class="vfoot"><b>Ventor</b> by Tarek Selim<br>&copy; Tarek Selim. All rights reserved.</p>';
 let ACC={mode:"owner"};
@@ -3934,6 +3934,52 @@ function normalize(){
       });
     });
     store.mig.reps1=1;
+    if(n) migWrote=true;
+  }
+  /* One-off: before the 5am day, a workout that ran past midnight was cut in two -
+     the sets after 12 opened a new session on the next date. A session whose first
+     set was typed between midnight and 5am on its own date goes back to the day
+     before, merged into that day's session if there is one. Any set slot holding
+     something in both is left alone, the whole pair untouched: no number is lost. */
+  if(!store.mig.split1){
+    const used=v=>!!v&&(half(v[0])||half(v[1])||half(v[2]));
+    const dayBefore=d=>{ const x=new Date(d+"T12:00:00"); x.setDate(x.getDate()-1); return iso(x); };
+    let n=0;
+    Object.keys(store.days||{}).forEach(id=>{
+      const ss=(store.days[id]||{}).sessions;
+      if(!Array.isArray(ss)) return;
+      for(let i=ss.length-1;i>=0;i--){
+        const x=ss[i];
+        if(!x||!x.t0||!x.date) continue;
+        const t=new Date(x.t0);
+        if(t.getHours()>=GYMH||iso(t)!==x.date) continue;
+        const d=dayBefore(x.date);
+        const y=ss.find(s=>s&&s!==x&&s.date===d);
+        if(!y){ x.date=d; n++; continue; }
+        const xe=x.ex||{}, ye=y.ex=y.ex||{};
+        const clash=Object.keys(xe).some(k=>(xe[k]||[]).some((v,j)=>used(v)&&ye[k]&&used(ye[k][j])));
+        if(clash) continue;
+        Object.keys(xe).forEach(k=>{
+          const a=xe[k]||[];
+          if(!ye[k]){ ye[k]=a; return; }
+          const b=ye[k];
+          a.forEach((v,j)=>{
+            while(b.length<=j) b.push(["","",""]);
+            if(used(v)) b[j]=v;
+          });
+        });
+        if(Array.isArray(x.skip)){
+          y.skip=Array.isArray(y.skip)?y.skip:[];
+          x.skip.forEach(k=>{ if(y.skip.indexOf(k)<0) y.skip.push(k); });
+        }
+        if(x.closed) y.closed=Math.max(y.closed||0,x.closed);
+        if(x.t0&&(!y.t0||x.t0<y.t0)) y.t0=x.t0;
+        if(x.t1&&(!y.t1||x.t1>y.t1)) y.t1=x.t1;
+        ss.splice(i,1);
+        n++;
+      }
+    });
+    store.mig.split1=1;
     if(n) migWrote=true;
   }
 }
