@@ -1165,7 +1165,7 @@ const $=id=>document.getElementById(id);
 /* Ventor accounts. APP_V changes with every release so an open app can tell a
    newer copy is waiting. ACC says who is using it: the owner, a subscriber
    ("user"), or the owner looking at a subscriber ("view"). */
-const APP_V="2026.11.28-8";
+const APP_V="2026.11.28-9";
 const WA="https://wa.me/966557454709";
 const FOOT='<p class="vfoot"><b>Ventor</b> by Tarek Selim<br>&copy; Tarek Selim. All rights reserved.</p>';
 let ACC={mode:"owner"};
@@ -2206,7 +2206,7 @@ const MZ=["chest","back","delts","biceps","triceps","traps","abs","quads","hams"
 const MZ_OF={chest:"chest",obliques:"abs",abs:"abs",biceps:"biceps",triceps:"triceps",deltoids:"delts",
   trapezius:"traps","upper-back":"back","lower-back":"back",gluteal:"glutes",hamstring:"hams",
   quadriceps:"quads",calves:"calves"};
-const MZ_COL={none:"#456E84",low:"#ECB053",ok:"#4CDCD6",high:"#EAAB9F"};
+const MZ_COL={none:"#A35A67",low:"#ECB053",ok:"#4CDCD6",high:"#EAAB9F"};
 let mzSel=null;
 /* the library's open filter and the rows it is showing */
 let xlF="all", xlRows=[];
@@ -2220,7 +2220,7 @@ function mzState(){
   return o;
 }
 /* light top, deep bottom, per state */
-const MZ_GR={none:["#5B8499","#3B6176"],low:["#F7CB7A","#C9862A"],ok:["#7DF0EA","#1FA9A3"],high:["#F6C4B9","#C97B6C"]};
+const MZ_GR={none:["#8C4652","#4E2630"],low:["#F7CB7A","#C9862A"],ok:["#7DF0EA","#1FA9A3"],high:["#F6C4B9","#C97B6C"]};
 /* Shaded: every muscle runs light to deep with a soft shine on top, the rest of
    the body sits darker so the muscles stand out. A picked muscle gets a white
    edge; the others keep their colour, so the week always reads whole. Gradient
@@ -2271,7 +2271,7 @@ function muscleView(){
   const sel=mzSel&&S[mzSel]?mzSel:null;
   return '<div class="mzbig"><div>'+mzFig("front",172,S,true)+'<div class="mzl">Front</div></div>'+
       '<div>'+mzFig("back",172,S,true)+'<div class="mzl">Back</div></div></div>'+
-    '<div class="mzleg"><span><i style="background:'+MZ_COL.none+'"></i>none</span><span><i style="background:'+MZ_COL.low+'"></i>low</span>'+
+    '<div class="mzleg"><span><i style="background:'+MZ_COL.none+'"></i>not trained</span><span><i style="background:'+MZ_COL.low+'"></i>low</span>'+
       '<span><i style="background:'+MZ_COL.ok+'"></i>on target</span><span><i style="background:'+MZ_COL.high+'"></i>a lot</span></div>'+
     '<div class="mzpick">'+(sel
       ? '<b style="color:'+MZ_COL[S[sel].c]+'">'+esc(MUSCLES[sel])+'</b> · '+S[sel].n+' set'+(S[sel].n===1?"":"s")+' · target '+S[sel].t[0]+'-'+S[sel].t[1]
