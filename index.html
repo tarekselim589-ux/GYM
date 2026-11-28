@@ -98,7 +98,7 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
 .vfoot{margin:22px 0 6px;text-align:center;color:#A9C1CD;font-size:11.5px;line-height:1.6;opacity:.85}
 .vfoot b{color:#F1F7F9;font-weight:600}
 .lgbox .vfoot{margin:6px 0 0}
-#g4note{position:fixed;left:16px;right:16px;bottom:24px;z-index:95;background:#ECB053;color:#1D3B4C;padding:10px 14px;border-radius:10px;font-weight:600;text-align:center}
+#g4note{position:fixed;left:16px;right:16px;bottom:24px;z-index:95;background:#ECB053;color:#1D3B4C;padding:10px 14px;border-radius:10px;font:600 15px -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;text-align:center}
 #g4acct{padding:9px 14px;font-size:12.5px;line-height:1.45;display:flex;gap:10px;align-items:center}
 #g4acct.view{background:#ECB053;color:#2B1F05}
 #g4acct.ro{background:#EAAB9F;color:#2E1712}
@@ -1165,7 +1165,7 @@ const $=id=>document.getElementById(id);
 /* Ventor accounts. APP_V changes with every release so an open app can tell a
    newer copy is waiting. ACC says who is using it: the owner, a subscriber
    ("user"), or the owner looking at a subscriber ("view"). */
-const APP_V="2026.11.28-10";
+const APP_V="2026.11.28-11";
 const WA="https://wa.me/966557454709";
 const FOOT='<p class="vfoot"><b>Ventor</b> by Tarek Selim<br>&copy; Tarek Selim. All rights reserved.</p>';
 let ACC={mode:"owner"};
