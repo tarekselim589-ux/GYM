@@ -275,6 +275,38 @@ onAuthStateChanged(auth,u=>{ window.FB.user=u; window.dispatchEvent(new CustomEv
   #g4 .rmbtn{width:100%;background:rgba(234,171,159,.12);border:1px solid rgba(234,171,159,.5);
     color:var(--rose);border-radius:9px;padding:12px;font-family:inherit;font-size:13.5px;
     font-weight:650;cursor:pointer}
+  /* supersets: a violet frame around the two linked exercises */
+  #g4 .ssg{margin:10px 0;border-radius:15px;padding:4px 6px 1px;
+    background:linear-gradient(180deg,rgba(199,155,242,.13),rgba(199,155,242,.05));border:1px solid rgba(199,155,242,.42)}
+  #g4 .ssg .ex{margin:6px 0}
+  #g4 .sshd{display:flex;align-items:center;gap:6px;padding:5px 4px 0;font-size:11px;font-weight:800;
+    letter-spacing:1.1px;color:#C79BF2;text-transform:uppercase}
+  #g4 .sshd .sssp{flex:1}
+  #g4 .sshd small{letter-spacing:0;text-transform:none;font-weight:600;font-size:11.5px;color:#D9C2F5}
+  #g4 .sslab{flex:0 0 auto;display:inline-grid;place-items:center;min-width:27px;height:22px;padding:0 5px;
+    border-radius:7px;background:rgba(199,155,242,.2);color:#E6D3FA;font-size:11.5px;font-weight:800}
+  #g4 .ssmv,#g4 .ssun{background:none;border:1px solid rgba(199,155,242,.5);color:#E6D3FA;border-radius:8px;
+    font-family:inherit;font-size:11px;font-weight:700;height:26px;cursor:pointer;letter-spacing:0;text-transform:none}
+  #g4 .ssmv{width:30px}
+  #g4 .ssun{padding:0 10px}
+  #g4 .ssmv:disabled{opacity:.28}
+  #g4 .sstop{display:flex;align-items:center;gap:10px;margin:12px 0 4px}
+  #g4 .sstop span{color:var(--muted);font-size:12.5px}
+  #g4 .ssbtn{background:rgba(199,155,242,.15);border:1px solid rgba(199,155,242,.6);color:#E6D3FA;border-radius:10px;
+    padding:8px 14px;font-family:inherit;font-size:13.5px;font-weight:750;cursor:pointer}
+  #g4 .ssbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0 8px;padding:11px 13px;
+    border-radius:12px;background:#3A2F55;border:1px solid rgba(199,155,242,.5);color:#F0E4FC;font-size:14px}
+  #g4 .ssbar button{background:none;border:1px solid rgba(255,255,255,.35);color:#F0E4FC;border-radius:9px;
+    padding:5px 11px;font-family:inherit;font-size:13px;cursor:pointer}
+  #g4 .sspk{display:flex;align-items:center;gap:10px;width:100%;text-align:left;margin:7px 0;padding:12px 13px;
+    border-radius:13px;border:1px solid var(--line);background:var(--surface);color:var(--chalk);
+    font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer}
+  #g4 .sspk.on{border-color:rgba(199,155,242,.9);background:rgba(120,90,170,.35)}
+  #g4 .sspk:disabled{opacity:.42;cursor:default}
+  #g4 .sspk em{margin-left:auto;font-style:normal;color:var(--muted);font-size:12px;font-weight:500}
+  #g4 .ssck{flex:0 0 auto;width:26px;height:26px;border-radius:50%;border:2px solid rgba(199,155,242,.7);
+    display:grid;place-items:center;font-size:10.5px;font-weight:800;color:#fff}
+  #g4 .sspk.on .ssck{background:#9C6FD6;border-color:#9C6FD6}
   #g4 .addex{width:100%;margin-top:18px;background:transparent;border:1px dashed var(--line);
     color:var(--aqua);border-radius:10px;padding:15px;font-family:inherit;font-size:14px;font-weight:650;cursor:pointer}
   #g4 .confirm{background:rgba(234,171,159,.13);border:1px solid rgba(234,171,159,.5);border-radius:10px;padding:14px}
@@ -1070,7 +1102,7 @@ const $=id=>document.getElementById(id);
 /* Ventor accounts. APP_V changes with every release so an open app can tell a
    newer copy is waiting. ACC says who is using it: the owner, a subscriber
    ("user"), or the owner looking at a subscriber ("view"). */
-const APP_V="2026.11.28-4";
+const APP_V="2026.11.28-5";
 const WA="https://wa.me/966557454709";
 const FOOT='<p class="vfoot"><b>Ventor</b> by Tarek Selim<br>&copy; Tarek Selim. All rights reserved.</p>';
 let ACC={mode:"owner"};
@@ -1294,6 +1326,8 @@ function seedDiet(){ return {k:2450,p:190,f:70,b:265,shift:50,days:DAYLOAD.slice
   burn:0,goal:"lose",rate:0.5,tgtkg:0,ppk:2.2,burnMode:"auto"}; }
 
 let store={}, day="sun", editing=false, confirmId=null, wake=null, openId=null, home=true;
+/* the ids picked so far for a new superset, or null when not picking */
+let ssPick=null;
 
 const iso=d=>{const x=d||new Date();
   return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0");};
@@ -2109,6 +2143,41 @@ function exTouched(s,e){
 }
 const isSkipped=(s,e)=>Array.isArray(s.skip)&&s.skip.indexOf(e.id)>=0;
 
+/* Supersets: e.ss on an exercise links it to the one right after it, two at a
+   time. The pair is only a mark on the program - each exercise keeps its own id,
+   so its sets, Next, PRs and stats are exactly what they were without it.
+   ssUnits reads the day as units: [i] alone, or [i,i+1] for a pair. */
+function ssUnits(ex){
+  const u=[];
+  for(let i=0;i<ex.length;i++){
+    if(ex[i]&&ex[i].ss&&i+1<ex.length){ u.push([i,i+1]); i++; }
+    else u.push([i]);
+  }
+  return u;
+}
+/* A1/A2, B1/B2... in the order the pairs come in the day */
+function ssTags(ex){
+  const t={}; let k=0;
+  ssUnits(ex).forEach(u=>{ if(u.length>1){ const L=String.fromCharCode(65+(k++%26)); t[u[0]]=L+"1"; t[u[1]]=L+"2"; } });
+  return t;
+}
+/* keep the marks honest: only the first of a pair carries ss, the last
+   exercise of a day cannot, and nothing waiting on the bench does */
+function ssClean(p){
+  if(!p) return;
+  const ex=Array.isArray(p.ex)?p.ex:[];
+  ssUnits(ex).forEach(u=>{
+    if(u.length>1) delete ex[u[1]].ss;
+    else if(ex[u[0]]&&ex[u[0]].ss) delete ex[u[0]].ss;
+  });
+  (Array.isArray(p.bench)?p.bench:[]).forEach(b=>{ if(b) delete b.ss; });
+}
+/* taking one exercise of a pair out, or swapping it, unlinks the pair */
+function ssBreak(ex,i){
+  const u=ssUnits(ex).find(x=>x.indexOf(i)>=0);
+  if(u&&u.length>1) delete ex[u[0]].ss;
+}
+
 /* Finished, not merely started. He closed the day himself, or every exercise he
    did not skip has all its sets filled. The card used to flip to DONE on the
    first set he logged, which told him a day was behind him while he was still
@@ -2467,11 +2536,11 @@ function liveBits(p,s){
 
 
 /* ---------- an exercise that is finished, or not reached yet ---------- */
-function miniView(e,ei,s){
+function miniView(e,ei,s,tag){
   const open='onclick="GYM4.openOne(\''+e.id+'\')"';
   if(isSkipped(s,e))
     return '<section class="ex sk" style="--mc:'+mcol(e)+'" '+open+'>'+
-      '<div class="up"><span class="idx">—</span><span class="nm">'+esc(e.n)+'</span>'+
+      '<div class="up">'+(tag?'<span class="sslab">'+tag+'</span>':'<span class="idx">—</span>')+'<span class="nm">'+esc(e.n)+'</span>'+
       '<span class="tg">skipped</span></div></section>';
   if(exDone(s,e)){
     const a=(s.ex[e.id]||[]).filter(filled);
@@ -2480,12 +2549,12 @@ function miniView(e,ei,s){
     const res=same?'<b>'+esc(w)+'</b>kg × '+a.map(x=>esc(x[1])).join(",")
                   :a.map(x=>'<b>'+esc(x[0])+'</b>×'+esc(x[1])).join(" · ");
     return '<section class="ex cmp" style="--mc:'+mcol(e)+'" '+open+'>'+
-      '<div class="done"><span class="dn">✓</span><span class="nm">'+esc(e.n)+'</span>'+
+      '<div class="done"><span class="dn">✓</span>'+(tag?'<span class="sslab">'+tag+'</span>':'')+'<span class="nm">'+esc(e.n)+'</span>'+
       (isPRex(s,e.id)?'<span class="prb">PR</span>':'')+
       '<span class="res">'+res+'</span></div></section>';
   }
   return '<section class="ex pend" style="--mc:'+mcol(e)+'" '+open+'>'+
-    '<div class="up"><span class="idx">'+(ei+1)+'</span><span class="nm">'+esc(e.n)+'</span>'+
+    '<div class="up">'+(tag?'<span class="sslab">'+tag+'</span>':'<span class="idx">'+(ei+1)+'</span>')+'<span class="nm">'+esc(e.n)+'</span>'+
     '<span class="tg">'+e.s+' × '+esc(e.r)+'</span></div></section>';
 }
 
@@ -2545,6 +2614,7 @@ function navMark(){
 function render(){
   const m=$("g4main");
   latCache={};
+  if(!editing||home) ssPick=null;
   const warn=Store.ok?"":'<div class="warn">Saving is not available here. Open this in Safari so your logs persist.</div>';
   const nav=$("g4nav");
   if(nav){
@@ -2608,10 +2678,33 @@ function render(){
   $("g4h1").innerHTML=esc(p.day)+' <em>'+esc(p.label)+'</em>';
   if(editing){
     $("g4h2").textContent="Editing, "+p.ex.length+" exercises";
+    const T=ssTags(p.ex), U=ssUnits(p.ex);
+    /* picking the two for a superset: a plain list to tap, nothing else */
+    if(ssPick){
+      m.innerHTML=warn+
+        '<div class="ssbar"><span><b>Pick 2 exercises</b> · '+ssPick.length+'/2</span>'+
+        '<button onclick="GYM4.ssCancel()">Cancel</button></div>'+
+        p.ex.map((e,i)=>{
+          const k=ssPick.indexOf(e.id);
+          if(T[i]) return '<button class="sspk" disabled><span class="ssck"></span>'+esc(e.n)+'<em>in superset '+T[i][0]+'</em></button>';
+          return '<button class="sspk'+(k>=0?' on':'')+'" onclick="GYM4.ssTap(\''+e.id+'\')">'+
+            '<span class="ssck">'+(k>=0?'A'+(k+1):'')+'</span>'+esc(e.n)+'<em>'+e.s+' × '+esc(e.r)+'</em></button>';
+        }).join("");
+      return;
+    }
+    const free=p.ex.filter((e,i)=>!T[i]).length;
     m.innerHTML=warn+
       '<div class="hint">Rename, reorder, delete, or change sets and reps. Muscle and head feed the volume and balance stats, so set them on any exercise you add. History follows the exercise, not its name.</div>'+
-      p.ex.map((e,i)=>editView(e,i,p.ex.length)).join("")+
-      '<button class="addex" onclick="GYM4.add()">+ Add exercise</button>'+benchView()+dayEditView(p);
+      (free>=2?'<div class="sstop"><button class="ssbtn" onclick="GYM4.ssStart()">⛓ Superset</button><span>Link any two exercises</span></div>':'')+
+      U.map((u,k)=>{
+        if(u.length===1) return editView(p.ex[u[0]],u[0],p.ex.length);
+        return '<div class="ssg"><div class="sshd">⛓ Superset '+T[u[0]][0]+'<span class="sssp"></span>'+
+          '<button class="ssmv" onclick="GYM4.move('+u[0]+',-1)" '+(k===0?'disabled':'')+' aria-label="Move superset up">▲</button>'+
+          '<button class="ssmv" onclick="GYM4.move('+u[0]+',1)" '+(k===U.length-1?'disabled':'')+' aria-label="Move superset down">▼</button>'+
+          '<button class="ssun" onclick="GYM4.ssUnlink('+u[0]+')">Unlink</button></div>'+
+          u.map(i=>editView(p.ex[i],i,p.ex.length,T[i])).join("")+'</div>';
+      }).join("")+
+      '<button class="addex" onclick="GYM4.addAsk()">+ Add exercise</button>'+benchView()+dayEditView(p);
   }else{
     const s=todaySess(), pv=prevSess();
     if(s.closed){
@@ -2634,13 +2727,22 @@ function render(){
       const nx=p.ex.find(e=>!exDone(s,e)&&!isSkipped(s,e));
       liveId=nx?nx.id:null;
     }
+    /* a superset opens both at once: a set of A1, straight to A2, then rest */
+    const T=ssTags(p.ex);
     m.innerHTML=warn+liveStrip(p,s)+backupBanner()+
-      p.ex.map((e,i)=>e.id===liveId?logView(e,i,pv,s):miniView(e,i,s)).join("")+
+      ssUnits(p.ex).map(u=>{
+        if(u.length===1){ const i=u[0], e=p.ex[i]; return e.id===liveId?logView(e,i,pv,s):miniView(e,i,s); }
+        const open=u.some(i=>p.ex[i].id===liveId);
+        return '<div class="ssg"><div class="sshd">⛓ Superset '+T[u[0]][0]+'<span class="sssp"></span>'+
+          (open?'<small>'+T[u[0]]+' → '+T[u[1]]+', then rest</small>':'')+'</div>'+
+          u.map(i=>{ const e=p.ex[i];
+            return open&&!isSkipped(s,e)?logView(e,i,pv,s,T[i]):miniView(e,i,s,T[i]); }).join("")+'</div>';
+      }).join("")+
       closeBar(p,s);
   }
 }
 
-function logView(e,ei,pv,s){
+function logView(e,ei,pv,s,tag){
   const cur=s.ex[e.id]||[];
   const pr=prevFor(e.id);
   const ps=pr?pr.sets:null;
@@ -2688,7 +2790,7 @@ function logView(e,ei,pv,s){
   return '<section class="ex cur" style="--mc:'+mcol(e)+'">'+
     '<span class="tagm">'+esc(MUSCLES[e.m]||"Other")+'</span>'+
     (isPRex(s,e.id)?'<span class="prb hd">PR</span>':'')+
-    '<div class="ex-head">'+
+    '<div class="ex-head">'+(tag?'<span class="sslab">'+tag+'</span>':'')+
     '<button class="ex-name" onclick="GYM4.history('+ei+')">'+esc(e.n)+'<span class="chev">▾</span></button>'+
     '<span class="target">'+e.s+' × '+esc(e.r)+'</span></div>'+
     (e.why?'<p class="why">'+esc(e.why)+'</p>':'')+
@@ -2751,7 +2853,7 @@ function benchView(){
   }).join("");
   return h;
 }
-function editView(e,i,total){
+function editView(e,i,total,tag){
   if(confirmId===e.id){
     return '<section class="ex"><div class="confirm">'+
       '<p>Take <b>'+esc(e.n)+'</b> out of this day? Its numbers are kept, and '+
@@ -2764,8 +2866,10 @@ function editView(e,i,total){
   return '<section class="ex">'+
     '<div class="erow">'+
       '<input class="nm" type="text" value="'+esc(e.n)+'" onchange="GYM4.set('+i+',\'n\',this.value)" aria-label="Exercise name">'+
+      /* one of a pair moves with its partner, from the arrows on the frame */
+      (tag?'<span class="sslab">'+tag+'</span>':
       '<button class="ebtn" onclick="GYM4.move('+i+',-1)" '+(i===0?"disabled":"")+' aria-label="Move up">▲</button>'+
-      '<button class="ebtn" onclick="GYM4.move('+i+',1)" '+(i===total-1?"disabled":"")+' aria-label="Move down">▼</button>'+
+      '<button class="ebtn" onclick="GYM4.move('+i+',1)" '+(i===total-1?"disabled":"")+' aria-label="Move down">▼</button>')+
     '</div>'+
     '<div class="egrid two">'+
       '<div><label>Sets</label><input type="text" inputmode="numeric" min="1" max="10" value="'+e.s+'" onchange="GYM4.set('+i+',\'s\',this.value)"></div>'+
@@ -3676,6 +3780,9 @@ function normalize(){
   if(!Array.isArray(store.archive)) store.archive=[];
   store.archive=store.archive.filter(a=>a&&a.id&&!store.program.some(p=>p.id===a.id));
   store.archive.forEach(p=>{ if(!Array.isArray(p.ex)) p.ex=[]; if(!Array.isArray(p.bench)) p.bench=[]; });
+  /* superset marks that point nowhere (last exercise, chains, the bench) go */
+  store.program.forEach(p=>{ if(Array.isArray(p.ex)) ssClean(p); });
+  store.archive.forEach(ssClean);
   /* days1: every day carries its own weekday (0 = Sunday) instead of the old
      fixed sun/tue/wed/fri table. Fills only what is missing, so a day he has
      moved stays where he put it. */
@@ -4037,7 +4144,8 @@ function mergeIn(d){
       if(!cp){ store.program.push(clone(ip)); n.days++; n.ex+=(ip.ex||[]).length; return; }
       cp.ex=cp.ex||[];
       (ip.ex||[]).forEach(ie=>{
-        if(ie&&ie.id&&!cp.ex.some(e=>e.id===ie.id)){ cp.ex.push(clone(ie)); n.ex++; }
+        /* added at the end of the day, so a superset mark would link it to a stranger */
+        if(ie&&ie.id&&!cp.ex.some(e=>e.id===ie.id)){ const c=clone(ie); delete c.ss; cp.ex.push(c); n.ex++; }
       });
       /* a benched exercise still owns its history, so it has to come across too */
       if(Array.isArray(ip.bench)){
@@ -4304,11 +4412,79 @@ const API={
     else e.r=String(val).trim()||"8-12";
     save(); render();
   },
+  /* moves a unit past the unit next to it: one exercise, or a superset pair as
+     a whole, so nothing ever lands between the two of a pair */
   move(i,d){
-    const ex=plan().ex, j=i+d;
-    if(j<0||j>=ex.length) return;
-    const t=ex[i]; ex[i]=ex[j]; ex[j]=t;
+    const p=plan(), U=ssUnits(p.ex);
+    const k=U.findIndex(u=>u.indexOf(i)>=0), j=k+d;
+    if(k<0||j<0||j>=U.length) return;
+    const t=U[k]; U[k]=U[j]; U[j]=t;
+    const ex=p.ex.slice();
+    p.ex.length=0;
+    U.forEach(u=>u.forEach(x=>p.ex.push(ex[x])));
     save(); render();
+  },
+  /* ---- supersets: pick any two, choose where the pair goes ---- */
+  ssStart(){ ssPick=[]; confirmId=null; render(); ROOT().scrollIntoView({block:"start"}); },
+  ssCancel(){ ssPick=null; closeAll(); render(); },
+  ssTap(id){
+    if(!ssPick) return;
+    const k=ssPick.indexOf(id);
+    if(k>=0) ssPick.splice(k,1); else if(ssPick.length<2) ssPick.push(id);
+    render();
+    if(ssPick.length===2) API.ssWhere();
+  },
+  ssWhere(){
+    const p=plan(); if(!ssPick||ssPick.length!==2) return;
+    const a=p.ex.findIndex(e=>e.id===ssPick[0]), b=p.ex.findIndex(e=>e.id===ssPick[1]);
+    if(a<0||b<0) return;
+    /* the slot each one stands in now, counted without the two of them */
+    const at=i=>p.ex.filter((e,x)=>x<i&&x!==a&&x!==b).length;
+    const row=(k,t,sub)=>'<button class="benchrow" onclick="GYM4.ssPlace('+k+')">'+
+      '<span class="bq" style="background:#C79BF2"></span><span class="bt"><b>'+t+'</b><em>'+sub+'</em></span></button>';
+    closeAll();
+    fsheet("Where does the superset go?",
+      esc(p.ex[a].n)+" (A1) + "+esc(p.ex[b].n)+" (A2). Both keep all their numbers.",'',
+      row(at(a),"Where "+esc(p.ex[a].n)+" is now","Spot #"+(a+1))+
+      row(at(b),"Where "+esc(p.ex[b].n)+" is now","Spot #"+(b+1))+
+      '<button class="benchrow" onclick="GYM4.ssSlots()"><span class="bq" style="background:var(--line)"></span>'+
+        '<span class="bt"><b>Somewhere else</b><em>Pick the spot in the day</em></span></button>'+
+      '<button class="fnewrow" onclick="GYM4.ssCancel()">Cancel</button>');
+  },
+  ssSlots(){
+    const p=plan(); if(!ssPick||ssPick.length!==2) return;
+    const rest=p.ex.filter(e=>ssPick.indexOf(e.id)<0);
+    let h="";
+    ssUnits(rest).forEach(u=>{
+      h+='<button class="benchrow" onclick="GYM4.ssPlace('+u[0]+')"><span class="bq" style="background:'+mcol(rest[u[0]])+'"></span>'+
+        '<span class="bt"><b>Before '+esc(rest[u[0]].n)+(u.length>1?' + '+esc(rest[u[1]].n):'')+'</b>'+
+        '<em>Spot #'+(u[0]+1)+'</em></span></button>';
+    });
+    h+='<button class="benchrow" onclick="GYM4.ssPlace('+rest.length+')"><span class="bq" style="background:var(--line)"></span>'+
+      '<span class="bt"><b>At the end</b><em>Last in the day</em></span></button>';
+    closeAll();
+    fsheet("Put it before…","The superset goes in this spot of the day.",'',h+
+      '<button class="fnewrow" onclick="GYM4.ssCancel()">Cancel</button>');
+  },
+  /* k: where the pair goes among the other exercises of the day */
+  ssPlace(k){
+    const p=plan(); if(!ssPick||ssPick.length!==2) return;
+    const A=p.ex.find(e=>e.id===ssPick[0]), B=p.ex.find(e=>e.id===ssPick[1]);
+    if(!A||!B||A===B) return;
+    const rest=p.ex.filter(e=>e!==A&&e!==B);
+    k=Math.max(0,Math.min(rest.length,k|0));
+    rest.splice(k,0,A,B);
+    A.ss=1; delete B.ss;
+    p.ex.length=0; rest.forEach(e=>p.ex.push(e));
+    ssClean(p);
+    ssPick=null; closeAll(); save(); render();
+    note("Superset made");
+  },
+  ssUnlink(i){
+    const e=plan().ex[i]; if(!e) return;
+    delete e.ss;
+    save(); render();
+    note("Unlinked. Both stay where they are.");
   },
   /* Tap the exercise you want gone, pick what takes its place. The one being
      replaced goes to the bench with its id, so its numbers are not lost, and
@@ -4338,6 +4514,9 @@ const API={
     const j=B.findIndex(x=>x.id===id);
     if(!out||j<0) return;
     const incoming=B.splice(j,1)[0];
+    /* the one coming in takes the outgoing one's place in a superset too */
+    if(out.ss) incoming.ss=1; else delete incoming.ss;
+    delete out.ss;
     p.ex.splice(i,1,incoming);
     B.push(out);
     closeAll(); openId=null; save(); render();
@@ -4345,8 +4524,11 @@ const API={
   swapNew(i){
     const p=plan(), out=p.ex[i];
     if(!out) return;
-    p.ex.splice(i,1,{id:uid(),n:"New exercise",s:out.s||3,r:out.r||"8-12",
-      rest:60,why:"",m:out.m||"other",h:out.h||"general"});
+    const fresh={id:uid(),n:"New exercise",s:out.s||3,r:out.r||"8-12",
+      rest:60,why:"",m:out.m||"other",h:out.h||"general"};
+    if(out.ss) fresh.ss=1;
+    delete out.ss;
+    p.ex.splice(i,1,fresh);
     benchOf(p).push(out);
     closeAll(); openId=null; save(); render();
     const f=document.querySelectorAll("#g4 .erow .nm");
@@ -4356,7 +4538,9 @@ const API={
     const p=plan(), B=benchOf(p);
     const j=B.findIndex(x=>x.id===id);
     if(j<0) return;
-    p.ex.push(B.splice(j,1)[0]);
+    const back=B.splice(j,1)[0];
+    delete back.ss;
+    p.ex.push(back);
     confirmId=null; save(); render();
   },
   benchAsk(id){ confirmId="bench:"+id; render(); },
@@ -4377,6 +4561,9 @@ const API={
   remove(i){
     const p=plan(), e=p.ex[i];
     if(!e) return;
+    /* its partner stays in the day, on its own */
+    ssBreak(p.ex,i);
+    delete e.ss;
     p.ex.splice(i,1);
     benchOf(p).push(e);
     confirmId=null; save(); render();
@@ -4429,7 +4616,24 @@ const API={
     store.program.push(A.splice(j,1)[0]);
     save(); render();
   },
+  addAsk(){
+    closeAll();
+    fsheet("Add to "+esc(plan().label||"this day"),"One exercise, or two done back to back with no rest between.",'',
+      '<button class="benchrow" onclick="GYM4.add()"><span class="bq" style="background:var(--aqua)"></span>'+
+        '<span class="bt"><b>Single exercise</b><em>Like before</em></span></button>'+
+      '<button class="benchrow" onclick="GYM4.ssAddNew()"><span class="bq" style="background:#C79BF2"></span>'+
+        '<span class="bt"><b>Superset</b><em>Two new exercises, linked. A1 then A2, then rest.</em></span></button>');
+  },
+  ssAddNew(){
+    const ex=plan().ex;
+    ex.push({id:uid(),n:"Exercise A",s:3,r:"8-12",rest:60,why:"",m:"other",h:"general",ss:1},
+            {id:uid(),n:"Exercise B",s:3,r:"8-12",rest:60,why:"",m:"other",h:"general"});
+    closeAll(); save(); render();
+    const f=document.querySelectorAll("#g4 .erow .nm");
+    if(f.length>1){ const l=f[f.length-2]; l.focus(); l.select(); }
+  },
   add(){
+    closeAll();
     plan().ex.push({id:uid(),n:"New exercise",s:3,r:"8-12",rest:60,why:"",m:"other",h:"general"});
     save(); render();
     const f=document.querySelectorAll("#g4 .erow .nm");
