@@ -1165,7 +1165,7 @@ const $=id=>document.getElementById(id);
 /* Ventor accounts. APP_V changes with every release so an open app can tell a
    newer copy is waiting. ACC says who is using it: the owner, a subscriber
    ("user"), or the owner looking at a subscriber ("view"). */
-const APP_V="2026.11.28-11";
+const APP_V="2026.11.28-12";
 const WA="https://wa.me/966557454709";
 const FOOT='<p class="vfoot"><b>Ventor</b> by Tarek Selim<br>&copy; Tarek Selim. All rights reserved.</p>';
 let ACC={mode:"owner"};
@@ -1654,8 +1654,15 @@ async function offLookup(code){
   const br=String(pr.brands||"").split(",")[0].trim();
   const liquid=/^(ml|l|cl)$/i.test(String(pr.product_quantity_unit||""))||
     /\d\s*(ml|cl|l)\b/i.test(String(pr.quantity||""));
-  const out={n:(nm||br||""),k:Math.round(k),p:num(nu.proteins_100g),
-    f:num(nu.fat_100g),b:num(nu.carbohydrates_100g),sz:packSize(pr),u:liquid?"ml":"g"};
+  /* The database hands back long floats (12.300000190734863) and some entries
+     are simply wrong (mg typed as g, a per-pack figure). Per 100 g nothing holds
+     more than 100 g of a macro or 900 kcal, so a bigger number is left empty for
+     the label rather than filled in; the rest is rounded to one decimal. */
+  const bad=[];
+  const g=(v,name)=>{ const x=num(v); if(x>100){ bad.push(name); return ""; } return Math.round(x*10)/10; };
+  if(k>900){ bad.push("calories"); k=""; } else k=Math.round(k);
+  const out={n:(nm||br||""),k:k,p:g(nu.proteins_100g,"protein"),
+    f:g(nu.fat_100g,"fat"),b:g(nu.carbohydrates_100g,"carbs"),sz:packSize(pr),u:liquid?"ml":"g",bad:bad};
   if(!out.k&&!out.p&&!out.f&&!out.b) return {err:"empty",n:out.n};
   return out;
 }
@@ -5622,7 +5629,9 @@ const API={
     }
     API.fdNew({n:r.n,k:r.k,p:r.p,f:r.f,b:r.b,sz:r.sz,u:r.u,
       note:"From Open Food Facts for <b>"+esc(c)+"</b>, per 100 "+(r.u==="ml"?"ml":"g")+
-        ". Check it against the pack."});
+        ". Check it against the pack."+
+        (r.bad&&r.bad.length?"<br><b>The database has a wrong number for "+esc(r.bad.join(", "))+
+          ", so it is left empty. Copy it off the pack.</b>":"")});
   },
   fdNew(pre){
     stopScanner();
